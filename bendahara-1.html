@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bendahara Pondok - An-Nur</title>
+<meta name="application-name" content="Bendahara An-Nur">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bendahara">
+<meta name="theme-color" content="#1a5c3a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Amiri:wght@400;700&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --green:#1a5c3a;--green-m:#2d7a52;--green-l:#4caf7d;--green-p:#e8f5ee;--green-b:#c8e6d5;
+  --gold:#c8952a;--gold-l:#f0c96a;--gold-p:#fdf6e3;--gold-b:#f0d080;
+  --red:#c0392b;--red-p:#fdecea;
+  --blue:#2471a3;--blue-p:#eaf4fb;
+  --bg:#f4f6f4;--white:#fff;--text:#1c2b22;--text-m:#4a6358;--text-l:#8aab97;
+  --border:#d4e6db;--rad:12px;
+  --sh:0 1px 8px rgba(26,92,58,.08);--shh:0 8px 32px rgba(26,92,58,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--green-l);border-radius:3px}
+input,textarea,select,button{font-family:'DM Sans',sans-serif}
+input[type=text],input[type=number],input[type=password],input[type=date],select,textarea{
+  width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;
+  outline:none;background:var(--white);color:var(--text);transition:.2s
+}
+input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-p)}
+label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-l);display:block;margin-bottom:5px}
+.fg{margin-bottom:14px}
+.btn{padding:9px 18px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn-p{background:var(--green);color:#fff}
+.btn-b{background:var(--blue-p);color:var(--blue)}
+.btn-d{background:var(--red-p);color:var(--red)}
+.btn-g{background:var(--gold-p);color:var(--gold)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px}
+
+/* LOADING */
+#pg-loading{position:fixed;inset:0;background:linear-gradient(135deg,var(--green),var(--green-m));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
+.load-logo{width:72px;height:72px;background:var(--gold);border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:'Amiri',serif;font-size:36px;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.load-title{font-family:'Amiri',serif;font-size:22px;color:#fff;font-weight:700}
+.load-sub{font-size:12px;color:rgba(255,255,255,.7)}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LOGIN */
+#pg-login{display:none;min-height:100vh;background:linear-gradient(135deg,var(--green),var(--green-m));align-items:center;justify-content:center;padding:20px}
+.login-box{background:#fff;border-radius:20px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.18)}
+.login-logo{width:64px;height:64px;background:linear-gradient(135deg,var(--green),var(--gold));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px}
+.login-box h2{font-family:'Amiri',serif;font-size:24px;color:var(--green);text-align:center;margin-bottom:4px}
+.login-box .sub{font-size:12px;color:var(--text-l);text-align:center;margin-bottom:24px}
+.role-tabs{display:flex;gap:0;background:var(--green-p);border-radius:9px;padding:3px;margin-bottom:20px}
+.rtab{flex:1;padding:8px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:none;color:var(--text-m);transition:.2s}
+.rtab.act{background:var(--green);color:#fff}
+.login-err{background:var(--red-p);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;border:1px solid #f5c6c2}
+
+/* HEADER */
+#pg-app{display:none}
+header{background:linear-gradient(135deg,var(--green),var(--green-m));height:64px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(26,92,58,.3)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-ico{width:38px;height:38px;background:var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Amiri',serif;font-size:18px;color:#fff;font-weight:700}
+.brand-txt{color:#fff}
+.brand-txt strong{display:block;font-size:14px;font-weight:700}
+.brand-txt span{font-size:11px;opacity:.75}
+.hright{display:flex;align-items:center;gap:8px}
+.hchip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.15)}
+.hchip.gold{background:var(--gold);border-color:var(--gold)}
+.hbtn{padding:6px 14px;border:1.5px solid rgba(255,255,255,.4);background:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.hbtn:hover{background:rgba(255,255,255,.15)}
+
+/* MAIN */
+main{max-width:1100px;margin:0 auto;padding:20px 16px}
+.tabs{display:flex;gap:3px;background:var(--white);border:1px solid var(--border);border-radius:var(--rad);padding:4px;margin-bottom:22px;width:fit-content;box-shadow:var(--sh);flex-wrap:wrap}
+.tb{padding:8px 16px;border:none;background:none;border-radius:9px;font-size:13px;font-weight:500;color:var(--text-m);cursor:pointer;transition:.2s;white-space:nowrap}
+.tb:hover{background:var(--green-p);color:var(--green)}
+.tb.act{background:var(--green);color:#fff}
+.sec{display:none}.sec.act{display:block}
+.panel{background:var(--white);border:1px solid var(--border);border-radius:var(--rad);box-shadow:var(--sh);overflow:hidden;margin-bottom:20px}
+.ph{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--green-p);flex-wrap:wrap;gap:8px}
+.ph h2{font-family:'Amiri',serif;font-size:17px;color:var(--green)}
+.pb{padding:18px 20px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:600px){.two{grid-template-columns:1fr}}
+
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.sc{background:var(--white);border:1px solid var(--border);border-radius:var(--rad);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh)}
+.sci{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sci.g{background:var(--green-p)}.sci.r{background:var(--red-p)}.sci.gg{background:var(--gold-p)}.sci.b{background:var(--blue-p)}
+.sil label{font-size:10.5px;color:var(--text-l);font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+.sil .val{font-size:20px;font-weight:700;color:var(--text)}
+.sil small{font-size:11px;color:var(--text-l)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--green);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:12px}
+th:first-child{border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:var(--green-p)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-lunas{background:#d4edda;color:#155724}
+.badge-belum{background:var(--red-p);color:var(--red)}
+.badge-cicil{background:var(--gold-p);color:var(--gold)}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;padding:16px}
+.mo.open{display:flex}
+.mo-box{background:#fff;border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.2)}
+.mo-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.mo-h h3{font-family:'Amiri',serif;font-size:17px;color:var(--green)}
+.mo-cls{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-l);padding:4px 8px;border-radius:6px}
+.mo-cls:hover{background:var(--red-p);color:var(--red)}
+.mo-b{padding:20px}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1c2b22;color:#fff;padding:11px 22px;border-radius:10px;font-size:13.5px;font-weight:500;z-index:9999;transition:.3s;opacity:0;pointer-events:none;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* INFO BOX */
+.info-box{background:var(--blue-p);border:1px solid #bee3f8;border-radius:9px;padding:12px 15px;font-size:13px;color:var(--blue);line-height:1.7}
+.warn-box{background:var(--gold-p);border:1px solid var(--gold-b);border-radius:9px;padding:12px 15px;font-size:13px;color:#7a5c00;line-height:1.7}
+
+/* SEARCH */
+.search-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.search-inp{flex:1;min-width:200px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none}
+.search-inp:focus{border-color:var(--green)}
+
+/* TAGIHAN STATUS */
+.tag-row-lunas td{background:#f0fff4}
+.tag-row-belum td{background:#fff8f8}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="pg-loading">
+  <div class="load-logo">💰</div>
+  <div class="load-title">Bendahara An-Nur</div>
+  <div class="load-sub">Pondok Pesantren An-Nur</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- LOGIN -->
+<div id="pg-login" style="display:none;min-height:100vh;background:linear-gradient(135deg,var(--green),var(--green-m));align-items:center;justify-content:center;padding:20px;flex-direction:column">
+  <div class="login-box">
+    <div class="login-logo">💰</div>
+    <h2>Bendahara Pondok</h2>
+    <p class="sub">PONDOK PESANTREN AN-NUR</p>
+    <div class="role-tabs">
+      <button class="rtab act" onclick="setRole('bendahara',this)">💰 Bendahara</button>
+      <button class="rtab" onclick="setRole('super',this)">👑 Kang Admin</button>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <div class="fg"><label>Username</label><input type="text" id="login-user" placeholder="Username..."></div>
+    <div class="fg"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-p" style="width:100%;justify-content:center" onclick="doLogin()">🔐 Masuk</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="pg-app" style="display:none">
+  <header>
+    <div class="brand">
+      <div class="brand-ico">💰</div>
+      <div class="brand-txt">
+        <strong>Bendahara Pondok</strong>
+        <span>Pondok Pesantren An-Nur</span>
+      </div>
+    </div>
+    <div class="hright">
+      <span class="hchip" id="hdr-bulan">—</span>
+      <span class="hchip gold" id="hdr-role">—</span>
+      <button class="hbtn" onclick="doLogout()">⬅ Keluar</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="tabs" id="main-tabs"></div>
+
+    <!-- DASHBOARD -->
+    <div class="sec" id="sec-dashboard">
+      <div class="stats" id="dash-stats"></div>
+      <div class="panel">
+        <div class="ph"><h2>📋 Tagihan Bulan Ini</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-g btn-sm" onclick="generateTagihanBulan()">⚡ Generate Tagihan</button>
+            <button class="btn btn-b btn-sm" onclick="showTab('tagihan')">📋 Kelola Tagihan</button>
+          </div>
+        </div>
+        <div class="pb" id="dash-tagihan-summary">
+          <div style="text-align:center;padding:20px;color:var(--text-l)">Memuat...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAGIHAN -->
+    <div class="sec" id="sec-tagihan">
+      <div class="panel">
+        <div class="ph">
+          <h2>📋 Kelola Tagihan</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-p btn-sm" onclick="openMo('mo-tagihan')">➕ Tambah Tagihan</button>
+            <button class="btn btn-g btn-sm" onclick="generateTagihanBulan()">⚡ Generate Semua</button>
+          </div>
+        </div>
+        <div class="pb">
+          <div class="search-row">
+            <input class="search-inp" id="cari-tagihan" placeholder="🔍 Cari nama santri..." oninput="renderTagihanTable()">
+            <select id="filter-bulan-tagihan" onchange="renderTagihanTable()" style="width:auto;padding:9px 13px">
+              <option value="">Semua Bulan</option>
+            </select>
+            <select id="filter-status-tagihan" onchange="renderTagihanTable()" style="width:auto;padding:9px 13px">
+              <option value="">Semua Status</option>
+              <option value="belum">Belum Bayar</option>
+              <option value="lunas">Lunas</option>
+              <option value="cicil">Cicilan</option>
+            </select>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>#</th><th>Santri</th><th>Jenis</th><th>Bulan</th>
+                <th>Nominal</th><th>Tgl Bayar</th><th>Keterangan</th><th>Status</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="tagihan-tbody"></tbody>
+            </table>
+          </div>
+          <div id="tagihan-empty" style="text-align:center;padding:30px;color:var(--text-l);display:none">Belum ada data tagihan.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SANTRI -->
+    <div class="sec" id="sec-santri">
+      <div class="panel">
+        <div class="ph"><h2>👥 Data Santri</h2>
+          <button class="btn btn-p btn-sm" onclick="openMo('mo-santri-bend')">➕ Tambah Santri</button>
+        </div>
+        <div class="pb">
+          <div class="info-box" style="margin-bottom:14px">Data santri diambil dari Saku Santri. Santri yang ditambah di sini hanya untuk keperluan tagihan bendahara.</div>
+          <input class="search-inp" id="cari-santri-bend" placeholder="🔍 Cari nama santri..." oninput="renderSantriBend()" style="margin-bottom:14px">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Nama</th><th>Kobong</th><th>No WA Ortu</th><th>Sumber</th><th>Aksi</th></tr></thead>
+              <tbody id="santri-bend-tbody"></tbody>
+            </table>
+          </div>
+          <div id="santri-bend-empty" style="text-align:center;padding:30px;color:var(--text-l);display:none">Belum ada santri.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JENIS TAGIHAN -->
+    <div class="sec" id="sec-jenis">
+      <div class="panel">
+        <div class="ph"><h2>🏷️ Jenis Tagihan</h2>
+          <button class="btn btn-p btn-sm" onclick="openMo('mo-jenis')">➕ Tambah Jenis</button>
+        </div>
+        <div class="pb">
+          <div class="warn-box" style="margin-bottom:14px">Nominal default bisa diubah per tagihan. Jenis tagihan ini digunakan saat generate tagihan bulanan.</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Nama Tagihan</th><th>Nominal Default</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+              <tbody id="jenis-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIWAYAT -->
+    <div class="sec" id="sec-riwayat">
+      <div class="panel">
+        <div class="ph"><h2>📜 Riwayat Pembayaran</h2></div>
+        <div class="pb">
+          <div class="search-row">
+            <input class="search-inp" id="cari-riwayat" placeholder="🔍 Cari..." oninput="renderRiwayat()">
+            <select id="filter-bulan-riwayat" onchange="renderRiwayat()" style="width:auto;padding:9px 13px">
+              <option value="">Semua Bulan</option>
+            </select>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Santri</th><th>Jenis</th><th>Bulan</th><th>Nominal</th><th>Tgl Bayar</th><th>Keterangan</th></tr></thead>
+              <tbody id="riwayat-tbody"></tbody>
+            </table>
+          </div>
+          <div id="riwayat-empty" style="text-align:center;padding:30px;color:var(--text-l);display:none">Belum ada riwayat.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENGATURAN (admin only, injected via JS) -->
+    <div class="sec" id="sec-pengaturan"></div>
+  </main>
+</div>
+
+<!-- MODAL TAMBAH TAGIHAN -->
+<div class="mo" id="mo-tagihan">
+  <div class="mo-box">
+    <div class="mo-h"><h3>➕ Tambah Tagihan</h3><button class="mo-cls" onclick="closeMo('mo-tagihan')">✕</button></div>
+    <div class="mo-b">
+      <div class="fg"><label>Santri</label>
+        <select id="tag-santri"></select>
+      </div>
+      <div class="fg"><label>Jenis Tagihan</label>
+        <select id="tag-jenis" onchange="fillNominal()"></select>
+      </div>
+      <div class="fg"><label>Bulan</label>
+        <input type="text" id="tag-bulan" placeholder="Juni 2026"></div>
+      <div class="fg"><label>Nominal (Rp)</label>
+        <input type="number" id="tag-nominal" placeholder="420000"></div>
+      <div class="fg"><label>Tanggal Tagihan</label>
+        <input type="date" id="tag-tgl"></div>
+      <div class="fg"><label>Keterangan</label>
+        <input type="text" id="tag-ket" placeholder="Opsional..."></div>
+      <div class="fg"><label>Status</label>
+        <select id="tag-status">
+          <option value="belum">Belum Bayar</option>
+          <option value="lunas">Lunas</option>
+          <option value="cicil">Cicilan</option>
+        </select>
+      </div>
+      <div id="tag-bayar-row" class="fg" style="display:none">
+        <label>Tanggal Bayar</label>
+        <input type="date" id="tag-tgl-bayar">
+      </div>
+      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="simpanTagihan()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT TAGIHAN -->
+<div class="mo" id="mo-edit-tagihan">
+  <div class="mo-box">
+    <div class="mo-h"><h3>✏️ Edit Tagihan</h3><button class="mo-cls" onclick="closeMo('mo-edit-tagihan')">✕</button></div>
+    <div class="mo-b">
+      <div class="fg"><label>Santri</label><input type="text" id="edit-tag-santri" readonly style="background:var(--bg)"></div>
+      <div class="fg"><label>Jenis</label><input type="text" id="edit-tag-jenis" readonly style="background:var(--bg)"></div>
+      <div class="fg"><label>Bulan</label><input type="text" id="edit-tag-bulan" readonly style="background:var(--bg)"></div>
+      <div class="fg"><label>Nominal (Rp)</label><input type="number" id="edit-tag-nominal"></div>
+      <div class="fg"><label>Tanggal Tagihan</label><input type="date" id="edit-tag-tgl"></div>
+      <div class="fg"><label>Keterangan</label><input type="text" id="edit-tag-ket"></div>
+      <div class="fg"><label>Status</label>
+        <select id="edit-tag-status" onchange="toggleEditBayar()">
+          <option value="belum">Belum Bayar</option>
+          <option value="lunas">Lunas</option>
+          <option value="cicil">Cicilan</option>
+        </select>
+      </div>
+      <div id="edit-bayar-row" class="fg">
+        <label>Tanggal Bayar</label>
+        <input type="date" id="edit-tag-tgl-bayar">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-p" style="flex:1;justify-content:center" onclick="updateTagihan()">💾 Simpan</button>
+        <button class="btn btn-d btn-sm" onclick="hapusTagihan()">🗑 Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH SANTRI -->
+<div class="mo" id="mo-santri-bend">
+  <div class="mo-box">
+    <div class="mo-h"><h3>➕ Tambah Santri</h3><button class="mo-cls" onclick="closeMo('mo-santri-bend')">✕</button></div>
+    <div class="mo-b">
+      <div class="info-box" style="margin-bottom:14px">Tambah santri khusus untuk bendahara. Tidak akan mempengaruhi data Saku Santri.</div>
+      <div class="fg"><label>Nama Santri</label><input type="text" id="sb-nama" placeholder="Nama lengkap..."></div>
+      <div class="fg"><label>Kobong/Kamar</label><input type="text" id="sb-kobong" placeholder="Al Badri 7..."></div>
+      <div class="fg"><label>No WA Orang Tua</label><input type="text" id="sb-wa" placeholder="08xxx..."></div>
+      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="simpanSantriBend()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH JENIS -->
+<div class="mo" id="mo-jenis">
+  <div class="mo-box">
+    <div class="mo-h"><h3>🏷️ Tambah Jenis Tagihan</h3><button class="mo-cls" onclick="closeMo('mo-jenis')">✕</button></div>
+    <div class="mo-b">
+      <div class="fg"><label>Nama Jenis</label><input type="text" id="jenis-nama" placeholder="Uang Makan, Listrik, dll..."></div>
+      <div class="fg"><label>Nominal Default (Rp)</label><input type="number" id="jenis-nominal" placeholder="380000"></div>
+      <div class="fg"><label>Keterangan</label><input type="text" id="jenis-ket" placeholder="Opsional..."></div>
+      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="simpanJenis()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GENERATE -->
+<div class="mo" id="mo-generate">
+  <div class="mo-box">
+    <div class="mo-h"><h3>⚡ Generate Tagihan Bulanan</h3><button class="mo-cls" onclick="closeMo('mo-generate')">✕</button></div>
+    <div class="mo-b">
+      <div class="warn-box" style="margin-bottom:16px">Generate akan membuat tagihan untuk <strong>semua santri aktif</strong> berdasarkan jenis tagihan yang ada. Tagihan yang sudah ada tidak akan duplikat.</div>
+      <div class="fg"><label>Bulan</label><input type="text" id="gen-bulan" placeholder="Juni 2026"></div>
+      <div class="fg"><label>Tanggal Tagihan</label><input type="date" id="gen-tgl"></div>
+      <div id="gen-preview" style="margin-bottom:14px"></div>
+      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="doGenerate()">⚡ Generate Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const { createClient } = supabase;
+let SB, SESSION = null, CONFIG = {};
+let ALL_SANTRI = [], ALL_JENIS = [], ALL_TAGIHAN = [];
+let EDIT_TAG_ID = null;
+
+const BULAN_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const now = new Date();
+const BULAN_AKTIF = BULAN_NAMES[now.getMonth()] + ' ' + now.getFullYear();
+
+// ===== INIT =====
+(async function init(){
+  const HARDCODED_URL = 'https://menfnmfwtxgcgvkbbjxh.supabase.co';
+  const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
+  SB = createClient(HARDCODED_URL, HARDCODED_KEY);
+
+  // Load config
+  try {
+    const {data:sets} = await SB.from('settings').select('*');
+    (sets||[]).forEach(s=>{ CONFIG[s.key]=s.value; });
+  } catch(e){}
+
+  // Cek persistent session
+  const saved = loadSession();
+  if(saved){
+    SESSION = saved;
+    document.getElementById('pg-loading').style.display='none';
+    await enterApp();
+    return;
+  }
+
+  document.getElementById('pg-loading').style.display='none';
+  document.getElementById('pg-login').style.display='flex';
+})();
+
+// ===== SESSION =====
+const SESS_KEY = 'bend_session';
+function saveSession(){ if(SESSION) localStorage.setItem(SESS_KEY, JSON.stringify({...SESSION, savedAt:Date.now()})); }
+function loadSession(){
+  try{
+    const r = localStorage.getItem(SESS_KEY);
+    if(!r) return null;
+    const d = JSON.parse(r);
+    if(Date.now()-d.savedAt > 48*60*60*1000){ localStorage.removeItem(SESS_KEY); return null; }
+    return d;
+  }catch(e){ return null; }
+}
+function clearSession(){ localStorage.removeItem(SESS_KEY); }
+
+// ===== LOGIN =====
+let loginRole = 'bendahara';
+function setRole(r, el){
+  loginRole = r;
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('act'));
+  el.classList.add('act');
+}
+
+async function doLogin(){
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if(!user||!pass){ showLoginErr('Isi username dan password!'); return; }
+  const passHash = btoa(pass);
+
+  if(loginRole==='super'){
+    const {data:dp} = await SB.from('settings').select('value').eq('key','super_pass').single();
+    const {data:du} = await SB.from('settings').select('value').eq('key','super_user').single();
+    const storedPass = dp?.value || '';
+    const storedUser = du?.value || 'superadmin';
+    if(user!==storedUser||passHash!==storedPass){ showLoginErr('Username atau password salah!'); return; }
+    SESSION = {role:'super'};
+  } else {
+    // Bendahara login
+    const {data:dp} = await SB.from('settings').select('value').eq('key','bend_pass').single();
+    const {data:du} = await SB.from('settings').select('value').eq('key','bend_user').single();
+    const storedPass = dp?.value || btoa('bendahara123');
+    const storedUser = du?.value || 'bendahara';
+    if(user!==storedUser||passHash!==storedPass){ showLoginErr('Username atau password salah!'); return; }
+    SESSION = {role:'bendahara'};
+  }
+
+  saveSession();
+  document.getElementById('pg-login').style.display='none';
+  await enterApp();
+}
+
+function showLoginErr(msg){
+  const el = document.getElementById('login-err');
+  el.textContent = msg; el.style.display='block';
+  setTimeout(()=>el.style.display='none', 3000);
+}
+
+// ===== ENTER APP =====
+async function enterApp(){
+  document.getElementById('pg-app').style.display='block';
+  document.getElementById('hdr-bulan').textContent = CONFIG.bulan_aktif || BULAN_AKTIF;
+  document.getElementById('hdr-role').textContent = SESSION.role==='super' ? '👑 Kang Admin' : '💰 Bendahara';
+
+  buildTabs();
+  await loadAllData();
+  showTab('dashboard');
+  renderDashboard();
+}
+
+// ===== TABS =====
+function buildTabs(){
+  const tabs = document.getElementById('main-tabs');
+  let t = '';
+  t += tab('dashboard','📊 Dashboard');
+  t += tab('tagihan','📋 Tagihan');
+  t += tab('santri','👥 Santri');
+  t += tab('jenis','🏷️ Jenis Tagihan');
+  t += tab('riwayat','📜 Riwayat');
+  if(SESSION.role==='super') t += tab('pengaturan','⚙️ Pengaturan');
+  tabs.innerHTML = t;
+}
+function tab(id,label){ return `<button class="tb" id="tab-${id}" onclick="showTab('${id}')">${label}</button>`; }
+
+function showTab(id){
+  if(id==='pengaturan' && SESSION.role!=='super') return;
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));
+  document.querySelectorAll('.tb').forEach(t=>t.classList.remove('act'));
+  const s=document.getElementById('sec-'+id), t=document.getElementById('tab-'+id);
+  if(s) s.classList.add('act');
+  if(t) t.classList.add('act');
+  if(id==='tagihan') renderTagihanTable();
+  if(id==='santri') renderSantriBend();
+  if(id==='jenis') renderJenis();
+  if(id==='riwayat') renderRiwayat();
+  if(id==='pengaturan') renderPengaturan();
+}
+
+// ===== LOAD DATA =====
+async function loadAllData(){
+  // Load santri dari Saku Santri + santri bendahara
+  const [{data:santriSaku},{data:santriBend},{data:jenis},{data:tagihan}] = await Promise.all([
+    SB.from('santri').select('id,nama,kobong(nama),no_wa').order('nama'),
+    SB.from('santri_tagihan').select('*').order('nama'),
+    SB.from('jenis_tagihan').select('*').order('nama'),
+    SB.from('tagihan_pondok').select('*,jenis_tagihan(nama)').order('created_at',{ascending:false})
+  ]);
+
+  // Merge santri — saku santri sebagai referensi, santri_tagihan tambahan
+  const sakuIds = new Set((santriSaku||[]).map(s=>'saku_'+s.id));
+  ALL_SANTRI = [
+    ...(santriSaku||[]).map(s=>({id:'saku_'+s.id,nama:s.nama,kobong:s.kobong?.nama||'—',no_wa:s.no_wa||'—',sumber:'Saku Santri',ref_id:s.id})),
+    ...(santriBend||[]).filter(s=>!sakuIds.has('bend_'+s.id)).map(s=>({id:'bend_'+s.id,nama:s.nama,kobong:s.kobong||'—',no_wa:s.no_wa||'—',sumber:'Bendahara',ref_id:s.id,is_bend:true}))
+  ];
+
+  ALL_JENIS = jenis||[];
+  ALL_TAGIHAN = tagihan||[];
+
+  // Jika belum ada jenis tagihan default, buat
+  if(ALL_JENIS.length===0){
+    await initJenisDefault();
+  }
+}
+
+async function initJenisDefault(){
+  const defaults = [
+    {nama:'Uang Makan',nominal:380000,keterangan:'Tagihan makan bulanan'},
+    {nama:'Uang Listrik',nominal:40000,keterangan:'Tagihan listrik bulanan'},
+  ];
+  const {data} = await SB.from('jenis_tagihan').insert(defaults).select();
+  ALL_JENIS = data||[];
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(){
+  const bulanAktif = CONFIG.bulan_aktif || BULAN_AKTIF;
+  const tagihanBulanIni = ALL_TAGIHAN.filter(t=>t.bulan===bulanAktif);
+  const lunas = tagihanBulanIni.filter(t=>t.status==='lunas');
+  const belum = tagihanBulanIni.filter(t=>t.status==='belum');
+  const cicil = tagihanBulanIni.filter(t=>t.status==='cicil');
+  const totalTagihan = tagihanBulanIni.reduce((a,t)=>a+Number(t.nominal),0);
+  const totalLunas = lunas.reduce((a,t)=>a+Number(t.nominal),0);
+  const totalBelum = [...belum,...cicil].reduce((a,t)=>a+Number(t.nominal),0);
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="sc"><div class="sci g">📋</div><div class="sil"><label>Total Tagihan</label><div class="val">${tagihanBulanIni.length}</div><small>${bulanAktif}</small></div></div>
+    <div class="sc"><div class="sci g">✅</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small>${fmtRp(totalLunas)}</small></div></div>
+    <div class="sc"><div class="sci r">❌</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(totalBelum)}</small></div></div>
+    <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Terkumpul</label><div class="val" style="color:var(--gold)">${fmtRp(totalLunas)}</div><small>dari ${fmtRp(totalTagihan)}</small></div></div>
+  `;
+
+  // Summary table
+  const grouped = {};
+  tagihanBulanIni.forEach(t=>{
+    const key = t.santri_nama||t.santri_id;
+    if(!grouped[key]) grouped[key]={nama:t.santri_nama||'—',tagihan:[],total:0,lunas:0};
+    grouped[key].tagihan.push(t);
+    grouped[key].total += Number(t.nominal);
+    if(t.status==='lunas') grouped[key].lunas += Number(t.nominal);
+  });
+
+  const rows = Object.values(grouped).map((g,i)=>{
+    const sisa = g.total - g.lunas;
+    const allLunas = g.tagihan.every(t=>t.status==='lunas');
+    return `<tr class="${allLunas?'tag-row-lunas':'tag-row-belum'}">
+      <td>${i+1}</td>
+      <td style="font-weight:600">${g.nama}</td>
+      <td>${fmtRp(g.total)}</td>
+      <td style="color:var(--green)">${fmtRp(g.lunas)}</td>
+      <td style="color:var(--red)">${fmtRp(sisa)}</td>
+      <td>${allLunas?'<span class="badge badge-lunas">✅ Lunas</span>':'<span class="badge badge-belum">❌ Belum</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('dash-tagihan-summary').innerHTML = rows ? `
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Santri</th><th>Total Tagihan</th><th>Sudah Bayar</th><th>Sisa</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>` : 
+    `<div style="text-align:center;padding:30px;color:var(--text-l)">Belum ada tagihan bulan ini. <button class="btn btn-g btn-sm" onclick="openMo('mo-generate');prefillGenerate()">⚡ Generate Sekarang</button></div>`;
+}
+
+// ===== TAGIHAN TABLE =====
+function renderTagihanTable(){
+  const cari = document.getElementById('cari-tagihan').value.toLowerCase();
+  const bulan = document.getElementById('filter-bulan-tagihan').value;
+  const status = document.getElementById('filter-status-tagihan').value;
+
+  // Populate bulan filter
+  const bulans = [...new Set(ALL_TAGIHAN.map(t=>t.bulan))].sort().reverse();
+  const bSel = document.getElementById('filter-bulan-tagihan');
+  const curBulan = bSel.value;
+  bSel.innerHTML = '<option value="">Semua Bulan</option>' + bulans.map(b=>`<option value="${b}" ${b===curBulan?'selected':''}>${b}</option>`).join('');
+
+  let data = ALL_TAGIHAN;
+  if(cari) data = data.filter(t=>(t.santri_nama||'').toLowerCase().includes(cari));
+  if(bulan) data = data.filter(t=>t.bulan===bulan);
+  if(status) data = data.filter(t=>t.status===status);
+
+  const badgeMap = {lunas:'badge-lunas',belum:'badge-belum',cicil:'badge-cicil'};
+  const labelMap = {lunas:'✅ Lunas',belum:'❌ Belum',cicil:'🔄 Cicilan'};
+
+  const rows = data.map((t,i)=>`<tr class="tag-row-${t.status}">
+    <td>${i+1}</td>
+    <td style="font-weight:600">${t.santri_nama||'—'}</td>
+    <td>${t.jenis_tagihan?.nama||t.jenis_nama||'—'}</td>
+    <td>${t.bulan||'—'}</td>
+    <td>${fmtRp(t.nominal)}</td>
+    <td style="font-size:12px;color:var(--text-m)">${t.tgl_bayar||'—'}</td>
+    <td style="font-size:12px;color:var(--text-m);max-width:140px">${t.keterangan||'—'}</td>
+    <td><span class="badge ${badgeMap[t.status]||''}">${labelMap[t.status]||t.status}</span></td>
+    <td><button class="btn btn-b btn-xs" onclick="editTagihan('${t.id}')">✏️</button></td>
+  </tr>`).join('');
+
+  document.getElementById('tagihan-tbody').innerHTML = rows;
+  document.getElementById('tagihan-empty').style.display = rows?'none':'block';
+}
+
+// ===== TAMBAH TAGIHAN =====
+function openMo(id){ document.getElementById(id).classList.add('open'); }
+function closeMo(id){ document.getElementById(id).classList.remove('open'); }
+
+function fillNominalOptions(){
+  const sel = document.getElementById('tag-santri');
+  sel.innerHTML = ALL_SANTRI.map(s=>`<option value="${s.id}" data-nama="${s.nama}">${s.nama} — ${s.kobong}</option>`).join('');
+  const jenSel = document.getElementById('tag-jenis');
+  jenSel.innerHTML = ALL_JENIS.map(j=>`<option value="${j.id}" data-nominal="${j.nominal}">${j.nama} (${fmtRp(j.nominal)})</option>`).join('');
+  fillNominal();
+  document.getElementById('tag-bulan').value = CONFIG.bulan_aktif || BULAN_AKTIF;
+  document.getElementById('tag-tgl').value = new Date().toISOString().split('T')[0];
+  document.getElementById('tag-status').value = 'belum';
+  document.getElementById('tag-bayar-row').style.display='none';
+}
+
+function fillNominal(){
+  const sel = document.getElementById('tag-jenis');
+  const opt = sel.options[sel.selectedIndex];
+  if(opt) document.getElementById('tag-nominal').value = opt.dataset.nominal||'';
+}
+
+document.getElementById('tag-status').addEventListener('change',function(){
+  document.getElementById('tag-bayar-row').style.display = this.value!=='belum'?'block':'none';
+});
+
+async function simpanTagihan(){
+  const santriSel = document.getElementById('tag-santri');
+  const santriOpt = santriSel.options[santriSel.selectedIndex];
+  const jenisSel = document.getElementById('tag-jenis');
+  const jenisOpt = jenisSel.options[jenisSel.selectedIndex];
+  const bulan = document.getElementById('tag-bulan').value.trim();
+  const nominal = parseInt(document.getElementById('tag-nominal').value)||0;
+  const tgl = document.getElementById('tag-tgl').value;
+  const ket = document.getElementById('tag-ket').value.trim();
+  const status = document.getElementById('tag-status').value;
+  const tglBayar = document.getElementById('tag-tgl-bayar').value||null;
+
+  if(!santriOpt||!jenisOpt||!bulan||!nominal){ toast('⚠️ Isi semua field!'); return; }
+
+  const payload = {
+    santri_id: santriSel.value,
+    santri_nama: santriOpt.dataset.nama,
+    jenis_id: jenisSel.value,
+    jenis_nama: jenisOpt.text.split(' (')[0],
+    bulan, nominal, tgl_tagihan:tgl, keterangan:ket, status,
+    tgl_bayar: status!=='belum'?tglBayar:null
+  };
+
+  const {error} = await SB.from('tagihan_pondok').insert(payload);
+  if(error){ toast('❌ Gagal menyimpan!'); return; }
+  toast('✅ Tagihan berhasil ditambahkan!');
+  closeMo('mo-tagihan');
+  await loadAllData();
+  renderTagihanTable();
+  renderDashboard();
+}
+
+// ===== EDIT TAGIHAN =====
+function editTagihan(id){
+  const t = ALL_TAGIHAN.find(t=>t.id==id);
+  if(!t) return;
+  EDIT_TAG_ID = id;
+  document.getElementById('edit-tag-santri').value = t.santri_nama||'—';
+  document.getElementById('edit-tag-jenis').value = t.jenis_tagihan?.nama||t.jenis_nama||'—';
+  document.getElementById('edit-tag-bulan').value = t.bulan||'';
+  document.getElementById('edit-tag-nominal').value = t.nominal||'';
+  document.getElementById('edit-tag-tgl').value = t.tgl_tagihan||'';
+  document.getElementById('edit-tag-ket').value = t.keterangan||'';
+  document.getElementById('edit-tag-status').value = t.status||'belum';
+  document.getElementById('edit-tag-tgl-bayar').value = t.tgl_bayar||'';
+  toggleEditBayar();
+  openMo('mo-edit-tagihan');
+}
+
+function toggleEditBayar(){
+  const s = document.getElementById('edit-tag-status').value;
+  document.getElementById('edit-bayar-row').style.display = s!=='belum'?'block':'none';
+}
+
+async function updateTagihan(){
+  if(!EDIT_TAG_ID) return;
+  const status = document.getElementById('edit-tag-status').value;
+  const payload = {
+    nominal: parseInt(document.getElementById('edit-tag-nominal').value)||0,
+    tgl_tagihan: document.getElementById('edit-tag-tgl').value,
+    keterangan: document.getElementById('edit-tag-ket').value.trim(),
+    status,
+    tgl_bayar: status!=='belum'?(document.getElementById('edit-tag-tgl-bayar').value||null):null
+  };
+  const {error} = await SB.from('tagihan_pondok').update(payload).eq('id',EDIT_TAG_ID);
+  if(error){ toast('❌ Gagal update!'); return; }
+  toast('✅ Tagihan diupdate!');
+  closeMo('mo-edit-tagihan');
+  await loadAllData();
+  renderTagihanTable();
+  renderDashboard();
+}
+
+async function hapusTagihan(){
+  if(!EDIT_TAG_ID||!confirm('Hapus tagihan ini?')) return;
+  const {error} = await SB.from('tagihan_pondok').delete().eq('id',EDIT_TAG_ID);
+  if(error){ toast('❌ Gagal hapus!'); return; }
+  toast('🗑 Tagihan dihapus!');
+  closeMo('mo-edit-tagihan');
+  await loadAllData();
+  renderTagihanTable();
+  renderDashboard();
+}
+
+// ===== GENERATE BULANAN =====
+function generateTagihanBulan(){
+  prefillGenerate();
+  openMo('mo-generate');
+}
+
+function prefillGenerate(){
+  document.getElementById('gen-bulan').value = CONFIG.bulan_aktif || BULAN_AKTIF;
+  document.getElementById('gen-tgl').value = new Date().toISOString().split('T')[0];
+  const prevEl = document.getElementById('gen-preview');
+  prevEl.innerHTML = `<div class="info-box">Akan membuat <strong>${ALL_SANTRI.length} × ${ALL_JENIS.length}</strong> tagihan = <strong>${ALL_SANTRI.length*ALL_JENIS.length}</strong> tagihan total</div>`;
+}
+
+async function doGenerate(){
+  const bulan = document.getElementById('gen-bulan').value.trim();
+  const tgl = document.getElementById('gen-tgl').value;
+  if(!bulan||!tgl){ toast('⚠️ Isi bulan dan tanggal!'); return; }
+
+  // Cek yang sudah ada
+  const existing = ALL_TAGIHAN.filter(t=>t.bulan===bulan);
+  const existKeys = new Set(existing.map(t=>t.santri_id+'_'+t.jenis_id));
+
+  const toInsert = [];
+  ALL_SANTRI.forEach(s=>{
+    ALL_JENIS.forEach(j=>{
+      const key = s.id+'_'+j.id;
+      if(!existKeys.has(key)){
+        toInsert.push({
+          santri_id:s.id, santri_nama:s.nama,
+          jenis_id:j.id, jenis_nama:j.nama,
+          bulan, nominal:j.nominal,
+          tgl_tagihan:tgl, status:'belum', keterangan:''
+        });
+      }
+    });
+  });
+
+  if(toInsert.length===0){ toast('ℹ️ Semua tagihan sudah ada untuk bulan ini!'); closeMo('mo-generate'); return; }
+
+  const {error} = await SB.from('tagihan_pondok').insert(toInsert);
+  if(error){ toast('❌ Gagal generate!'); return; }
+  toast(`✅ ${toInsert.length} tagihan berhasil dibuat!`);
+  closeMo('mo-generate');
+  await loadAllData();
+  renderDashboard();
+  renderTagihanTable();
+}
+
+// ===== SANTRI BENDAHARA =====
+function renderSantriBend(){
+  const cari = document.getElementById('cari-santri-bend').value.toLowerCase();
+  let data = ALL_SANTRI;
+  if(cari) data = data.filter(s=>s.nama.toLowerCase().includes(cari));
+
+  const rows = data.map((s,i)=>`<tr>
+    <td>${i+1}</td>
+    <td style="font-weight:600">${s.nama}</td>
+    <td>${s.kobong}</td>
+    <td style="font-size:12px">${s.no_wa}</td>
+    <td><span class="badge ${s.sumber==='Saku Santri'?'badge-lunas':'badge-cicil'}">${s.sumber}</span></td>
+    <td>${s.is_bend?`<button class="btn btn-d btn-xs" onclick="hapusSantriBend('${s.ref_id}')">🗑</button>`:'—'}</td>
+  </tr>`).join('');
+
+  document.getElementById('santri-bend-tbody').innerHTML = rows;
+  document.getElementById('santri-bend-empty').style.display = rows?'none':'block';
+}
+
+async function simpanSantriBend(){
+  const nama = document.getElementById('sb-nama').value.trim();
+  const kobong = document.getElementById('sb-kobong').value.trim();
+  const wa = document.getElementById('sb-wa').value.trim();
+  if(!nama){ toast('⚠️ Nama wajib diisi!'); return; }
+  const {error} = await SB.from('santri_tagihan').insert({nama,kobong,no_wa:wa});
+  if(error){ toast('❌ Gagal simpan!'); return; }
+  toast('✅ Santri ditambahkan!');
+  closeMo('mo-santri-bend');
+  document.getElementById('sb-nama').value='';
+  document.getElementById('sb-kobong').value='';
+  document.getElementById('sb-wa').value='';
+  await loadAllData();
+  renderSantriBend();
+}
+
+async function hapusSantriBend(id){
+  if(!confirm('Hapus santri ini dari data bendahara?')) return;
+  const {error} = await SB.from('santri_tagihan').delete().eq('id',id);
+  if(error){ toast('❌ Gagal hapus!'); return; }
+  toast('🗑 Santri dihapus!');
+  await loadAllData();
+  renderSantriBend();
+}
+
+// ===== JENIS TAGIHAN =====
+function renderJenis(){
+  const rows = ALL_JENIS.map((j,i)=>`<tr>
+    <td>${i+1}</td>
+    <td style="font-weight:600">${j.nama}</td>
+    <td>${fmtRp(j.nominal)}</td>
+    <td style="color:var(--text-m)">${j.keterangan||'—'}</td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-b btn-xs" onclick="editJenis(${j.id},'${j.nama}',${j.nominal},'${j.keterangan||''}')">✏️</button>
+      <button class="btn btn-d btn-xs" onclick="hapusJenis(${j.id})">🗑</button>
+    </td>
+  </tr>`).join('');
+  document.getElementById('jenis-tbody').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-l)">Belum ada jenis tagihan.</td></tr>';
+}
+
+async function simpanJenis(){
+  const nama = document.getElementById('jenis-nama').value.trim();
+  const nominal = parseInt(document.getElementById('jenis-nominal').value)||0;
+  const ket = document.getElementById('jenis-ket').value.trim();
+  if(!nama||!nominal){ toast('⚠️ Nama dan nominal wajib diisi!'); return; }
+  const {error} = await SB.from('jenis_tagihan').insert({nama,nominal,keterangan:ket});
+  if(error){ toast('❌ Gagal simpan!'); return; }
+  toast('✅ Jenis tagihan ditambahkan!');
+  closeMo('mo-jenis');
+  document.getElementById('jenis-nama').value='';
+  document.getElementById('jenis-nominal').value='';
+  document.getElementById('jenis-ket').value='';
+  await loadAllData();
+  renderJenis();
+}
+
+function editJenis(id,nama,nominal,ket){
+  document.getElementById('jenis-nama').value=nama;
+  document.getElementById('jenis-nominal').value=nominal;
+  document.getElementById('jenis-ket').value=ket;
+  openMo('mo-jenis');
+  // Ubah tombol simpan jadi update
+  const btn = document.querySelector('#mo-jenis .btn-p');
+  btn.textContent='💾 Update';
+  btn.onclick=async()=>{
+    const {error}=await SB.from('jenis_tagihan').update({
+      nama:document.getElementById('jenis-nama').value.trim(),
+      nominal:parseInt(document.getElementById('jenis-nominal').value)||0,
+      keterangan:document.getElementById('jenis-ket').value.trim()
+    }).eq('id',id);
+    if(error){toast('❌ Gagal update!');return;}
+    toast('✅ Jenis tagihan diupdate!');
+    closeMo('mo-jenis');
+    btn.textContent='💾 Simpan';btn.onclick=simpanJenis;
+    await loadAllData();renderJenis();
+  };
+}
+
+async function hapusJenis(id){
+  if(!confirm('Hapus jenis tagihan ini?')) return;
+  const {error}=await SB.from('jenis_tagihan').delete().eq('id',id);
+  if(error){toast('❌ Gagal hapus!');return;}
+  toast('🗑 Jenis tagihan dihapus!');
+  await loadAllData();renderJenis();
+}
+
+// ===== RIWAYAT =====
+function renderRiwayat(){
+  const cari = document.getElementById('cari-riwayat').value.toLowerCase();
+  const bulan = document.getElementById('filter-bulan-riwayat').value;
+
+  const bulans = [...new Set(ALL_TAGIHAN.map(t=>t.bulan))].sort().reverse();
+  const bSel = document.getElementById('filter-bulan-riwayat');
+  const cur = bSel.value;
+  bSel.innerHTML = '<option value="">Semua Bulan</option>' + bulans.map(b=>`<option value="${b}" ${b===cur?'selected':''}>${b}</option>`).join('');
+
+  let data = ALL_TAGIHAN.filter(t=>t.status==='lunas');
+  if(cari) data = data.filter(t=>(t.santri_nama||'').toLowerCase().includes(cari));
+  if(bulan) data = data.filter(t=>t.bulan===bulan);
+
+  const rows = data.map((t,i)=>`<tr>
+    <td>${i+1}</td>
+    <td style="font-weight:600">${t.santri_nama||'—'}</td>
+    <td>${t.jenis_tagihan?.nama||t.jenis_nama||'—'}</td>
+    <td>${t.bulan||'—'}</td>
+    <td>${fmtRp(t.nominal)}</td>
+    <td style="color:var(--green)">${t.tgl_bayar||'—'}</td>
+    <td style="font-size:12px;color:var(--text-m)">${t.keterangan||'—'}</td>
+  </tr>`).join('');
+
+  document.getElementById('riwayat-tbody').innerHTML=rows;
+  document.getElementById('riwayat-empty').style.display=rows?'none':'block';
+}
+
+// ===== PENGATURAN (super only) =====
+function renderPengaturan(){
+  if(SESSION.role!=='super') return;
+  const sec = document.getElementById('sec-pengaturan');
+  if(sec.dataset.loaded) return;
+  sec.dataset.loaded='1';
+  sec.innerHTML=`
+  <div class="two">
+    <div class="panel"><div class="ph"><h2>⚙️ Pengaturan Umum</h2></div><div class="pb">
+      <div class="fg"><label>Bulan Aktif</label><input type="text" id="set-bulan" value="${CONFIG.bulan_aktif||BULAN_AKTIF}"></div>
+      <button class="btn btn-p btn-sm" onclick="simpanPengaturan()">💾 Simpan</button>
+    </div></div>
+    <div class="panel"><div class="ph"><h2>🔐 Akun Bendahara</h2></div><div class="pb">
+      <div class="fg"><label>Username Bendahara</label><input type="text" id="set-bend-user" placeholder="bendahara"></div>
+      <div class="fg"><label>Password Baru</label><input type="password" id="set-bend-pass1" placeholder="••••••••"></div>
+      <div class="fg"><label>Ulangi Password</label><input type="password" id="set-bend-pass2" placeholder="••••••••"></div>
+      <button class="btn btn-p btn-sm" onclick="simpanAkunBendahara()">💾 Simpan Akun</button>
+    </div></div>
+  </div>`;
+}
+
+async function simpanPengaturan(){
+  const bulan=document.getElementById('set-bulan').value.trim();
+  if(!bulan){toast('⚠️ Isi bulan aktif!');return;}
+  await SB.from('settings').upsert({key:'bulan_aktif_bend',value:bulan});
+  CONFIG.bulan_aktif=bulan;
+  document.getElementById('hdr-bulan').textContent=bulan;
+  toast('✅ Pengaturan disimpan!');
+}
+
+async function simpanAkunBendahara(){
+  const user=document.getElementById('set-bend-user').value.trim();
+  const p1=document.getElementById('set-bend-pass1').value;
+  const p2=document.getElementById('set-bend-pass2').value;
+  if(user){
+    await SB.from('settings').upsert({key:'bend_user',value:user});
+    toast('✅ Username bendahara diupdate!');
+  }
+  if(p1||p2){
+    if(p1!==p2){toast('⚠️ Password tidak cocok!');return;}
+    if(p1.length<6){toast('⚠️ Password min 6 karakter!');return;}
+    await SB.from('settings').upsert({key:'bend_pass',value:btoa(p1)});
+    toast('✅ Password bendahara diupdate!');
+  }
+}
+
+// ===== LOGOUT =====
+function doLogout(){
+  clearSession();
+  SESSION=null;
+  document.getElementById('pg-app').style.display='none';
+  document.getElementById('pg-login').style.display='flex';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+}
+
+// ===== HELPERS =====
+function fmtRp(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// Open mo-tagihan — fill options
+document.getElementById('mo-tagihan').addEventListener('click', function(e){
+  if(e.target===this) closeMo('mo-tagihan');
+});
+document.querySelectorAll('.mo').forEach(m=>{
+  m.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); });
+});
+
+// Override openMo for tagihan to fill options
+const _origOpen = openMo;
+window.openMo = function(id){
+  if(id==='mo-tagihan') fillNominalOptions();
+  document.getElementById(id).classList.add('open');
+};
+</script>
+</body>
+</html>
