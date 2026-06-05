@@ -1,0 +1,2544 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bendahara — Pondok Pesantren An-Nur</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bendahara">
+<meta name="theme-color" content="#1a5c3a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Amiri:wght@400;700&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --green:#1a5c3a;--green-m:#2d7a52;--green-l:#4caf7d;--green-p:#e8f5ee;--green-b:#c8e6d5;
+  --gold:#b8860b;--gold-l:#d4a017;--gold-p:#fdf6e3;--gold-b:#f0d080;
+  --red:#c0392b;--red-p:#fdecea;--red-b:#f5c6c2;
+  --blue:#1a6fa8;--blue-p:#eaf4fb;--blue-b:#bee3f8;
+  --purple:#6c3483;--purple-p:#f4ecf7;
+  --orange:#d35400;--orange-p:#fef0e7;
+  --bg:#f0f4f2;--white:#fff;
+  --text:#1c2b22;--text-m:#4a6358;--text-l:#8aab97;
+  --border:#d4e6db;--rad:14px;--rad-sm:9px;
+  --sh:0 1px 8px rgba(26,92,58,.08);--shh:0 8px 32px rgba(26,92,58,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--green-l);border-radius:3px}
+input,textarea,select,button{font-family:'DM Sans',sans-serif}
+input[type=text],input[type=number],input[type=password],input[type=date],input[type=search],select,textarea{
+  width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--rad-sm);
+  font-size:13.5px;outline:none;background:var(--white);color:var(--text);transition:.2s
+}
+input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-p)}
+label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-l);display:block;margin-bottom:5px}
+.fg{margin-bottom:14px}
+.btn{padding:9px 18px;border:none;border-radius:var(--rad-sm);font-weight:600;font-size:13px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-p{background:var(--green);color:#fff}
+.btn-b{background:var(--blue-p);color:var(--blue);border:1px solid var(--blue-b)}
+.btn-d{background:var(--red-p);color:var(--red);border:1px solid var(--red-b)}
+.btn-g{background:var(--gold-p);color:var(--gold);border:1px solid var(--gold-b)}
+.btn-o{background:var(--bg);color:var(--text-m);border:1.5px solid var(--border)}
+.btn-wa{background:#25d366;color:#fff}
+.btn-sm{padding:6px 13px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px}
+
+/* LOADING */
+#pg-loading{position:fixed;inset:0;background:linear-gradient(135deg,var(--green) 0%,var(--green-m) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px}
+.load-logo{width:80px;height:80px;background:var(--gold);border-radius:20px;display:flex;align-items:center;justify-content:center;font-family:'Amiri',serif;font-size:40px;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.load-title{font-family:'Amiri',serif;font-size:24px;color:#fff;font-weight:700;letter-spacing:.5px}
+.load-sub{font-size:12px;color:rgba(255,255,255,.65)}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LOGIN */
+#pg-login{display:none;min-height:100vh;background:linear-gradient(135deg,var(--green) 0%,var(--green-m) 100%);align-items:center;justify-content:center;padding:20px;flex-direction:column}
+.login-wrap{width:100%;max-width:400px}
+.login-logo-wrap{text-align:center;margin-bottom:28px}
+.login-logo{width:72px;height:72px;background:var(--gold);border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 8px 28px rgba(0,0,0,.25);margin-bottom:14px}
+.login-title{font-family:'Amiri',serif;font-size:28px;color:#fff;font-weight:700}
+.login-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:4px}
+.login-box{background:#fff;border-radius:20px;padding:28px;box-shadow:0 24px 64px rgba(0,0,0,.2)}
+.ltabs{display:flex;background:var(--bg);border-radius:10px;padding:3px;margin-bottom:22px;gap:3px}
+.ltab{flex:1;padding:9px;border:none;background:none;border-radius:8px;font-size:13px;font-weight:600;color:var(--text-m);cursor:pointer;transition:.2s;text-align:center}
+.ltab.act{background:#fff;color:var(--green);box-shadow:var(--sh)}
+.login-err{background:var(--red-p);color:var(--red);padding:10px 14px;border-radius:var(--rad-sm);font-size:13px;margin-bottom:14px;display:none;border:1px solid var(--red-b)}
+.login-box .btn-p{width:100%;justify-content:center;padding:12px;font-size:14px}
+
+/* HEADER */
+#pg-app{display:none}
+header{background:linear-gradient(135deg,var(--green) 0%,var(--green-m) 100%);height:64px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(26,92,58,.3)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-ico{width:40px;height:40px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Amiri',serif;font-size:20px;color:#fff;font-weight:700;flex-shrink:0}
+.brand-txt{color:#fff}
+.brand-txt strong{display:block;font-size:14px;font-weight:700;line-height:1.2}
+.brand-txt span{font-size:11px;opacity:.7}
+.hright{display:flex;align-items:center;gap:8px}
+.hchip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.15)}
+.hchip.gold{background:var(--gold);border-color:var(--gold)}
+.hbtn{padding:6px 14px;border:1.5px solid rgba(255,255,255,.35);background:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:5px}
+.hbtn:hover{background:rgba(255,255,255,.15)}
+
+/* DAPUR BAR */
+.dapur-bar{background:var(--white);border-bottom:1.5px solid var(--border);padding:10px 20px;display:none;align-items:center;gap:10px;flex-wrap:wrap}
+.dapur-bar-label{font-size:12px;color:var(--text-m);font-weight:600;white-space:nowrap}
+.dapur-tabs{display:flex;gap:5px;flex-wrap:wrap}
+.dtab{padding:6px 16px;border:1.5px solid var(--border);background:var(--white);border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.2s;color:var(--text-m)}
+.dtab:hover{border-color:var(--green-l);color:var(--green)}
+.dtab.act{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* MAIN */
+main{max-width:1200px;margin:0 auto;padding:24px 16px}
+.tabs{display:flex;gap:3px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--rad);padding:4px;margin-bottom:24px;width:fit-content;box-shadow:var(--sh);flex-wrap:wrap}
+.tb{padding:8px 16px;border:none;background:none;border-radius:10px;font-size:13px;font-weight:500;color:var(--text-m);cursor:pointer;transition:.2s;white-space:nowrap}
+.tb:hover{background:var(--green-p);color:var(--green)}
+.tb.act{background:var(--green);color:#fff;font-weight:600}
+.sec{display:none}.sec.act{display:block}
+
+/* PANEL */
+.panel{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rad);box-shadow:var(--sh);overflow:hidden;margin-bottom:20px}
+.ph{padding:14px 20px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--green-p);flex-wrap:wrap;gap:8px}
+.ph h2{font-family:'Amiri',serif;font-size:18px;color:var(--green);display:flex;align-items:center;gap:8px}
+.pb{padding:18px 20px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.sc{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rad);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);transition:.2s}
+.sc:hover{box-shadow:var(--shh);transform:translateY(-1px)}
+.sci{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.sci.g{background:var(--green-p)}.sci.r{background:var(--red-p)}.sci.gg{background:var(--gold-p)}.sci.b{background:var(--blue-p)}.sci.p{background:var(--purple-p)}
+.sil label{font-size:10.5px;color:var(--text-l);font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+.sil .val{font-size:22px;font-weight:800;color:var(--text);line-height:1.1}
+.sil small{font-size:11px;color:var(--text-l)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--green);color:#fff;padding:11px 13px;text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.3px;white-space:nowrap}
+th:first-child{border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+td{padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--green-p)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;gap:4px}
+.badge-lunas{background:#d4edda;color:#155724}
+.badge-belum{background:var(--red-p);color:var(--red)}
+.badge-cicil{background:var(--gold-p);color:var(--gold)}
+.badge-dapur{background:var(--blue-p);color:var(--blue)}
+.badge-super{background:var(--gold-p);color:var(--gold)}
+.badge-saku{background:var(--green-p);color:var(--green)}
+.badge-bg{background:var(--bg);color:var(--text-m)}
+
+/* AVATAR */
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.av-lg{width:56px;height:56px;font-size:22px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700}
+.av-lg img{width:100%;height:100%;object-fit:cover}
+
+/* SEARCH ROW */
+.search-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.search-inp{flex:1;min-width:180px;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--rad-sm);font-size:13px;outline:none;background:var(--white);transition:.2s}
+.search-inp:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-p)}
+.search-row select{width:auto;flex-shrink:0}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(10,25,15,.5);z-index:500;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(2px)}
+.mo.open{display:flex}
+@media(min-width:641px){
+  .mo{align-items:center;padding:16px}
+  .mo-box{border-radius:16px !important;max-height:90vh !important}
+}
+.mo-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 -4px 40px rgba(0,0,0,.2);animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(60px);opacity:.5}to{transform:none;opacity:1}}
+.mo-h{padding:16px 20px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.mo-h h3{font-family:'Amiri',serif;font-size:18px;color:var(--green)}
+.mo-cls{width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text-m);transition:.2s}
+.mo-cls:hover{background:var(--red-p);color:var(--red)}
+.mo-b{padding:20px}
+
+/* DETAIL SANTRI MODAL (mirip Saku Santri) */
+.dh{background:linear-gradient(135deg,var(--green),var(--green-m));border-radius:var(--rad);padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:18px;position:relative;overflow:hidden}
+.dh::before{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,.07);border-radius:50%}
+.dh-av{width:60px;height:60px;border-radius:50%;border:3px solid rgba(255,255,255,.4);background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden}
+.dh-av img{width:100%;height:100%;object-fit:cover}
+.dh-info{flex:1;min-width:0}
+.dh-info h3{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2}
+.dh-info p{font-size:12px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dh-saldo{text-align:right;flex-shrink:0}
+.dh-saldo .lbl{font-size:10px;color:rgba(255,255,255,.65);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.dh-saldo .amt{font-size:22px;font-weight:800;color:#fff;line-height:1}
+.dh-saldo small{font-size:11px;color:rgba(255,255,255,.75);display:block;margin-top:3px}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat-card{background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:10px}
+.stat-card.red{background:var(--red-p);border-color:var(--red-b)}
+.stat-icon{width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.stat-info label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-l);margin-bottom:2px}
+.stat-info .stat-val{font-size:15px;font-weight:700;color:var(--green)}
+.stat-card.red .stat-info .stat-val{color:var(--red)}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+
+/* PROGRESS BAR */
+.prog-wrap{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;background:var(--green);border-radius:4px;transition:width .5s ease}
+
+/* FORM FOTO */
+.foto-wrap{display:flex;align-items:center;gap:14px;padding:12px;border:1.5px dashed var(--border);border-radius:10px;background:var(--bg)}
+.foto-prev{width:64px;height:64px;border-radius:50%;background:var(--green-p);border:2px solid var(--green-b);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;flex-shrink:0}
+.foto-prev img{width:100%;height:100%;object-fit:cover}
+
+/* INFO BOXES */
+.info-box{background:var(--blue-p);border:1px solid var(--blue-b);border-radius:var(--rad-sm);padding:12px 14px;font-size:13px;color:var(--blue)}
+.warn-box{background:var(--gold-p);border:1px solid var(--gold-b);border-radius:var(--rad-sm);padding:12px 14px;font-size:13px;color:var(--gold)}
+.err-box{background:var(--red-p);border:1px solid var(--red-b);border-radius:var(--rad-sm);padding:12px 14px;font-size:13px;color:var(--red)}
+.success-box{background:var(--green-p);border:1px solid var(--green-b);border-radius:var(--rad-sm);padding:12px 14px;font-size:13px;color:var(--green)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1c2b22;color:#fff;padding:12px 22px;border-radius:40px;font-size:13.5px;font-weight:600;z-index:9999;transition:.3s;opacity:0;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* BULAN CHECKLIST */
+.bulan-check-list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto}
+.bulan-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);cursor:pointer;transition:.2s;background:var(--white)}
+.bulan-item:hover{border-color:var(--green-l);background:var(--green-p)}
+.bulan-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
+.bulan-item.checked{border-color:var(--green);background:var(--green-p)}
+
+/* AKSES ASRAMA CHIPS */
+.asrama-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.asrama-chip{padding:4px 10px;border-radius:20px;background:var(--green-p);color:var(--green);font-size:11px;font-weight:600;border:1px solid var(--green-b)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:36px 20px;color:var(--text-l)}
+.empty .ei{font-size:40px;display:block;margin-bottom:10px}
+.empty p{font-size:14px}
+
+/* DROPDOWN IMPORT */
+.drop-zone{border:2.5px dashed var(--border);border-radius:var(--rad);padding:32px 20px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--green);background:var(--green-p)}
+.drop-zone .di{font-size:40px;margin-bottom:12px}
+
+/* AKUN CARD */
+.akun-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rad);padding:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;transition:.2s}
+.akun-card:hover{box-shadow:var(--sh)}
+.akun-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0;background:var(--green-p);color:var(--green)}
+.akun-info{flex:1;min-width:0}
+.akun-info strong{font-size:15px;font-weight:700;display:block;margin-bottom:2px}
+.akun-info .akun-un{font-size:12px;color:var(--text-l)}
+.akun-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* RIWAYAT TAGIHAN DALAM DETAIL */
+.riwayat-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:var(--rad-sm);border:1px solid var(--border);margin-bottom:7px;transition:.2s}
+.riwayat-item:hover{border-color:var(--green-b);background:var(--green-p)}
+.ri-left{flex:1;min-width:0}
+.ri-left strong{display:block;font-size:13px;font-weight:600;margin-bottom:2px}
+.ri-left span{font-size:11px;color:var(--text-l)}
+.ri-right{text-align:right;flex-shrink:0}
+.ri-right .ri-nominal{font-size:14px;font-weight:700;color:var(--text)}
+.ri-right .ri-sisa{font-size:11px;color:var(--red)}
+
+/* STATUS DOT */
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:var(--green)}
+.dot-red{background:var(--red)}
+.dot-gold{background:var(--gold)}
+
+/* PAGINATION */
+.pagination{display:flex;gap:5px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.pg-btn{padding:6px 12px;border:1.5px solid var(--border);background:var(--white);border-radius:7px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text-m);transition:.2s}
+.pg-btn:hover{border-color:var(--green);color:var(--green)}
+.pg-btn.act{background:var(--green);color:#fff;border-color:var(--green)}
+
+@media(max-width:640px){
+  main{padding:16px 12px}
+  .ph{flex-direction:column;align-items:flex-start}
+  table{font-size:12px}
+  th,td{padding:8px 10px}
+  .hright .hchip:not(.gold){display:none}
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="pg-loading">
+  <div class="load-logo">ن</div>
+  <div class="load-title">Bendahara An-Nur</div>
+  <div class="load-sub">Memuat sistem...</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- LOGIN -->
+<div id="pg-login">
+  <div class="login-wrap">
+    <div class="login-logo-wrap">
+      <div class="login-logo">🕌</div>
+      <div class="login-title">Bendahara</div>
+      <div class="login-sub">Pondok Pesantren An-Nur</div>
+    </div>
+    <div class="login-box">
+      <div class="ltabs">
+        <button class="ltab act" id="ltab-bend" onclick="switchLoginTab('bend')">🔑 Pengelola</button>
+        <button class="ltab" id="ltab-admin" onclick="switchLoginTab('admin')">👑 Kang Admin</button>
+      </div>
+      <div id="login-err" class="login-err"></div>
+      <div id="form-bend">
+        <div class="fg"><label>Username</label><input type="text" id="login-user" placeholder="Username pengelola..." onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="fg"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="btn btn-p" onclick="doLogin()">🔑 Masuk</button>
+      </div>
+      <div id="form-admin" style="display:none">
+        <div class="fg"><label>Username Admin</label><input type="text" id="admin-user" placeholder="Username Kang Admin..." onkeydown="if(event.key==='Enter')doLoginAdmin()"></div>
+        <div class="fg"><label>Password Admin</label><input type="password" id="admin-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLoginAdmin()"></div>
+        <button class="btn btn-p" onclick="doLoginAdmin()">👑 Masuk sebagai Admin</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="pg-app">
+  <header>
+    <div class="brand">
+      <div class="brand-ico">ن</div>
+      <div class="brand-txt">
+        <strong>Bendahara An-Nur</strong>
+        <span id="hdr-bulan">—</span>
+      </div>
+    </div>
+    <div class="hright">
+      <span class="hchip gold" id="hdr-role">—</span>
+      <button class="hbtn" onclick="doLogout()">↩ Keluar</button>
+    </div>
+  </header>
+
+  <!-- DAPUR BAR -->
+  <div class="dapur-bar" id="dapur-bar">
+    <span class="dapur-bar-label">Filter Dapur:</span>
+    <div class="dapur-tabs" id="dapur-tabs"></div>
+  </div>
+
+  <main>
+    <div class="tabs" id="main-tabs"></div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="sec" id="sec-dashboard">
+      <div class="stats" id="dash-stats"></div>
+
+      <!-- Rincian Makan & Listrik -->
+      <div id="dash-rincian"></div>
+
+      <!-- Dapur Cards (super/admin only) -->
+      <div id="dapur-cards"></div>
+
+      <div class="panel">
+        <div class="ph">
+          <h2 id="dash-tagihan-title">📋 Tagihan Bulan Ini</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-wa btn-sm" id="btn-wa-massal" onclick="bukaWAMassal()" style="display:none">📱 WA Massal</button>
+            <button class="btn btn-b btn-sm" onclick="backupLengkap()">📥 Backup</button>
+            <button class="btn btn-g btn-sm" onclick="generateTagihanBulan()">⚡ Generate Tagihan</button>
+          </div>
+        </div>
+        <div class="pb" id="dash-tagihan-summary">
+          <div class="empty"><span class="ei">📋</span><p>Memuat data...</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAGIHAN ===== -->
+    <div class="sec" id="sec-tagihan">
+      <div class="panel">
+        <div class="ph">
+          <h2>📋 Kelola Tagihan</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-g btn-sm" onclick="generateTagihanBulan()">⚡ Generate Bulan Ini</button>
+            <button class="btn btn-wa btn-sm" onclick="kirimWABelumBayar()">📱 WA Pengingat</button>
+            <button class="btn btn-d btn-sm" id="btn-hapus-semua" onclick="hapusSemuaTagihan()" style="display:none">🗑 Hapus Semua</button>
+          </div>
+        </div>
+        <div class="pb">
+          <div class="search-row">
+            <input class="search-inp" id="cari-tagihan" placeholder="🔍 Cari nama santri..." oninput="renderTagihanTable()">
+            <select id="filter-asrama-tagihan" onchange="renderTagihanTable()"><option value="">Semua Asrama</option></select>
+            <select id="filter-bulan-tagihan" onchange="renderTagihanTable()"><option value="">Semua Bulan</option></select>
+            <select id="filter-status-tagihan" onchange="renderTagihanTable()">
+              <option value="">Semua Status</option>
+              <option value="belum">Belum Bayar</option>
+              <option value="lunas">Lunas</option>
+              <option value="cicil">Cicilan</option>
+            </select>
+            <select id="filter-kobong-tagihan" onchange="renderTagihanTable()"><option value="">Semua Kobong</option></select>
+            <select id="filter-kelas-tagihan" onchange="renderTagihanTable()"><option value="">Semua Kelas</option></select>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>#</th><th>Santri</th><th>Kelas</th><th>Kobong</th><th>Dapur</th><th>Bulan</th>
+                <th>Uang Makan</th><th>Uang Listrik</th><th>Total</th><th>Status</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="tagihan-tbody"></tbody>
+            </table>
+          </div>
+          <div id="tagihan-empty" class="empty" style="display:none"><span class="ei">📋</span><p>Belum ada tagihan.</p></div>
+          <div class="pagination" id="tagihan-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SANTRI ===== -->
+    <div class="sec" id="sec-santri">
+      <div class="panel">
+        <div class="ph">
+          <h2>👥 Data Santri</h2>
+          <button class="btn btn-p btn-sm" onclick="bukaModalTambahSantri()">➕ Tambah Santri</button>
+        </div>
+        <div class="pb">
+          <div class="search-row">
+            <input class="search-inp" id="cari-santri" placeholder="🔍 Cari nama santri..." oninput="renderSantri()">
+            <select id="filter-asrama-santri" onchange="filterKobongBySantriAsrama();renderSantri()"><option value="">Semua Asrama</option></select>
+            <select id="filter-kobong-santri" onchange="renderSantri()"><option value="">Semua Kobong</option></select>
+            <select id="filter-kelas-santri" onchange="renderSantri()"><option value="">Semua Kelas</option></select>
+          </div>
+          <div id="santri-grid"></div>
+          <div id="santri-empty" class="empty" style="display:none"><span class="ei">👥</span><p>Belum ada santri.</p></div>
+          <div class="pagination" id="santri-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REKAP TUNGGAKAN ===== -->
+    <div class="sec" id="sec-rekap">
+      <div class="panel">
+        <div class="ph">
+          <h2>📊 Rekap Tunggakan</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="rekap-mode" onchange="renderRekap()" style="width:auto;padding:7px 12px;font-size:13px;border-radius:8px">
+              <option value="santri">Per Santri</option>
+              <option value="bulan">Per Bulan</option>
+            </select>
+            <button class="btn btn-b btn-sm" onclick="exportRekapExcel()">📊 Export Excel</button>
+          </div>
+        </div>
+        <div class="pb">
+          <div class="search-row">
+            <input class="search-inp" id="cari-rekap" placeholder="🔍 Cari nama santri..." oninput="renderRekap()">
+            <select id="filter-asrama-rekap" onchange="renderRekap()" style="width:auto"><option value="">Semua Asrama</option></select>
+            <select id="filter-bulan-rekap" onchange="renderRekap()" style="width:auto"><option value="">Semua Bulan</option></select>
+            <select id="filter-kobong-rekap" onchange="renderRekap()" style="width:auto"><option value="">Semua Kobong</option></select>
+            <select id="filter-kelas-rekap" onchange="renderRekap()" style="width:auto"><option value="">Semua Kelas</option></select>
+            <select id="filter-status-rekap" onchange="renderRekap()" style="width:auto">
+              <option value="">Semua Status</option>
+              <option value="tunggak">Ada Tunggakan</option>
+              <option value="lunas">Lunas Semua</option>
+            </select>
+          </div>
+          <div id="rekap-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== KELULUSAN ===== -->
+    <div class="sec" id="sec-kelulusan">
+      <div class="panel">
+        <div class="ph">
+          <h2>🎓 Cek Kelulusan</h2>
+          <select id="filter-status-lulus" onchange="renderKelulusan()" style="width:auto;padding:7px 12px;font-size:13px;border-radius:8px">
+            <option value="">Semua Santri</option>
+            <option value="bebas">✅ Bebas Tanggungan</option>
+            <option value="tunggak">❌ Ada Tunggakan</option>
+          </select>
+        </div>
+        <div class="pb">
+          <div class="search-row">
+            <input class="search-inp" id="cari-kelulusan" placeholder="🔍 Cari nama santri..." oninput="renderKelulusan()">
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Santri</th><th>Kobong</th><th>Dapur</th><th>Total Tagihan</th><th>Sudah Bayar</th><th>Tunggakan</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="kelulusan-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RIWAYAT ===== -->
+    <div class="sec" id="sec-riwayat">
+      <div class="panel">
+        <div class="ph">
+          <h2>📜 Riwayat Pembayaran</h2>
+        </div>
+        <div class="pb">
+          <div class="search-row">
+            <input class="search-inp" id="cari-riwayat" placeholder="🔍 Cari nama santri..." oninput="renderRiwayat()">
+            <select id="filter-bulan-riwayat" onchange="renderRiwayat()" style="width:auto"><option value="">Semua Bulan</option></select>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Tanggal</th><th>Santri</th><th>Dapur</th><th>Keterangan</th><th>Bulan</th><th>Nominal</th><th>Dicatat Oleh</th></tr></thead>
+              <tbody id="riwayat-tbody"></tbody>
+            </table>
+          </div>
+          <div id="riwayat-empty" class="empty" style="display:none"><span class="ei">📜</span><p>Belum ada riwayat.</p></div>
+          <div class="pagination" id="riwayat-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== IMPORT ===== -->
+    <div class="sec" id="sec-import">
+      <div class="panel">
+        <div class="ph"><h2>📥 Import Tunggakan Lama</h2>
+          <button class="btn btn-b btn-sm" onclick="downloadTemplateImport()">📄 Download Template</button>
+        </div>
+        <div class="pb">
+          <div class="info-box" style="margin-bottom:16px">Import tagihan lama dari file Excel/CSV. Pastikan kolom: <strong>nama_santri, jenis_tagihan, bulan, nominal, keterangan</strong></div>
+          <div class="drop-zone" id="drop-zone" onclick="document.getElementById('import-file').click()"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="handleDrop(event)">
+            <div class="di">📂</div>
+            <div style="font-weight:600;margin-bottom:6px">Klik atau drag file ke sini</div>
+            <div style="font-size:12px;color:var(--text-l)">Format: .xlsx atau .csv</div>
+          </div>
+          <input type="file" id="import-file" accept=".xlsx,.csv" style="display:none" onchange="handleImportFile(this.files[0])">
+          <div id="import-preview" style="display:none;margin-top:16px">
+            <div class="ph" style="background:var(--gold-p);border-radius:var(--rad-sm) var(--rad-sm) 0 0;padding:12px 16px;border:1px solid var(--gold-b)">
+              <span id="import-preview-title" style="font-weight:600;color:var(--gold)">Preview Import</span>
+              <button class="btn btn-p btn-sm" onclick="prosesImport()">✅ Proses Import</button>
+            </div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>#</th><th>Nama Santri</th><th>Jenis</th><th>Bulan</th><th>Nominal</th><th>Keterangan</th><th>Status</th></tr></thead>
+              <tbody id="import-tbody"></tbody>
+            </table></div>
+          </div>
+          <div id="import-log" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MANAJEMEN BENDAHARA ===== -->
+    <div class="sec" id="sec-manajemen">
+      <div class="panel">
+        <div class="ph"><h2>👥 Manajemen Bendahara</h2>
+          <button class="btn btn-p btn-sm" onclick="bukaModalTambahAkun()">➕ Tambah Akun</button>
+        </div>
+        <div class="pb" id="manajemen-content">
+          <div class="empty"><span class="ei">👥</span><p>Memuat...</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MONITOR ===== -->
+    <div class="sec" id="sec-monitor"></div>
+
+    <!-- ===== PENGATURAN ===== -->
+    <div class="sec" id="sec-pengaturan">
+      <div class="two">
+        <div class="panel">
+          <div class="ph"><h2>⚙️ Pengaturan Tagihan</h2></div>
+          <div class="pb">
+            <div class="fg"><label>Nominal Uang Makan (Rp)</label><input type="number" id="set-makan" placeholder="380000"></div>
+            <div class="fg"><label>Nominal Uang Listrik (Rp)</label><input type="number" id="set-listrik" placeholder="40000"></div>
+            <div class="fg"><label>Bulan Aktif</label><input type="text" id="set-bulan" placeholder="Juni 2026"></div>
+            <button class="btn btn-p btn-sm" onclick="simpanPengaturan()">💾 Simpan Pengaturan</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h2>🔐 Keamanan</h2></div>
+          <div class="pb">
+            <div class="fg"><label>Password Admin Baru</label><input type="password" id="set-pass1" placeholder="Password baru..."></div>
+            <div class="fg"><label>Ulangi Password</label><input type="password" id="set-pass2" placeholder="Ulangi password..."></div>
+            <button class="btn btn-b btn-sm" onclick="gantiPassAdmin()">🔑 Ganti Password</button>
+            <hr style="margin:18px 0;border:none;border-top:1px solid var(--border)">
+            <div class="fg"><label>Template Pesan WA</label><textarea id="set-wa-template" rows="7" placeholder="Template pesan WA..."></textarea></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-p btn-sm" onclick="simpanTemplateWA()">💾 Simpan Template</button>
+              <button class="btn btn-o btn-sm" onclick="resetTemplateWA()">↺ Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>🗄️ SQL Migrasi</h2></div>
+        <div class="pb">
+          <div class="info-box" style="margin-bottom:14px">Jalankan SQL ini di <strong>Supabase Dashboard → SQL Editor</strong> jika tabel belum ada.</div>
+          <textarea readonly id="sql-migrasi" rows="10" style="font-family:'DM Mono',monospace;font-size:11.5px;background:var(--bg)"></textarea>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-b btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('sql-migrasi').value);toast('✅ SQL disalin!')">📋 Salin SQL</button>
+            <button class="btn btn-d btn-sm" id="btn-hapus-semua-set" onclick="hapusSemuaTagihan()">🗑 Hapus Semua Tagihan</button>
+            <button class="btn btn-o btn-sm" onclick="backupSemuaData()">📥 Backup Semua Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><!-- end pg-app -->
+
+<!-- MODAL DETAIL SANTRI (universal popup) -->
+<div class="mo" id="mo-detail">
+  <div class="mo-box" style="max-width:580px">
+    <div class="mo-h">
+      <h3 id="mo-detail-nama">Detail Santri</h3>
+      <button class="mo-cls" onclick="closeMo('mo-detail')">✕</button>
+    </div>
+    <div class="mo-b" id="mo-detail-body"></div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH/EDIT SANTRI (sama dengan Saku Santri) -->
+<div class="mo" id="mo-santri">
+  <div class="mo-box" style="max-width:520px">
+    <div class="mo-h">
+      <h3 id="mo-santri-title">Tambah Santri Baru</h3>
+      <button class="mo-cls" onclick="closeMo('mo-santri')">✕</button>
+    </div>
+    <div class="mo-b">
+      <input type="hidden" id="s-id">
+      <div class="two">
+        <div class="fg"><label>Nama Santri *</label><input type="text" id="s-nama" placeholder="Nama lengkap"></div>
+        <div class="fg"><label>Asrama *</label>
+          <select id="s-asrama" onchange="onAsramaChange()"><option value="">-- Pilih Asrama --</option></select>
+        </div>
+      </div>
+      <div class="two">
+        <div class="fg"><label>Kobong *</label>
+          <select id="s-kobong"><option value="">-- Pilih Kobong --</option></select>
+        </div>
+        <div class="fg"><label>PIN (4 digit)</label><input type="text" id="s-pin" placeholder="1234" maxlength="4"></div>
+      </div>
+      <div class="two">
+        <div class="fg"><label>Kelas</label><input type="text" id="s-kelas" placeholder="7, 8, 9, 10..."></div>
+        <div class="fg"><label>Dapur</label>
+          <select id="s-dapur"><option value="">-- Pilih Dapur --</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>No WA Orang Tua <span style="font-weight:400;color:var(--text-l)">(opsional)</span></label><input type="text" id="s-nowa" placeholder="08123456789"></div>
+      <div class="fg">
+        <label>Foto Santri <span style="font-weight:400;color:var(--text-l)">(opsional)</span></label>
+        <div class="foto-wrap">
+          <div class="foto-prev" id="foto-preview">👤</div>
+          <div>
+            <button class="btn btn-o btn-sm" onclick="document.getElementById('s-foto').click()">📷 Pilih Foto</button>
+            <button class="btn btn-d btn-sm" id="hapus-foto-btn" onclick="hapusFoto()" style="display:none;margin-left:6px">✕</button>
+            <div style="font-size:11px;color:var(--text-l);margin-top:5px">JPG/PNG, dikompres otomatis</div>
+          </div>
+        </div>
+        <input type="file" id="s-foto" accept="image/*" style="display:none" onchange="previewFoto(this)">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-o" onclick="closeMo('mo-santri')">Batal</button>
+        <button class="btn btn-p" onclick="simpanSantri()">✅ Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BAYAR TAGIHAN -->
+<div class="mo" id="mo-bayar">
+  <div class="mo-box" style="max-width:460px">
+    <div class="mo-h"><h3>💰 Bayar Tagihan</h3><button class="mo-cls" onclick="closeMo('mo-bayar')">✕</button></div>
+    <div class="mo-b">
+      <div style="font-weight:700;font-size:15px;margin-bottom:4px" id="bayar-nama"></div>
+      <div id="bayar-deposit-info" style="display:none;margin-bottom:10px"></div>
+      <div id="bayar-detail" style="margin-bottom:14px"></div>
+      <!-- Shortcut nominal -->
+      <div class="fg">
+        <label>Nominal Bayar</label>
+        <input type="number" id="bayar-nominal" placeholder="0" oninput="updateBayarSisa()">
+        <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap" id="bayar-shortcuts"></div>
+      </div>
+      <div class="two">
+        <div class="fg"><label>Tanggal Bayar</label><input type="date" id="bayar-tgl"></div>
+        <div class="fg"><label>Keterangan</label><input type="text" id="bayar-ket" placeholder="Transfer, tunai..."></div>
+      </div>
+      <div id="bayar-sisa-wrap" style="margin-bottom:12px;display:none">
+        <div class="warn-box" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Sisa tagihan setelah bayar:</span>
+          <strong id="bayar-sisa-val" style="font-size:15px"></strong>
+        </div>
+      </div>
+      <div id="bayar-lunas-wrap" style="margin-bottom:12px;display:none">
+        <div class="success-box">✅ Tagihan akan <strong>LUNAS</strong> dengan pembayaran ini</div>
+      </div>
+      <button class="btn btn-p" style="width:100%;justify-content:center;padding:13px" onclick="prosesBayar()">✅ Konfirmasi Bayar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BAYAR MULTI / DEPOSIT -->
+<div class="mo" id="mo-multi-bayar">
+  <div class="mo-box" style="max-width:520px">
+    <div class="mo-h">
+      <h3 id="mo-multi-title">💰 Bayar Tagihan</h3>
+      <button class="mo-cls" onclick="closeMo('mo-multi-bayar')">✕</button>
+    </div>
+    <div class="mo-b">
+      <div style="font-weight:700;font-size:16px;margin-bottom:14px" id="multi-bayar-nama"></div>
+
+      <!-- Mode tabs -->
+      <div style="display:flex;background:var(--bg);border-radius:10px;padding:3px;gap:3px;margin-bottom:16px">
+        <button class="ltab act" id="mode-tab-bulan" onclick="switchModeTab('bulan')">📅 Pilih Bulan</button>
+        <button class="ltab" id="mode-tab-deposit" onclick="switchModeTab('deposit')">🏦 Deposit Dimuka</button>
+      </div>
+
+      <!-- MODE: PILIH BULAN -->
+      <div id="mode-bulan">
+        <div id="multi-deposit-ada" style="display:none;margin-bottom:12px"></div>
+        <div class="fg"><label>Pilih Bulan yang Dibayar</label>
+          <div class="bulan-check-list" id="multi-bulan-list"></div>
+        </div>
+        <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:var(--rad-sm);padding:12px 14px;margin-bottom:14px">
+          <div style="font-size:12px;color:var(--text-m);margin-bottom:3px">Total yang akan dibayar:</div>
+          <div id="multi-total" style="font-size:22px;font-weight:800;color:var(--green)">Rp 0</div>
+        </div>
+        <div class="two">
+          <div class="fg"><label>Tanggal Bayar</label><input type="date" id="multi-tgl-bayar"></div>
+          <div class="fg"><label>Keterangan</label><input type="text" id="multi-ket" placeholder="Transfer, tunai..."></div>
+        </div>
+        <button class="btn btn-p" style="width:100%;justify-content:center;padding:13px" onclick="prosesMultiBayar()">✅ Proses Pembayaran</button>
+      </div>
+
+      <!-- MODE: DEPOSIT DIMUKA -->
+      <div id="mode-deposit" style="display:none">
+        <div class="info-box" style="margin-bottom:14px">
+          💡 Deposit akan otomatis terpotong saat generate tagihan bulan berikutnya.
+          <br>Jika deposit < tagihan → status Cicilan. Jika ≥ → Lunas.
+        </div>
+        <div id="deposit-saldo-ada" style="margin-bottom:12px"></div>
+        <div class="fg">
+          <label>Jumlah Deposit</label>
+          <input type="number" id="deposit-nominal" placeholder="0" oninput="updateDepositInfo()">
+          <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap" id="deposit-shortcuts"></div>
+        </div>
+        <div id="deposit-info" style="margin-bottom:14px;display:none">
+          <div class="success-box" id="deposit-info-text"></div>
+        </div>
+        <div class="two">
+          <div class="fg"><label>Tanggal Deposit</label><input type="date" id="deposit-tgl"></div>
+          <div class="fg"><label>Keterangan</label><input type="text" id="deposit-ket" placeholder="Transfer, tunai..."></div>
+        </div>
+        <button class="btn btn-p" style="width:100%;justify-content:center;padding:13px" onclick="prosesDeposit()">🏦 Simpan Deposit</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SURAT BEBAS TANGGUNGAN -->
+<div class="mo" id="mo-surat-bebas">
+  <div class="mo-box" style="max-width:520px">
+    <div class="mo-h"><h3>🎓 Surat Bebas Tanggungan</h3><button class="mo-cls" onclick="closeMo('mo-surat-bebas')">✕</button></div>
+    <div class="mo-b">
+      <div id="surat-bebas-content" style="border:2px solid var(--green);border-radius:10px;padding:20px;font-family:'Amiri',serif;line-height:2;font-size:14px"></div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn-p btn-sm" onclick="printSuratBebas()">🖨️ Print</button>
+        <button class="btn btn-o btn-sm" onclick="closeMo('mo-surat-bebas')">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH/EDIT AKUN BENDAHARA -->
+<div class="mo" id="mo-akun">
+  <div class="mo-box" style="max-width:460px">
+    <div class="mo-h"><h3 id="mo-akun-title">Tambah Akun Bendahara</h3><button class="mo-cls" onclick="closeMo('mo-akun')">✕</button></div>
+    <div class="mo-b">
+      <input type="hidden" id="akun-id">
+      <div class="fg"><label>Nama Tampilan</label><input type="text" id="akun-nama" placeholder="Nama lengkap pengelola"></div>
+      <div class="fg"><label>Username</label><input type="text" id="akun-user" placeholder="username (tanpa spasi)"></div>
+      <div class="fg" id="fg-akun-pass">
+        <label>Password</label><input type="password" id="akun-pass" placeholder="Min. 4 karakter">
+      </div>
+      <div class="fg"><label>Dapur</label>
+        <select id="akun-dapur">
+          <option value="">-- Pilih Dapur --</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Akses Asrama</label>
+        <div id="akun-asrama-list" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--rad-sm);padding:10px;background:var(--bg)"></div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:5px">Kosongkan = akses semua asrama</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-o" onclick="closeMo('mo-akun')">Batal</button>
+        <button class="btn btn-p" onclick="simpanAkun()">✅ Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL WA MASSAL -->
+<div class="mo" id="mo-wa-massal">
+  <div class="mo-box" style="max-width:520px">
+    <div class="mo-h"><h3>📱 WA Massal</h3><button class="mo-cls" onclick="closeMo('mo-wa-massal')">✕</button></div>
+    <div class="mo-b">
+      <div class="info-box" style="margin-bottom:14px">Kirim pesan WA ke orang tua santri yang belum bayar.</div>
+      <div class="fg"><label>Bulan</label>
+        <select id="wa-bulan"><option value="">Bulan aktif</option></select>
+      </div>
+      <div id="wa-list" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+      <div style="margin-top:14px">
+        <button class="btn btn-wa" style="width:100%;justify-content:center" onclick="kirimWASemua()">📱 Kirim ke Semua</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const { createClient } = supabase;
+let SB, SESSION = null, CONFIG = {};
+let ALL_SANTRI = [], ALL_TAGIHAN = [], ALL_AKUN = [], ALL_AKSES = [], ALL_ASRAMA = [], ALL_KOBONG = [];
+let ACTIVE_DAPUR = null;
+let MONITOR_INTERVAL = null;
+let IMPORT_PARSED = [];
+let BAYAR_TAG_ID = null;
+let MULTI_SANTRI_ID = null;
+let santriPage = 1, tagihanPage = 1, riwayatPage = 1;
+const PAGE_SIZE = 20;
+let fotoBase64 = null, fotoFile = null;
+
+// ===== KONFIGURASI =====
+function getNominalMakan(){ return parseInt(CONFIG.nominal_makan)||380000; }
+function getNominalListrik(){ return parseInt(CONFIG.nominal_listrik)||40000; }
+
+const DAPUR_LIST = [
+  {id:'dapur_bibi',   nama:'Dapur Bibi',    emoji:'🍲'},
+  {id:'dapur_ummi',   nama:'Dapur Ummi',    emoji:'🥘'},
+  {id:'dapur_buonih', nama:'Dapur Bu Onih', emoji:'🍛'},
+];
+const BULAN_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const now2 = new Date();
+const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYear();
+
+// ===== INIT =====
+(async function init(){
+  const SB_URL = 'https://menfnmfwtxgcgvkbbjxh.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
+  SB = createClient(SB_URL, SB_KEY);
+
+  try {
+    const {data:sets} = await SB.from('settings').select('*');
+    (sets||[]).forEach(s=>{ CONFIG[s.key]=s.value; });
+
+    await ensureSuperAccount();
+
+    const saved = loadSession();
+    if(saved){
+      SESSION = saved;
+      trackActivity();
+      MONITOR_INTERVAL = setInterval(trackActivity, 2*60*1000);
+      await enterApp();
+      return;
+    }
+    document.getElementById('pg-login').style.display='flex';
+  } catch(e){
+    console.error('Init error:', e);
+    document.getElementById('pg-login').style.display='flex';
+  } finally {
+    document.getElementById('pg-loading').style.display='none';
+  }
+})();
+
+async function ensureSuperAccount(){
+  try {
+    const {data,error} = await SB.from('bendahara_users').select('id').eq('role','super').limit(1);
+    if(error || !data || !data.length){
+      await SB.from('bendahara_users').upsert({
+        username:'admin', password_hash:btoa('admin123'),
+        nama_tampilan:'Kang Admin / Bendahara Utama', role:'super', dapur_id:null
+      },{onConflict:'username'});
+    }
+  } catch(e){}
+}
+
+// ===== SESSION =====
+const SESS_KEY = 'bend_sess_v3';
+function saveSession(){ if(SESSION) localStorage.setItem(SESS_KEY, JSON.stringify({...SESSION, savedAt:Date.now()})); }
+function loadSession(){
+  try {
+    const r=localStorage.getItem(SESS_KEY); if(!r) return null;
+    const d=JSON.parse(r);
+    if(Date.now()-d.savedAt > 48*3600*1000){ localStorage.removeItem(SESS_KEY); return null; }
+    return d;
+  } catch(e){ return null; }
+}
+function clearSession(){ localStorage.removeItem(SESS_KEY); }
+
+// ===== LOGIN =====
+function switchLoginTab(tab){
+  document.getElementById('form-bend').style.display = tab==='bend'?'block':'none';
+  document.getElementById('form-admin').style.display = tab==='admin'?'block':'none';
+  document.getElementById('ltab-bend').classList.toggle('act', tab==='bend');
+  document.getElementById('ltab-admin').classList.toggle('act', tab==='admin');
+  document.getElementById('login-err').style.display='none';
+}
+
+async function doLogin(){
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if(!user||!pass){ showLoginErr('⚠️ Isi username dan password!'); return; }
+  try {
+    const {data,error} = await SB.from('bendahara_users').select('*').eq('username',user).single();
+    if(error||!data){ showLoginErr('❌ Username tidak ditemukan!'); return; }
+    if(data.password_hash!==btoa(pass)){ showLoginErr('❌ Password salah!'); return; }
+    const {data:akses} = await SB.from('bendahara_akses').select('*').eq('bendahara_id',data.id);
+    SESSION = {
+      id:data.id, role:'pengelola', nama:data.nama_tampilan,
+      username:data.username, dapur_id:data.dapur_id,
+      akses_asrama:(akses||[]).map(a=>String(a.asrama_id))
+    };
+    saveSession(); trackActivity();
+    MONITOR_INTERVAL = setInterval(trackActivity, 2*60*1000);
+    document.getElementById('pg-login').style.display='none';
+    await enterApp();
+  } catch(e){ showLoginErr('❌ Gagal login!'); }
+}
+
+async function doLoginAdmin(){
+  const user = document.getElementById('admin-user').value.trim();
+  const pass = document.getElementById('admin-pass').value;
+  if(!user||!pass){ showLoginErr('⚠️ Isi username dan password!'); return; }
+  try {
+    const {data:dp} = await SB.from('settings').select('value').eq('key','super_pass').single();
+    const {data:du} = await SB.from('settings').select('value').eq('key','super_user').single();
+    const storedPass = dp?.value||''; const storedUser = du?.value||'superadmin';
+    if(user!==storedUser){ showLoginErr('❌ Username salah!'); return; }
+    let ok = false;
+    if(/^[0-9a-f]{64}$/.test(storedPass)){
+      const enc=new TextEncoder().encode(pass);
+      const h=await crypto.subtle.digest('SHA-256',enc);
+      const hex=Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      ok = hex===storedPass;
+    } else { ok = btoa(pass)===storedPass; }
+    if(!ok){ showLoginErr('❌ Password salah!'); return; }
+    SESSION = {role:'kangadmin', nama:'Kang Admin', username:storedUser, dapur_id:null, akses_asrama:[]};
+    saveSession(); trackActivity();
+    MONITOR_INTERVAL = setInterval(trackActivity, 2*60*1000);
+    document.getElementById('pg-login').style.display='none';
+    await enterApp();
+  } catch(e){ showLoginErr('❌ Gagal login! Cek koneksi.'); }
+}
+
+function showLoginErr(msg){
+  const el=document.getElementById('login-err');
+  el.textContent=msg; el.style.display='block';
+  setTimeout(()=>el.style.display='none',3000);
+}
+
+// ===== ENTER APP =====
+async function enterApp(){
+  const isAdmin = isKangAdmin();
+  document.getElementById('pg-app').style.display='block';
+  document.getElementById('hdr-bulan').textContent = CONFIG.bulan_aktif||BULAN_AKTIF_DEFAULT;
+  document.getElementById('hdr-role').textContent = isAdmin ? '👑 Kang Admin' : ('🍳 '+(getDapurNama(SESSION.dapur_id)||SESSION.nama||'Pengelola'));
+
+  if(!isAdmin) ACTIVE_DAPUR = SESSION.dapur_id||null;
+
+  buildDapurBar();
+  buildTabs();
+  await loadAllData();
+  fillSelects();
+  showTab('dashboard');
+}
+
+function isKangAdmin(){ return SESSION && SESSION.role==='kangadmin'; }
+
+// ===== LOAD DATA =====
+async function loadAllData(){
+  const isAdmin = isKangAdmin();
+  const queries = [
+    SB.from('santri').select('id,nama,kelas,kobong_id,kobong(id,nama,asrama_id),no_wa,dapur_id,catatan,foto_url,pin').order('nama'),
+    SB.from('tagihan_pondok').select('*').order('created_at',{ascending:false}),
+    SB.from('asrama').select('*').order('nama'),
+    SB.from('kobong').select('*,asrama(id,nama)').order('nama'),
+  ];
+  if(isAdmin){
+    queries.push(SB.from('bendahara_users').select('*').order('created_at'));
+    queries.push(SB.from('bendahara_akses').select('*'));
+  }
+  const results = await Promise.all(queries);
+  const [r0,r1,r2,r3,r4,r5] = results;
+
+  ALL_ASRAMA = r2.data||[];
+  ALL_KOBONG = r3.data||[];
+  ALL_AKUN = r4?.data||[];
+  ALL_AKSES = r5?.data||[];
+
+  let santri = r0.data||[];
+  // Filter santri berdasarkan akses asrama (untuk pengelola)
+  if(!isAdmin && SESSION.akses_asrama && SESSION.akses_asrama.length>0){
+    const aksesSet = new Set(SESSION.akses_asrama.map(String));
+    santri = santri.filter(s=>aksesSet.has(String(s.kobong?.asrama_id||'')));
+  } else if(!isAdmin && SESSION.dapur_id){
+    santri = santri.filter(s=>s.dapur_id===SESSION.dapur_id);
+  }
+  ALL_SANTRI = santri;
+
+  let tagihan = r1.data||[];
+  // Filter tagihan ke santri yang boleh dilihat
+  const santriIds = new Set(ALL_SANTRI.map(s=>String(s.id)));
+  ALL_TAGIHAN = tagihan.filter(t=>santriIds.has(String(t.santri_id)));
+}
+
+// ===== HELPERS =====
+function getDapurNama(id){ return DAPUR_LIST.find(d=>d.id===id)?.nama||'—'; }
+function getDapurEmoji(id){ return DAPUR_LIST.find(d=>d.id===id)?.emoji||'🍳'; }
+function getAsramaNama(id){ return ALL_ASRAMA.find(a=>String(a.id)===String(id))?.nama||'—'; }
+function getKobongNama(id){ return ALL_KOBONG.find(k=>String(k.id)===String(id))?.nama||'—'; }
+function getSantriById(id){ return ALL_SANTRI.find(s=>String(s.id)===String(id)); }
+
+function getSantriFiltered(){
+  if(!ACTIVE_DAPUR) return ALL_SANTRI;
+  return ALL_SANTRI.filter(s=>s.dapur_id===ACTIVE_DAPUR);
+}
+function getTagihanFiltered(){
+  const sf = getSantriFiltered();
+  const ids = new Set(sf.map(s=>String(s.id)));
+  return ALL_TAGIHAN.filter(t=>ids.has(String(t.santri_id)));
+}
+
+const avColors=['#1a5c3a','#2471a3','#6c3483','#b8860b','#c0392b','#16a085','#8e44ad','#d35400'];
+function avColor(n){ if(!n) return avColors[0]; let h=0; for(let i=0;i<n.length;i++) h=(h+n.charCodeAt(i)*31)%avColors.length; return avColors[h]; }
+function avLetter(n){ return n?n[0].toUpperCase():'?'; }
+function fmtRp(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
+function today(){ return new Date().toISOString().split('T')[0]; }
+function fmtTgl(s){ if(!s) return '—'; try{ return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return s; } }
+
+function bulanAktif(){ return CONFIG.bulan_aktif||BULAN_AKTIF_DEFAULT; }
+
+// ===== DAPUR BAR =====
+function buildDapurBar(){
+  const isAdmin = isKangAdmin();
+  const bar = document.getElementById('dapur-bar');
+  const tabs = document.getElementById('dapur-tabs');
+  // Pengelola: bar tidak perlu tampil, data sudah otomatis difilter dari SESSION.dapur_id
+  if(!isAdmin){ bar.style.display='none'; return; }
+  // Kang Admin: tampil semua dapur
+  bar.style.display='flex';
+  let t=`<button class="dtab act" id="dtab-all" onclick="setActiveDapur(null,this)">🌐 Semua Dapur</button>`;
+  DAPUR_LIST.forEach(d=>{ t+=`<button class="dtab" id="dtab-${d.id}" onclick="setActiveDapur('${d.id}',this)">${d.emoji} ${d.nama}</button>`; });
+  tabs.innerHTML=t;
+}
+
+function setActiveDapur(id,el){
+  ACTIVE_DAPUR=id;
+  document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('act'));
+  if(el) el.classList.add('act');
+  renderDashboard(); renderTagihanTable(); renderSantri(); renderRiwayat();
+}
+
+// ===== TABS =====
+function buildTabs(){
+  const isAdmin=isKangAdmin();
+  const tabs=document.getElementById('main-tabs');
+  let t='';
+  t+=tab('dashboard','📊 Dashboard');
+  t+=tab('tagihan','📋 Tagihan');
+  t+=tab('santri','👥 Santri');
+  t+=tab('rekap','📊 Rekap Tunggakan');
+  t+=tab('kelulusan','🎓 Kelulusan');
+  t+=tab('riwayat','📜 Riwayat');
+  t+=tab('import','📥 Import');
+  if(isAdmin){
+    t+=tab('manajemen','👥 Manajemen Bendahara');
+    t+=tab('monitor','👁️ Monitor');
+    t+=tab('pengaturan','⚙️ Pengaturan');
+  }
+  tabs.innerHTML=t;
+
+  // Set SQL migrasi di pengaturan
+  if(isAdmin){
+    const sqlEl = document.getElementById('sql-migrasi');
+    if(sqlEl) sqlEl.value = getSQLMigrasi();
+  }
+}
+function tab(id,l){ return `<button class="tb" id="tab-${id}" onclick="showTab('${id}')">${l}</button>`; }
+
+function showTab(id){
+  const isAdmin=isKangAdmin();
+  if(['pengaturan','manajemen','monitor'].includes(id) && !isAdmin) return;
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));
+  document.querySelectorAll('.tb').forEach(t=>t.classList.remove('act'));
+  const s=document.getElementById('sec-'+id), t=document.getElementById('tab-'+id);
+  if(s) s.classList.add('act'); if(t) t.classList.add('act');
+  if(id==='dashboard') renderDashboard();
+  if(id==='tagihan') renderTagihanTable();
+  if(id==='santri') renderSantri();
+  if(id==='rekap') renderRekap();
+  if(id==='kelulusan') renderKelulusan();
+  if(id==='riwayat') renderRiwayat();
+  if(id==='manajemen') renderManajemenBendahara();
+  if(id==='monitor') renderMonitor();
+  if(id==='pengaturan') renderPengaturan();
+}
+
+// ===== FILL SELECTS =====
+function fillSelects(){
+  const isAdmin=isKangAdmin();
+  // Dapur select di form santri
+  const dapurOpts = DAPUR_LIST.map(d=>`<option value="${d.id}">${d.emoji} ${d.nama}</option>`).join('');
+  ['s-dapur','akun-dapur'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML='<option value="">-- Pilih Dapur --</option>'+dapurOpts; });
+
+  // Asrama select
+  const asramaOpts = ALL_ASRAMA.map(a=>`<option value="${a.id}">${a.nama}</option>`).join('');
+  ['filter-asrama-tagihan','filter-asrama-santri','s-asrama'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const hasAll = id!=='s-asrama';
+    el.innerHTML=(hasAll?'<option value="">Semua Asrama</option>':'')+asramaOpts;
+  });
+
+  // Kobong di tagihan filter
+  const kobongOpts = ALL_KOBONG.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
+  ['filter-kobong-tagihan','filter-kobong-santri','filter-kobong-rekap'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.innerHTML='<option value="">Semua Kobong</option>'+kobongOpts;
+  });
+
+  // Kelas dari data santri
+  const kelasSet = new Set(ALL_SANTRI.map(s=>s.kelas).filter(Boolean));
+  const kelasOpts = [...kelasSet].sort((a,b)=>parseInt(a)-parseInt(b)).map(k=>`<option value="${k}">${k}</option>`).join('');
+  ['filter-kelas-tagihan','filter-kelas-santri','filter-kelas-rekap'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.innerHTML='<option value="">Semua Kelas</option>'+kelasOpts;
+  });
+
+  // Bulan di tagihan filter
+  const bulanSet = new Set(ALL_TAGIHAN.map(t=>t.bulan).filter(Boolean));
+  const bulanOpts = [...bulanSet].sort().reverse().map(b=>`<option value="${b}">${b}</option>`).join('');
+  ['filter-bulan-tagihan','filter-bulan-riwayat','wa-bulan','filter-bulan-rekap'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.innerHTML='<option value="">Semua Bulan</option>'+bulanOpts;
+  });
+
+  // Hapus semua button — hanya kangadmin
+  const btnHapus = document.getElementById('btn-hapus-semua');
+  const btnHapusSm = document.getElementById('btn-hapus-semua-set');
+  if(btnHapus) btnHapus.style.display=isAdmin?'inline-flex':'none';
+  if(btnHapusSm) btnHapusSm.style.display=isAdmin?'inline-flex':'none';
+}
+
+function filterKobongBySantriAsrama(){
+  const asramaId = document.getElementById('filter-asrama-santri')?.value||'';
+  const el = document.getElementById('filter-kobong-santri'); if(!el) return;
+  let kobong = asramaId ? ALL_KOBONG.filter(k=>String(k.asrama_id||'')==asramaId) : ALL_KOBONG;
+  el.innerHTML='<option value="">Semua Kobong</option>'+kobong.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
+}
+
+function onAsramaChange(){
+  const asramaId = document.getElementById('s-asrama')?.value||'';
+  const el=document.getElementById('s-kobong'); if(!el) return;
+  const kobong = asramaId ? ALL_KOBONG.filter(k=>String(k.asrama_id||'')==asramaId) : ALL_KOBONG;
+  el.innerHTML='<option value="">-- Pilih Kobong --</option>'+kobong.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(){
+  const bulan = bulanAktif();
+  const tagihanBulan = getTagihanFiltered().filter(t=>(t.bulan||'').toLowerCase()===bulan.toLowerCase());
+  const lunas = tagihanBulan.filter(t=>t.status==='lunas');
+  const belum = tagihanBulan.filter(t=>t.status!=='lunas');
+  const totalTagihan = tagihanBulan.reduce((a,t)=>a+Number(t.nominal),0);
+  const totalLunas = lunas.reduce((a,t)=>a+Number(t.nominal),0);
+  const totalBelum = belum.reduce((a,t)=>a+Number(t.nominal),0);
+  const dapurLabel = ACTIVE_DAPUR?getDapurNama(ACTIVE_DAPUR):'Semua Dapur';
+
+  // Hitung proporsi makan & listrik dari config (bisa diubah di Pengaturan)
+  const N_MAKAN = getNominalMakan(), N_LISTRIK = getNominalListrik();
+  const NOMINAL = N_MAKAN + N_LISTRIK;
+  const jmlSantriTagihan = tagihanBulan.length;
+  const jmlLunas = lunas.length;
+  const jmlBelum = belum.length;
+
+  const makanTerkumpul = jmlLunas * N_MAKAN;
+  const makanBelum = jmlBelum * N_MAKAN;
+  const makanTotal = jmlSantriTagihan * N_MAKAN;
+  const listrikTerkumpul = jmlLunas * N_LISTRIK;
+  const listrikBelum = jmlBelum * N_LISTRIK;
+  const listrikTotal = jmlSantriTagihan * N_LISTRIK;
+
+  document.getElementById('dash-tagihan-title').textContent=`📋 Tagihan Bulan Ini — ${dapurLabel}`;
+
+  // Stat cards — nominal sebagai nilai utama
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="sc"><div class="sci g">📋</div><div class="sil"><label>Total Tagihan</label><div class="val" style="font-size:15px">${fmtRp(totalTagihan)}</div><small>${jmlSantriTagihan} santri · ${bulan}</small></div></div>
+    <div class="sc"><div class="sci g">✅</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green);font-size:15px">${fmtRp(totalLunas)}</div><small>${jmlLunas} santri</small></div></div>
+    <div class="sc"><div class="sci r">❌</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red);font-size:15px">${fmtRp(totalBelum)}</div><small>${jmlBelum} santri</small></div></div>
+    <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Terkumpul</label><div class="val" style="color:var(--gold);font-size:15px">${fmtRp(totalLunas)}</div><small>dari ${fmtRp(totalTagihan)}</small></div></div>
+  `;
+
+  // Kartu rincian Uang Makan & Uang Listrik
+  document.getElementById('dash-rincian').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph" style="background:#fff8e1"><h2>🍲 Uang Makan <span style="font-size:12px;font-weight:400;color:var(--text-m)">(Rp 380.000/santri)</span></h2></div>
+        <div class="pb" style="padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px">
+            <span style="color:var(--text-m)">Total Tagihan</span>
+            <strong>${fmtRp(makanTotal)}</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px">
+            <span style="color:var(--green)">✅ Terkumpul</span>
+            <strong style="color:var(--green)">${fmtRp(makanTerkumpul)}</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px">
+            <span style="color:var(--red)">❌ Belum</span>
+            <strong style="color:var(--red)">${fmtRp(makanBelum)}</strong>
+          </div>
+          <div class="prog-wrap"><div class="prog-fill" style="width:${makanTotal>0?Math.round(makanTerkumpul/makanTotal*100):0}%;background:var(--gold-l)"></div></div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:4px">${makanTotal>0?Math.round(makanTerkumpul/makanTotal*100):0}% terkumpul</div>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph" style="background:var(--blue-p)"><h2>💡 Uang Listrik <span style="font-size:12px;font-weight:400;color:var(--text-m)">(Rp 40.000/santri)</span></h2></div>
+        <div class="pb" style="padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px">
+            <span style="color:var(--text-m)">Total Tagihan</span>
+            <strong>${fmtRp(listrikTotal)}</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px">
+            <span style="color:var(--green)">✅ Terkumpul</span>
+            <strong style="color:var(--green)">${fmtRp(listrikTerkumpul)}</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px">
+            <span style="color:var(--red)">❌ Belum</span>
+            <strong style="color:var(--red)">${fmtRp(listrikBelum)}</strong>
+          </div>
+          <div class="prog-wrap"><div class="prog-fill" style="width:${listrikTotal>0?Math.round(listrikTerkumpul/listrikTotal*100):0}%;background:var(--blue)"></div></div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:4px">${listrikTotal>0?Math.round(listrikTerkumpul/listrikTotal*100):0}% terkumpul</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Dapur cards (admin + semua dapur)
+  const dapurCardsEl = document.getElementById('dapur-cards');
+  if(isKangAdmin() && !ACTIVE_DAPUR){
+    let dc='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px">';
+    DAPUR_LIST.forEach(d=>{
+      const sIds=new Set(ALL_SANTRI.filter(s=>s.dapur_id===d.id).map(s=>String(s.id)));
+      const tg=ALL_TAGIHAN.filter(t=>sIds.has(String(t.santri_id))&&(t.bulan||'').toLowerCase()===bulan.toLowerCase());
+      const lun=tg.filter(t=>t.status==='lunas').reduce((a,t)=>a+Number(t.nominal),0);
+      const tot=tg.reduce((a,t)=>a+Number(t.nominal),0);
+      const pct=tot>0?Math.round(lun/tot*100):0;
+      dc+=`<div class="panel" style="cursor:pointer;margin-bottom:0" onclick="setActiveDapur('${d.id}',document.getElementById('dtab-${d.id}'))">
+        <div class="ph"><h2>${d.emoji} ${d.nama}</h2><span class="badge badge-dapur">${sIds.size} santri</span></div>
+        <div class="pb">
+          <div style="font-size:12px;color:var(--text-m);margin-bottom:8px">Terkumpul: <strong style="color:var(--green)">${fmtRp(lun)}</strong> / ${fmtRp(tot)}</div>
+          <div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:4px">${pct}% terkumpul</div>
+        </div>
+      </div>`;
+    });
+    dc+='</div>';
+    dapurCardsEl.innerHTML=dc;
+  } else {
+    dapurCardsEl.innerHTML='';
+  }
+
+  // WA Massal button
+  const hasBelum = belum.some(t=>{ const s=getSantriById(t.santri_id); return s?.no_wa; });
+  const wabtn=document.getElementById('btn-wa-massal');
+  if(wabtn) wabtn.style.display=hasBelum?'inline-flex':'none';
+
+  // Tabel tagihan bulan ini
+  const rows = tagihanBulan.map((t,i)=>{
+    const s=getSantriById(t.santri_id)||{};
+    const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
+    const statusBadge = t.status==='lunas'?`<span class="badge badge-lunas">✅ Lunas</span>`:t.status==='cicil'?`<span class="badge badge-cicil">⏳ Cicilan</span>`:`<span class="badge badge-belum">❌ Belum</span>`;
+    return `<tr>
+      <td style="color:var(--text-l)">${i+1}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="av" style="background:${avColor(s.nama||'')}22;color:${avColor(s.nama||'')}">${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama||'?')}</div>
+        <button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;text-align:left;color:var(--text);padding:0">${s.nama||t.santri_nama||'—'}</button>
+      </div></td>
+      <td>${s.kelas||'—'}</td>
+      <td><span class="badge badge-bg">${kobongNama}</span></td>
+      <td><span class="badge badge-dapur">${getDapurEmoji(t.dapur_id)} ${getDapurNama(t.dapur_id)}</span></td>
+      <td>${t.bulan||'—'}</td>
+      <td>${fmtRp(t.nominal_makan||0)}</td>
+      <td>${fmtRp(t.nominal_listrik||0)}</td>
+      <td><strong>${fmtRp(t.nominal)}</strong></td>
+      <td>${statusBadge}</td>
+      <td>
+        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="bukaMoBayar('${t.id}')">💰 Bayar</button>`:''}
+        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs" style="margin-left:4px" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulan}')">📱</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('dash-tagihan-summary').innerHTML = rows.length
+    ? `<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Santri</th><th>Kelas</th><th>Kobong</th><th>Dapur</th><th>Bulan</th><th>Uang Makan</th><th>Uang Listrik</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    : `<div class="empty"><span class="ei">📋</span><p>Belum ada tagihan bulan ini. <button class="btn btn-g btn-sm" onclick="generateTagihanBulan()" style="margin-left:8px">⚡ Generate Sekarang</button></p></div>`;
+}
+
+// ===== TAGIHAN TABLE =====
+function renderTagihanTable(){
+  const q=document.getElementById('cari-tagihan')?.value.toLowerCase()||'';
+  const asramaF=document.getElementById('filter-asrama-tagihan')?.value||'';
+  const bulanF=document.getElementById('filter-bulan-tagihan')?.value||'';
+  const statusF=document.getElementById('filter-status-tagihan')?.value||'';
+  const kobongF=document.getElementById('filter-kobong-tagihan')?.value||'';
+  const kelasF=document.getElementById('filter-kelas-tagihan')?.value||'';
+
+  let filtered = getTagihanFiltered().filter(t=>{
+    const s=getSantriById(t.santri_id)||{};
+    if(q && !((s.nama||t.santri_nama||'').toLowerCase().includes(q))) return false;
+    if(asramaF && String(s.kobong?.asrama_id||'')!==asramaF) return false;
+    if(bulanF && (t.bulan||'')!==bulanF) return false;
+    if(statusF && (t.status||'belum')!==statusF) return false;
+    if(kobongF && String(s.kobong_id||'')!==kobongF) return false;
+    if(kelasF && (s.kelas||'')!==kelasF) return false;
+    return true;
+  });
+
+  const pages=Math.ceil(filtered.length/PAGE_SIZE);
+  if(tagihanPage>pages) tagihanPage=1;
+  const slice=filtered.slice((tagihanPage-1)*PAGE_SIZE, tagihanPage*PAGE_SIZE);
+
+  const rows=slice.map((t,i)=>{
+    const s=getSantriById(t.santri_id)||{};
+    const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
+    const statusBadge=t.status==='lunas'?`<span class="badge badge-lunas">✅ Lunas</span>`:t.status==='cicil'?`<span class="badge badge-cicil">⏳ Cicilan</span>`:`<span class="badge badge-belum">❌ Belum</span>`;
+    return `<tr>
+      <td style="color:var(--text-l)">${(tagihanPage-1)*PAGE_SIZE+i+1}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="av" style="background:${avColor(s.nama||'')}22;color:${avColor(s.nama||'')}">${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama||'?')}</div>
+        <button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;text-align:left;color:var(--text);padding:0">${s.nama||t.santri_nama||'—'}</button>
+      </div></td>
+      <td>${s.kelas||'—'}</td>
+      <td><span class="badge badge-bg">${kobongNama}</span></td>
+      <td><span class="badge badge-dapur">${getDapurEmoji(t.dapur_id)} ${getDapurNama(t.dapur_id)}</span></td>
+      <td>${t.bulan||'—'}</td>
+      <td>${fmtRp(t.nominal_makan||0)}</td>
+      <td>${fmtRp(t.nominal_listrik||0)}</td>
+      <td><strong>${fmtRp(t.nominal)}</strong></td>
+      <td>${statusBadge}</td>
+      <td style="display:flex;gap:4px">
+        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="bukaMoBayar('${t.id}')">💰 Bayar</button>`:''}
+        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulanAktif()}')">📱</button>`:''}
+        ${isKangAdmin()?`<button class="btn btn-d btn-xs" onclick="hapusTagihan('${t.id}')">🗑</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  const tbody=document.getElementById('tagihan-tbody');
+  tbody.innerHTML=rows||`<tr><td colspan="11"><div class="empty"><span class="ei">📋</span><p>Tidak ada data tagihan.</p></div></td></tr>`;
+
+  // Pagination
+  let pg='';
+  for(let i=1;i<=pages;i++) pg+=`<button class="pg-btn ${i===tagihanPage?'act':''}" onclick="tagihanPage=${i};renderTagihanTable()">${i}</button>`;
+  document.getElementById('tagihan-pagination').innerHTML=pg;
+}
+
+// ===== SANTRI TABLE =====
+function renderSantri(){
+  const q=document.getElementById('cari-santri')?.value.toLowerCase()||'';
+  const asramaF=document.getElementById('filter-asrama-santri')?.value||'';
+  const kobongF=document.getElementById('filter-kobong-santri')?.value||'';
+  const kelasF=document.getElementById('filter-kelas-santri')?.value||'';
+
+  let filtered=ALL_SANTRI.filter(s=>{
+    if(q && !s.nama.toLowerCase().includes(q)) return false;
+    if(asramaF && String(s.kobong?.asrama_id||'')!==asramaF) return false;
+    if(kobongF && String(s.kobong_id||'')!==kobongF) return false;
+    if(kelasF && (s.kelas||'')!==kelasF) return false;
+    return true;
+  });
+
+  const pages=Math.ceil(filtered.length/PAGE_SIZE)||1;
+  if(santriPage>pages) santriPage=1;
+  const slice=filtered.slice((santriPage-1)*PAGE_SIZE, santriPage*PAGE_SIZE);
+
+  const grid=document.getElementById('santri-grid');
+  const empty=document.getElementById('santri-empty');
+
+  if(!slice.length){
+    grid.innerHTML=''; empty.style.display='block'; return;
+  }
+  empty.style.display='none';
+
+  const rows=slice.map((s,i)=>{
+    const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
+    const tagSantri=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(s.id));
+    const totalTagihan=tagSantri.reduce((a,t)=>a+Number(t.nominal),0);
+    const totalBayar=tagSantri.filter(t=>t.status==='lunas').reduce((a,t)=>a+Number(t.nominal_bayar||t.nominal),0);
+    const totalTunggak=tagSantri.filter(t=>t.status!=='lunas').reduce((a,t)=>a+(Number(t.nominal)-Number(t.nominal_bayar||0)),0);
+    const hasTunggak=totalTunggak>0;
+    const statusBadge=hasTunggak
+      ?`<span class="badge badge-belum">❌ ${fmtRp(totalTunggak)}</span>`
+      :`<span class="badge badge-lunas">✅ Lunas</span>`;
+    return `<tr>
+      <td style="color:var(--text-l);font-size:12px">${(santriPage-1)*PAGE_SIZE+i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};width:38px;height:38px;flex-shrink:0">
+            ${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:avLetter(s.nama)}
+          </div>
+          <div>
+            <button onclick="openDetailModal('${s.id}')" style="background:none;border:none;cursor:pointer;font-weight:700;font-size:14px;text-align:left;color:var(--text);padding:0;display:block">${s.nama}</button>
+            <div style="font-size:11px;color:var(--text-l)">${s.kelas?'Kelas '+s.kelas:'—'}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="badge badge-bg">${kobongNama}</span></td>
+      <td>${s.dapur_id?`<span class="badge badge-dapur">${getDapurEmoji(s.dapur_id)} ${getDapurNama(s.dapur_id)}</span>`:'<span style="color:var(--text-l);font-size:12px">—</span>'}</td>
+      <td>
+        <div style="font-size:12px;color:var(--text-m)">${fmtRp(totalTagihan)}</div>
+        <div style="font-size:11px;color:var(--text-l)">Bayar: ${fmtRp(totalBayar)}</div>
+      </td>
+      <td>${statusBadge}</td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-b btn-xs" onclick="openDetailModal('${s.id}')">📋 Detail</button>
+          ${hasTunggak?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${s.id}')">💰</button>`:''}
+          ${s.no_wa&&hasTunggak?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${s.id}','${bulanAktif()}')">📱</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  grid.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>#</th><th>Nama Santri</th><th>Kobong</th><th>Dapur</th><th>Total Tagihan</th><th>Status</th><th>Aksi</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+
+  let pg='';
+  for(let i=1;i<=pages;i++) pg+=`<button class="pg-btn ${i===santriPage?'act':''}" onclick="santriPage=${i};renderSantri()">${i}</button>`;
+  document.getElementById('santri-pagination').innerHTML=pg;
+}
+
+// ===== DETAIL SANTRI MODAL (Universal) =====
+async function openDetailModal(santriId){
+  const s=getSantriById(santriId);
+  if(!s){ toast('❌ Santri tidak ditemukan!'); return; }
+
+  // Load tagihan santri ini
+  const tagSantri=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(santriId)).sort((a,b)=>(b.bulan||'').localeCompare(a.bulan||''));
+  const totalTagihan=tagSantri.reduce((a,t)=>a+Number(t.nominal),0);
+  const totalLunas=tagSantri.filter(t=>t.status==='lunas').reduce((a,t)=>a+Number(t.nominal),0);
+  const totalSisa=totalTagihan-totalLunas;
+  const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
+  const asramaNama=getAsramaNama(s.kobong?.asrama_id||'');
+
+  document.getElementById('mo-detail-nama').textContent=s.nama;
+
+  // Build riwayat tagihan
+  let riwayatHtml='';
+  if(!tagSantri.length){
+    riwayatHtml=`<div class="empty"><span class="ei">📋</span><p>Belum ada tagihan</p></div>`;
+  } else {
+    riwayatHtml=tagSantri.map(t=>{
+      const sudahBayar=Number(t.nominal_bayar||0);
+      const sisa=Number(t.nominal)-sudahBayar;
+      const statusBadge=t.status==='lunas'?`<span class="badge badge-lunas">✅ Lunas</span>`:t.status==='cicil'?`<span class="badge badge-cicil">⏳ Cicil</span>`:`<span class="badge badge-belum">❌ Belum</span>`;
+      return `<div class="riwayat-item">
+        <div class="ri-left">
+          <strong>${t.bulan||'—'}</strong>
+          <span>${t.dicatat_oleh?'Bayar oleh: '+t.dicatat_oleh:''} ${t.tgl_bayar?'· '+fmtTgl(t.tgl_bayar):''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="ri-right">
+            <div class="ri-nominal">${fmtRp(t.nominal)}</div>
+            ${sisa>0?`<div class="ri-sisa">Sisa: ${fmtRp(sisa)}</div>`:''}
+          </div>
+          ${statusBadge}
+          ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="closeMo('mo-detail');bukaMoBayar('${t.id}')">💰</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const hasTunggak=totalSisa>0;
+  const hasWA=!!(s.no_wa);
+
+  document.getElementById('mo-detail-body').innerHTML=`
+    <div class="dh">
+      <div class="dh-av">${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama)}</div>
+      <div class="dh-info">
+        <h3>${s.nama}</h3>
+        <p>🏠 ${kobongNama} ${s.kelas?'· Kelas '+s.kelas:''}</p>
+        <p>🍽️ ${getDapurNama(s.dapur_id)} ${asramaNama?'· '+asramaNama:''}</p>
+      </div>
+      <div class="dh-saldo">
+        <div class="lbl">Sisa Tagihan</div>
+        <div class="amt" style="${hasTunggak?'color:#ff6b6b':''}">${hasTunggak?fmtRp(totalSisa):'Lunas'}</div>
+        <small>${hasTunggak?'⚠️ Ada tunggakan':'✅ Semua lunas'}</small>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-info"><label>Total Tagihan</label><div class="stat-val">${fmtRp(totalTagihan)}</div></div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">💳</div>
+        <div class="stat-info"><label>Sudah Bayar</label><div class="stat-val">${fmtRp(totalLunas)}</div></div>
+      </div>
+    </div>
+    <div class="detail-actions">
+      ${hasTunggak?`<button class="btn btn-p btn-sm" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}')">💰 Bayar Tagihan</button>`:''}
+      ${hasWA&&hasTunggak?`<button class="btn btn-wa btn-sm" onclick="kirimWASantri('${santriId}','${bulanAktif()}')">📱 Kirim WA</button>`:''}
+      ${!hasWA&&hasTunggak?`<button class="btn btn-o btn-sm" title="No WA tidak ada" style="opacity:.5;cursor:not-allowed">📵 WA N/A</button>`:''}
+    </div>
+    <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:var(--text)">📜 Riwayat Tagihan</div>
+    ${riwayatHtml}
+  `;
+  openMo('mo-detail');
+}
+
+// ===== GENERATE TAGIHAN (dengan auto-potong deposit) =====
+async function generateTagihanBulan(){
+  const bulan=bulanAktif();
+  const sf=getSantriFiltered();
+  if(!sf.length){ toast('⚠️ Tidak ada santri!'); return; }
+
+  const sudahAda=getTagihanFiltered().filter(t=>t.bulan===bulan);
+  if(sudahAda.length){
+    if(!confirm(`⚠️ Tagihan ${bulan} sudah ada (${sudahAda.length}).\nLanjut untuk santri yang belum?`)) return;
+  }
+
+  const nomMakan=getNominalMakan(), nomListrik=getNominalListrik();
+  const santriSudah=new Set(sudahAda.map(t=>String(t.santri_id)));
+  const toProcess=sf.filter(s=>!santriSudah.has(String(s.id)));
+
+  if(!toProcess.length){ toast('ℹ️ Semua santri sudah punya tagihan bulan ini!'); return; }
+
+  // Load deposit semua santri
+  const {data:deposits}=await SB.from('santri_deposit').select('*').in('santri_id',toProcess.map(s=>s.id));
+  const depositMap={};
+  (deposits||[]).forEach(d=>{ depositMap[String(d.santri_id)]=d; });
+
+  const toInsert=[];
+  const depositUpdates=[];
+
+  for(const s of toProcess){
+    const nom=nomMakan+nomListrik;
+    const dep=depositMap[String(s.id)];
+    const saldoDep=dep?Number(dep.saldo||0):0;
+    let bayar=0, status='belum', newDep=saldoDep;
+
+    if(saldoDep>0){
+      if(saldoDep>=nom){ bayar=nom; status='lunas'; newDep=saldoDep-nom; }
+      else { bayar=saldoDep; status='cicil'; newDep=0; }
+      depositUpdates.push({santri_id:s.id, saldo:newDep, dep_id:dep?.id});
+    }
+
+    toInsert.push({
+      santri_id:s.id, santri_nama:s.nama, dapur_id:s.dapur_id||null,
+      bulan, nominal_makan:nomMakan, nominal_listrik:nomListrik, nominal:nom,
+      nominal_bayar:bayar, status, tgl_tagihan:today(),
+      keterangan:bayar>0?`Auto dari deposit`:'',
+      dicatat_oleh:SESSION.nama||SESSION.username,
+    });
+  }
+
+  const {error}=await SB.from('tagihan_pondok').insert(toInsert);
+  if(error){ toast('❌ Gagal generate: '+error.message); return; }
+
+  // Update saldo deposit
+  for(const u of depositUpdates){
+    if(u.dep_id) await SB.from('santri_deposit').update({saldo:u.saldo}).eq('id',u.dep_id);
+  }
+
+  const autoLunas=toInsert.filter(t=>t.status==='lunas').length;
+  const autoCicil=toInsert.filter(t=>t.status==='cicil').length;
+  let msg=`✅ ${toInsert.length} tagihan dibuat!`;
+  if(autoLunas) msg+=` ${autoLunas} lunas (deposit).`;
+  if(autoCicil) msg+=` ${autoCicil} cicilan (deposit).`;
+  toast(msg);
+  await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
+}
+
+// ===== BAYAR TAGIHAN =====
+function bukaMoBayar(tagId){
+  const t=ALL_TAGIHAN.find(x=>String(x.id)===String(tagId));
+  if(!t){ toast('❌ Tagihan tidak ditemukan!'); return; }
+  BAYAR_TAG_ID=tagId;
+  const s=getSantriById(t.santri_id)||{};
+  const sudahBayar=Number(t.nominal_bayar||0);
+  const sisaBayar=Number(t.nominal)-sudahBayar;
+  const nomMakan=Number(t.nominal_makan||0);
+  const nomListrik=Number(t.nominal_listrik||0);
+
+  document.getElementById('bayar-nama').textContent=`${s.nama||'—'} — ${t.bulan}`;
+
+  // Info deposit jika ada
+  const depEl=document.getElementById('bayar-deposit-info');
+  depEl.style.display='none';
+
+  document.getElementById('bayar-detail').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:5px">
+      ${nomMakan?`<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--bg);border-radius:8px"><span>Uang Makan</span><strong>${fmtRp(nomMakan)}</strong></div>`:''}
+      ${nomListrik?`<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--bg);border-radius:8px"><span>Uang Listrik</span><strong>${fmtRp(nomListrik)}</strong></div>`:''}
+      ${sudahBayar>0?`<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--gold-p);border-radius:8px"><span>Sudah Dibayar</span><strong style="color:var(--gold)">${fmtRp(sudahBayar)}</strong></div>`:''}
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--green-p);border-radius:8px;border:1px solid var(--green-b)"><span><strong>Sisa Tagihan</strong></span><strong style="color:var(--red)">${fmtRp(sisaBayar)}</strong></div>
+    </div>`;
+
+  // Shortcut nominal
+  const shortcuts=[];
+  if(sisaBayar>0) shortcuts.push({label:'Lunas '+fmtRp(sisaBayar), val:sisaBayar});
+  if(sisaBayar>=nomMakan&&nomMakan>0) shortcuts.push({label:'Makan '+fmtRp(nomMakan), val:nomMakan});
+  if(sisaBayar>=nomListrik&&nomListrik>0) shortcuts.push({label:'Listrik '+fmtRp(nomListrik), val:nomListrik});
+  const half=Math.floor(sisaBayar/2);
+  if(half>0&&half!==sisaBayar) shortcuts.push({label:'½ '+fmtRp(half), val:half});
+
+  document.getElementById('bayar-shortcuts').innerHTML=shortcuts.map(sc=>
+    `<button class="btn btn-o btn-xs" onclick="document.getElementById('bayar-nominal').value=${sc.val};updateBayarSisa()">${sc.label}</button>`
+  ).join('');
+
+  document.getElementById('bayar-nominal').value=sisaBayar;
+  document.getElementById('bayar-tgl').value=today();
+  document.getElementById('bayar-ket').value='';
+  document.getElementById('bayar-sisa-wrap').style.display='none';
+  document.getElementById('bayar-lunas-wrap').style.display='block';
+  openMo('mo-bayar');
+}
+
+function updateBayarSisa(){
+  const t=ALL_TAGIHAN.find(x=>String(x.id)===String(BAYAR_TAG_ID));
+  if(!t) return;
+  const bayar=parseInt(document.getElementById('bayar-nominal').value)||0;
+  const sisa=Number(t.nominal)-(Number(t.nominal_bayar||0))-bayar;
+  const sisaWrap=document.getElementById('bayar-sisa-wrap');
+  const lunasWrap=document.getElementById('bayar-lunas-wrap');
+  if(sisa>0){
+    sisaWrap.style.display='block';
+    lunasWrap.style.display='none';
+    document.getElementById('bayar-sisa-val').textContent=fmtRp(sisa);
+  } else {
+    sisaWrap.style.display='none';
+    lunasWrap.style.display='block';
+  }
+}
+
+async function prosesBayar(){
+  const t=ALL_TAGIHAN.find(x=>String(x.id)===String(BAYAR_TAG_ID));
+  if(!t){ toast('❌ Tagihan tidak ditemukan!'); return; }
+  const bayar=parseInt(document.getElementById('bayar-nominal').value)||0;
+  const tgl=document.getElementById('bayar-tgl').value;
+  const ket=document.getElementById('bayar-ket').value.trim();
+  if(!bayar||!tgl){ toast('⚠️ Isi nominal dan tanggal!'); return; }
+  if(bayar<=0){ toast('⚠️ Nominal harus lebih dari 0!'); return; }
+
+  const totalBayar=(Number(t.nominal_bayar||0))+bayar;
+  const status=totalBayar>=Number(t.nominal)?'lunas':'cicil';
+  const {error}=await SB.from('tagihan_pondok').update({
+    nominal_bayar:totalBayar, status, tgl_bayar:tgl,
+    keterangan:ket||null, dicatat_oleh:SESSION.nama||SESSION.username
+  }).eq('id',BAYAR_TAG_ID);
+  if(error){ toast('❌ Gagal: '+error.message); return; }
+  toast(`✅ ${fmtRp(bayar)} tercatat! Status: ${status==='lunas'?'Lunas ✅':'Cicilan ⏳'}`);
+  closeMo('mo-bayar');
+  await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
+}
+
+// ===== BAYAR MULTI / DEPOSIT =====
+function switchModeTab(mode){
+  document.getElementById('mode-bulan').style.display=mode==='bulan'?'block':'none';
+  document.getElementById('mode-deposit').style.display=mode==='deposit'?'block':'none';
+  document.getElementById('mode-tab-bulan').classList.toggle('act',mode==='bulan');
+  document.getElementById('mode-tab-deposit').classList.toggle('act',mode==='deposit');
+  if(mode==='deposit') initDepositMode();
+}
+
+async function bukaMoBayarMulti(santriId){
+  try {
+  MULTI_SANTRI_ID=santriId;
+  const s=getSantriById(santriId)||{};
+  document.getElementById('multi-bayar-nama').textContent=s.nama||'—';
+  document.getElementById('mo-multi-title').textContent='💰 Bayar Tagihan — '+s.nama;
+
+  // Load tagihan belum lunas
+  const tagBelum=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(santriId)&&t.status!=='lunas')
+    .sort((a,b)=>(a.bulan||'').localeCompare(b.bulan||''));
+
+  // Load deposit - pakai maybeSingle agar tidak error jika kosong
+  let saldoDep=0;
+  try {
+    const {data:dep}=await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle();
+    saldoDep=dep?Number(dep.saldo||0):0;
+  } catch(e){ saldoDep=0; }
+
+  // Info deposit di mode bulan
+  const depAda=document.getElementById('multi-deposit-ada');
+  if(saldoDep>0){
+    depAda.style.display='block';
+    depAda.innerHTML=`<div class="success-box">🏦 Saldo Deposit: <strong>${fmtRp(saldoDep)}</strong></div>`;
+  } else depAda.style.display='none';
+
+  document.getElementById('multi-bulan-list').innerHTML=tagBelum.map(t=>{
+    const sisa=Number(t.nominal)-Number(t.nominal_bayar||0);
+    return `<label class="bulan-item" id="bitem-${t.id}">
+      <input type="checkbox" value="${t.id}" data-nom="${sisa}" onchange="updateMultiTotal()" class="multi-check">
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px">${t.bulan||'—'}</div>
+        <div style="font-size:11px;color:var(--text-l)">${fmtRp(t.nominal_makan||0)} Makan + ${fmtRp(t.nominal_listrik||0)} Listrik${t.nominal_bayar>0?` · Bayar: ${fmtRp(t.nominal_bayar)}`:''}</div>
+      </div>
+      <strong style="font-size:13px;color:var(--red)">${fmtRp(sisa)}</strong>
+    </label>`;
+  }).join('')||'<div class="empty"><span class="ei">✅</span><p>Semua lunas!</p></div>';
+
+  document.getElementById('multi-total').textContent='Rp 0';
+  document.getElementById('multi-tgl-bayar').value=today();
+  document.getElementById('multi-ket').value='';
+  switchModeTab('bulan');
+  openMo('mo-multi-bayar');
+  } catch(e){ toast('❌ Error: '+e.message); console.error(e); }
+}
+
+function updateMultiTotal(){
+  let total=0;
+  document.querySelectorAll('.multi-check:checked').forEach(c=>{ total+=parseInt(c.dataset.nom)||0; });
+  document.getElementById('multi-total').textContent=fmtRp(total);
+  document.querySelectorAll('.bulan-item').forEach(li=>{
+    li.classList.toggle('checked',li.querySelector('.multi-check')?.checked);
+  });
+}
+
+async function prosesMultiBayar(){
+  const checked=[...document.querySelectorAll('.multi-check:checked')].map(c=>({id:c.value,nom:parseInt(c.dataset.nom)||0}));
+  if(!checked.length){ toast('⚠️ Pilih minimal satu bulan!'); return; }
+  const tgl=document.getElementById('multi-tgl-bayar').value;
+  const ket=document.getElementById('multi-ket').value.trim();
+  if(!tgl){ toast('⚠️ Isi tanggal!'); return; }
+
+  let sukses=0;
+  for(const {id,nom} of checked){
+    const t=ALL_TAGIHAN.find(x=>String(x.id)===String(id)); if(!t) continue;
+    const totalBayar=(Number(t.nominal_bayar||0))+nom;
+    const status=totalBayar>=Number(t.nominal)?'lunas':'cicil';
+    const {error}=await SB.from('tagihan_pondok').update({
+      nominal_bayar:totalBayar, status, tgl_bayar:tgl,
+      keterangan:ket||null, dicatat_oleh:SESSION.nama||SESSION.username
+    }).eq('id',id);
+    if(!error) sukses++;
+  }
+  toast(`✅ ${sukses} tagihan berhasil!`);
+  closeMo('mo-multi-bayar');
+  await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
+}
+
+// ===== DEPOSIT =====
+async function initDepositMode(){
+  const santriId=MULTI_SANTRI_ID;
+  let saldoDep=0;
+  try {
+    const {data:dep}=await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle();
+    saldoDep=dep?Number(dep.saldo||0):0;
+  } catch(e){ saldoDep=0; }
+  const nomBulan=getNominalMakan()+getNominalListrik();
+
+  const saldoEl=document.getElementById('deposit-saldo-ada');
+  if(saldoDep>0){
+    saldoEl.innerHTML=`<div class="success-box">🏦 Saldo deposit saat ini: <strong>${fmtRp(saldoDep)}</strong> (~${Math.floor(saldoDep/nomBulan)} bulan)</div>`;
+  } else {
+    saldoEl.innerHTML=`<div class="info-box">Belum ada deposit. Tambah deposit sekarang.</div>`;
+  }
+
+  // Shortcut: 1,2,3,4,5,6 bulan
+  const shortcuts=[1,2,3,4,5,6].map(n=>{
+    const val=n*nomBulan;
+    return `<button class="btn btn-o btn-xs" onclick="document.getElementById('deposit-nominal').value=${val};updateDepositInfo()">${n} bln (${fmtRp(val)})</button>`;
+  }).join('');
+  document.getElementById('deposit-shortcuts').innerHTML=shortcuts;
+  document.getElementById('deposit-nominal').value='';
+  document.getElementById('deposit-tgl').value=today();
+  document.getElementById('deposit-ket').value='';
+  document.getElementById('deposit-info').style.display='none';
+}
+
+function updateDepositInfo(){
+  const nominal=parseInt(document.getElementById('deposit-nominal').value)||0;
+  const nomBulan=getNominalMakan()+getNominalListrik();
+  const bulan=Math.floor(nominal/nomBulan);
+  const sisa=nominal%nomBulan;
+  const infoEl=document.getElementById('deposit-info');
+  const infoText=document.getElementById('deposit-info-text');
+  if(nominal>0){
+    infoEl.style.display='block';
+    infoText.innerHTML=`🏦 Deposit <strong>${fmtRp(nominal)}</strong> = <strong>${bulan} bulan</strong> tagihan${sisa>0?` + sisa ${fmtRp(sisa)}`:''}<br><small style="color:var(--text-m)">Otomatis terpotong saat generate tagihan berikutnya</small>`;
+  } else infoEl.style.display='none';
+}
+
+async function prosesDeposit(){
+  const santriId=MULTI_SANTRI_ID;
+  const nominal=parseInt(document.getElementById('deposit-nominal').value)||0;
+  const tgl=document.getElementById('deposit-tgl').value;
+  const ket=document.getElementById('deposit-ket').value.trim();
+  if(!nominal||nominal<=0){ toast('⚠️ Isi jumlah deposit!'); return; }
+  if(!tgl){ toast('⚠️ Isi tanggal!'); return; }
+
+  // Cek deposit existing
+  let dep=null;
+  try {
+    const {data:d}=await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle();
+    dep=d;
+  } catch(e){ dep=null; }
+  const saldoLama=dep?Number(dep.saldo||0):0;
+  const saldoBaru=saldoLama+nominal;
+
+  if(dep){
+    await SB.from('santri_deposit').update({
+      saldo:saldoBaru, tgl_terakhir:tgl,
+      keterangan:ket||'Tambah deposit', dicatat_oleh:SESSION.nama||SESSION.username
+    }).eq('id',dep.id);
+  } else {
+    await SB.from('santri_deposit').insert({
+      santri_id:santriId, saldo:saldoBaru, tgl_terakhir:tgl,
+      keterangan:ket||'Deposit awal', dicatat_oleh:SESSION.nama||SESSION.username
+    });
+  }
+
+  toast(`🏦 Deposit ${fmtRp(nominal)} berhasil! Saldo: ${fmtRp(saldoBaru)}`);
+  closeMo('mo-multi-bayar');
+  await loadAllData(); fillSelects(); renderDashboard();
+}
+
+async function hapusTagihan(id){
+  if(!confirm('Hapus tagihan ini?')) return;
+  const {error}=await SB.from('tagihan_pondok').delete().eq('id',id);
+  if(error){ toast('❌ Gagal: '+error.message); return; }
+  toast('🗑 Tagihan dihapus!');
+  await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
+}
+
+async function hapusSemuaTagihan(){
+  if(!isKangAdmin()){ toast('⛔ Hanya Kang Admin!'); return; }
+  if(!confirm('⚠️ Hapus SEMUA tagihan?')) return;
+  const konfirm=prompt('Ketik "HAPUS SEMUA" untuk konfirmasi:');
+  if(konfirm!=='HAPUS SEMUA'){ toast('⚠️ Dibatalkan.'); return; }
+  const {error}=await SB.from('tagihan_pondok').delete().neq('id',0);
+  if(error){ toast('❌ Gagal: '+error.message); return; }
+  toast('🗑 Semua tagihan dihapus!');
+  await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
+}
+
+// ===== TAMBAH SANTRI (sama dengan Saku Santri) =====
+function bukaModalTambahSantri(){
+  document.getElementById('mo-santri-title').textContent='Tambah Santri Baru';
+  document.getElementById('s-id').value='';
+  document.getElementById('s-nama').value='';
+  document.getElementById('s-pin').value='1234';
+  document.getElementById('s-kelas').value='';
+  document.getElementById('s-nowa').value='';
+  document.getElementById('s-kobong').innerHTML='<option value="">-- Pilih Kobong --</option>';
+  const sd=document.getElementById('s-dapur');
+  sd.innerHTML='<option value="">-- Pilih Dapur --</option>'+DAPUR_LIST.map(d=>`<option value="${d.id}">${d.emoji} ${d.nama}</option>`).join('');
+  hapusFoto();
+  // Reset asrama & populate
+  const sa=document.getElementById('s-asrama');
+  sa.innerHTML='<option value="">-- Pilih Asrama --</option>'+ALL_ASRAMA.map(a=>`<option value="${a.id}">${a.nama}</option>`).join('');
+  openMo('mo-santri');
+}
+
+async function simpanSantri(){
+  const nama=document.getElementById('s-nama').value.trim();
+  const kobong_id=parseInt(document.getElementById('s-kobong').value)||null;
+  const pin=document.getElementById('s-pin').value.trim()||'1234';
+  const kelas=document.getElementById('s-kelas').value.trim();
+  const dapur_id=document.getElementById('s-dapur').value||null;
+  const no_wa=document.getElementById('s-nowa').value.trim().replace(/\D/g,'')||null;
+  if(!nama||!kobong_id){ toast('⚠️ Nama dan kobong wajib diisi!'); return; }
+
+  // Santri diinput ke tabel santri (Saku Santri), wali = kangadmin
+  const created_by='kangadmin';
+  const {data:newSantri,error}=await SB.from('santri').insert({
+    nama, kobong_id, pin, kelas, catatan:kelas, dapur_id, no_wa, saldo:0, created_by
+  }).select().single();
+  if(error){ toast('❌ Gagal: '+error.message); return; }
+
+  // Upload foto jika ada
+  if(fotoFile){
+    const url=await uploadFoto(newSantri.id);
+    if(url) await SB.from('santri').update({foto_url:url}).eq('id',newSantri.id);
+  }
+  toast('✅ Santri berhasil ditambahkan!');
+  closeMo('mo-santri'); hapusFoto();
+  await loadAllData(); fillSelects(); renderSantri();
+}
+
+// ===== FOTO =====
+function previewFoto(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=400; let w=img.width, h=img.height;
+      if(w>h){ if(w>MAX){h=Math.round(h*MAX/w);w=MAX;} } else { if(h>MAX){w=Math.round(w*MAX/h);h=MAX;} }
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(blob=>{ fotoFile=blob; fotoBase64=canvas.toDataURL('image/jpeg',.72);
+        document.getElementById('foto-preview').innerHTML=`<img src="${fotoBase64}" style="width:100%;height:100%;object-fit:cover">`;
+        document.getElementById('hapus-foto-btn').style.display='inline-flex';
+      },'image/jpeg',.72);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function hapusFoto(){
+  fotoBase64=null; fotoFile=null;
+  document.getElementById('foto-preview').innerHTML='👤';
+  document.getElementById('s-foto').value='';
+  document.getElementById('hapus-foto-btn').style.display='none';
+}
+async function uploadFoto(santriId){
+  if(!fotoFile) return null;
+  try {
+    const CLOUD='dfj1eutgf'; const PRESET='santri_foto';
+    const form=new FormData();
+    form.append('file',fotoFile); form.append('upload_preset',PRESET);
+    form.append('folder','santri'); form.append('public_id',`santri_${santriId}_${Date.now()}`);
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,{method:'POST',body:form});
+    if(!res.ok) throw new Error('Upload gagal');
+    const r=await res.json();
+    return r.secure_url.replace('/upload/','/upload/f_auto,q_auto,w_400/');
+  } catch(e){ return fotoBase64; }
+}
+
+// ===== REKAP TUNGGAKAN =====
+function renderRekap(){
+  const mode=document.getElementById('rekap-mode').value;
+  const cari=document.getElementById('cari-rekap').value.toLowerCase();
+  const statusF=document.getElementById('filter-status-rekap').value;
+  const asramaF=document.getElementById('filter-asrama-rekap')?.value||'';
+  const bulanF=document.getElementById('filter-bulan-rekap')?.value||'';
+  const kobongF=document.getElementById('filter-kobong-rekap')?.value||'';
+  const kelasF=document.getElementById('filter-kelas-rekap')?.value||'';
+  const content=document.getElementById('rekap-content');
+
+  // Filter tagihan berdasarkan filter yang dipilih
+  let tagihanF=getTagihanFiltered().filter(t=>{
+    const s=getSantriById(t.santri_id)||{};
+    if(bulanF && (t.bulan||'')!==bulanF) return false;
+    if(asramaF && String(s.kobong?.asrama_id||'')!==asramaF) return false;
+    if(kobongF && String(s.kobong_id||'')!==kobongF) return false;
+    if(kelasF && (s.kelas||'')!==kelasF) return false;
+    return true;
+  });
+
+  if(mode==='santri'){
+    const perSantri={};
+    tagihanF.forEach(t=>{
+      const s=getSantriById(t.santri_id)||{};
+      if(!perSantri[t.santri_id]) perSantri[t.santri_id]={
+        id:t.santri_id,
+        nama:s.nama||t.santri_nama||'—',
+        dapur_id:s.dapur_id||t.dapur_id,
+        kobong:s.kobong?.nama||getKobongNama(s.kobong_id)||'—',
+        kelas:s.kelas||'—',
+        total:0,lunas:0,tagihan:[]
+      };
+      perSantri[t.santri_id].total+=Number(t.nominal);
+      if(t.status==='lunas') perSantri[t.santri_id].lunas+=Number(t.nominal_bayar||t.nominal);
+      else perSantri[t.santri_id].lunas+=Number(t.nominal_bayar||0);
+      perSantri[t.santri_id].tagihan.push(t);
+    });
+    let data=Object.values(perSantri).map(d=>({...d,tunggak:d.total-d.lunas}));
+    if(cari) data=data.filter(d=>d.nama.toLowerCase().includes(cari));
+    if(statusF==='tunggak') data=data.filter(d=>d.tunggak>0);
+    if(statusF==='lunas') data=data.filter(d=>d.tunggak<=0);
+    data.sort((a,b)=>b.tunggak-a.tunggak);
+
+    const rows=data.map((d,i)=>{
+      const pct=d.total>0?Math.round(d.lunas/d.total*100):100;
+      return `<tr>
+        <td>${i+1}</td>
+        <td><button onclick="openDetailModal('${d.id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${d.nama}</button></td>
+        <td><span class="badge badge-bg">${d.kobong}</span></td>
+        <td>${d.kelas}</td>
+        <td><span class="badge badge-dapur">${getDapurEmoji(d.dapur_id)} ${getDapurNama(d.dapur_id)}</span></td>
+        <td>${fmtRp(d.total)}</td>
+        <td style="color:var(--green)">${fmtRp(d.lunas)}</td>
+        <td style="color:${d.tunggak>0?'var(--red)':'var(--green)'};font-weight:700">${fmtRp(d.tunggak)}</td>
+        <td style="min-width:100px"><div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text-l);margin-top:2px">${pct}%</div></td>
+        <td><div style="display:flex;gap:4px">${d.tunggak>0?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${d.id}')">💰</button>`:''}<button class="btn btn-b btn-xs" onclick="openDetailModal('${d.id}')">📋</button></div></td>
+      </tr>`;
+    }).join('');
+    content.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Santri</th><th>Kobong</th><th>Kelas</th><th>Dapur</th><th>Total Tagihan</th><th>Sudah Bayar</th><th>Tunggakan</th><th>Progres</th><th>Aksi</th></tr></thead><tbody>${rows||'<tr><td colspan="10"><div class="empty"><span class="ei">✅</span><p>Tidak ada tunggakan!</p></div></td></tr>'}</tbody></table></div>`;
+  } else {
+    const perBulan={};
+    tagihanF.forEach(t=>{
+      const b=t.bulan||'—';
+      if(!perBulan[b]) perBulan[b]={bulan:b,total:0,lunas:0,belum:0,santriSet:new Set()};
+      perBulan[b].total+=Number(t.nominal);
+      if(t.status==='lunas') perBulan[b].lunas+=Number(t.nominal);
+      else perBulan[b].belum+=(Number(t.nominal)-Number(t.nominal_bayar||0));
+      perBulan[b].santriSet.add(t.santri_id);
+    });
+    let data=Object.values(perBulan).sort((a,b)=>b.bulan.localeCompare(a.bulan));
+    if(cari) data=data.filter(d=>d.bulan.toLowerCase().includes(cari));
+    const rows=data.map((d,i)=>{
+      const pct=d.total>0?Math.round(d.lunas/d.total*100):100;
+      return `<tr><td>${i+1}</td><td style="font-weight:600">${d.bulan}</td><td>${d.santriSet.size} santri</td><td>${fmtRp(d.total)}</td><td style="color:var(--green)">${fmtRp(d.lunas)}</td><td style="color:${d.belum>0?'var(--red)':'var(--green)'};font-weight:700">${fmtRp(d.belum)}</td><td style="min-width:100px"><div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text-l);margin-top:2px">${pct}%</div></td></tr>`;
+    }).join('');
+    content.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Bulan</th><th>Santri</th><th>Total Tagihan</th><th>Terkumpul</th><th>Sisa</th><th>Progres</th></tr></thead><tbody>${rows||'<tr><td colspan="7"><div class="empty"><span class="ei">📋</span><p>Tidak ada data.</p></div></td></tr>'}</tbody></table></div>`;
+  }
+}
+
+function exportRekapExcel(){
+  const perSantri={};
+  getTagihanFiltered().forEach(t=>{
+    const k=t.santri_id;
+    if(!perSantri[k]) perSantri[k]={nama:t.santri_nama||getSantriById(k)?.nama||'—',dapur:getDapurNama(t.dapur_id)||'—',total:0,lunas:0};
+    perSantri[k].total+=Number(t.nominal);
+    if(t.status==='lunas') perSantri[k].lunas+=Number(t.nominal_bayar||t.nominal);
+  });
+  const rows=[['#','Nama Santri','Dapur','Total Tagihan','Sudah Bayar','Tunggakan','Status']];
+  Object.values(perSantri).forEach((d,i)=>{
+    const tunggak=d.total-d.lunas;
+    rows.push([i+1,d.nama,d.dapur,d.total,d.lunas,tunggak,tunggak>0?'Ada Tunggakan':'Lunas']);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Rekap Tunggakan');
+  XLSX.writeFile(wb,`rekap_tunggakan_${today()}.xlsx`);
+  toast('✅ Excel didownload!');
+}
+
+// ===== KELULUSAN =====
+function renderKelulusan(){
+  const cari=document.getElementById('cari-kelulusan').value.toLowerCase();
+  const filterL=document.getElementById('filter-status-lulus').value;
+  const perSantri={};
+  ALL_TAGIHAN.forEach(t=>{
+    if(!perSantri[t.santri_id]) perSantri[t.santri_id]={id:t.santri_id,nama:t.santri_nama||getSantriById(t.santri_id)?.nama||'—',dapur_id:t.dapur_id,total:0,lunas:0};
+    perSantri[t.santri_id].total+=Number(t.nominal);
+    if(t.status==='lunas') perSantri[t.santri_id].lunas+=Number(t.nominal_bayar||t.nominal);
+  });
+  let data=Object.values(perSantri).map(d=>({...d,tunggak:d.total-d.lunas,bebas:d.total<=d.lunas}));
+  if(cari) data=data.filter(d=>d.nama.toLowerCase().includes(cari));
+  if(filterL==='bebas') data=data.filter(d=>d.bebas);
+  if(filterL==='tunggak') data=data.filter(d=>!d.bebas);
+  data.sort((a,b)=>a.nama.localeCompare(b.nama));
+  const s0=getSantriById;
+  const rows=data.map((d,i)=>{
+    const s=s0(d.id)||{};
+    const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
+    return `<tr>
+      <td>${i+1}</td>
+      <td><button onclick="openDetailModal('${d.id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${d.nama}</button></td>
+      <td><span class="badge badge-bg">${kobongNama}</span></td>
+      <td><span class="badge badge-dapur">${getDapurEmoji(d.dapur_id)} ${getDapurNama(d.dapur_id)}</span></td>
+      <td>${fmtRp(d.total)}</td>
+      <td style="color:var(--green)">${fmtRp(d.lunas)}</td>
+      <td style="color:${d.tunggak>0?'var(--red)':'var(--green)'};font-weight:700">${fmtRp(d.tunggak)}</td>
+      <td><span class="badge ${d.bebas?'badge-lunas':'badge-belum'}">${d.bebas?'✅ Bebas':'❌ Tunggakan'}</span></td>
+      <td style="display:flex;gap:4px">
+        ${d.bebas?`<button class="btn btn-p btn-xs" onclick="cetakSuratBebas('${d.id}','${d.nama}')">🎓 Surat</button>`:`<button class="btn btn-b btn-xs" onclick="bukaMoBayarMulti('${d.id}')">💰 Lunasi</button>`}
+        <button class="btn btn-b btn-xs" onclick="openDetailModal('${d.id}')">📋</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('kelulusan-tbody').innerHTML=rows||`<tr><td colspan="9"><div class="empty"><span class="ei">🎓</span><p>Tidak ada data.</p></div></td></tr>`;
+}
+
+function cetakSuratBebas(santriId,nama){
+  const s=getSantriById(santriId)||{};
+  const tgl=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('surat-bebas-content').innerHTML=`
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:20px;font-weight:700">بِسْمِ اللّهِ الرَّحْمَنِ الرَّحِيْم</div>
+      <div style="font-size:17px;font-weight:700;margin-top:12px">SURAT KETERANGAN BEBAS TANGGUNGAN</div>
+      <div style="font-size:13px;color:var(--text-m)">Pondok Pesantren An-Nur</div>
+    </div>
+    <div style="margin-bottom:12px;font-size:13px">Yang bertanda tangan di bawah ini menerangkan bahwa santri:</div>
+    <div style="margin-left:20px;margin-bottom:16px;font-size:13px;line-height:2.5">
+      Nama &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : <strong>${nama}</strong><br>
+      Kobong &nbsp;&nbsp;&nbsp;&nbsp; : <strong>${s.kobong?.nama||getKobongNama(s.kobong_id)||'—'}</strong><br>
+      Dapur &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : <strong>${getDapurNama(s.dapur_id)}</strong>
+    </div>
+    <div style="font-size:13px;margin-bottom:24px;line-height:1.8">Adalah benar telah <strong>melunasi seluruh kewajiban</strong> kepada pondok pesantren dan dinyatakan <strong>BEBAS TANGGUNGAN</strong>.</div>
+    <div style="text-align:right;font-size:13px;margin-top:32px">
+      <div>${tgl}</div>
+      <div style="margin-top:8px">Bendahara Pondok Pesantren An-Nur</div>
+      <div style="margin-top:60px;font-weight:700;display:inline-block;border-top:1px solid var(--text);padding-top:4px">( ____________________ )</div>
+    </div>`;
+  openMo('mo-surat-bebas');
+}
+function printSuratBebas(){
+  const c=document.getElementById('surat-bebas-content').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><style>body{font-family:'Times New Roman',serif;padding:40px;max-width:600px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>${c}</body></html>`);
+  w.document.close(); w.print();
+}
+
+// ===== RIWAYAT =====
+function renderRiwayat(){
+  const q=document.getElementById('cari-riwayat')?.value.toLowerCase()||'';
+  const bulanF=document.getElementById('filter-bulan-riwayat')?.value||'';
+  let filtered=ALL_TAGIHAN.filter(t=>{
+    const s=getSantriById(t.santri_id)||{};
+    if(q && !((s.nama||t.santri_nama||'').toLowerCase().includes(q))) return false;
+    if(bulanF && (t.bulan||'')!==bulanF) return false;
+    return t.status==='lunas'||t.status==='cicil'; // hanya yang sudah ada pembayaran
+  }).sort((a,b)=>(b.tgl_bayar||'').localeCompare(a.tgl_bayar||''));
+
+  const pages=Math.ceil(filtered.length/PAGE_SIZE);
+  if(riwayatPage>pages) riwayatPage=1;
+  const slice=filtered.slice((riwayatPage-1)*PAGE_SIZE, riwayatPage*PAGE_SIZE);
+
+  const rows=slice.map((t,i)=>{
+    const s=getSantriById(t.santri_id)||{};
+    return `<tr>
+      <td style="color:var(--text-l)">${(riwayatPage-1)*PAGE_SIZE+i+1}</td>
+      <td style="color:var(--text-l);font-size:12px">${fmtTgl(t.tgl_bayar)||'—'}</td>
+      <td><button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${s.nama||t.santri_nama||'—'}</button></td>
+      <td><span class="badge badge-dapur">${getDapurEmoji(t.dapur_id)} ${getDapurNama(t.dapur_id)}</span></td>
+      <td>${t.keterangan||'—'}</td>
+      <td>${t.bulan||'—'}</td>
+      <td><strong style="color:var(--green)">${fmtRp(t.nominal_bayar||t.nominal)}</strong></td>
+      <td style="font-size:12px;color:var(--text-l)">${t.dicatat_oleh||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('riwayat-tbody').innerHTML=rows||'';
+  document.getElementById('riwayat-empty').style.display=rows?'none':'block';
+  let pg='';
+  for(let i=1;i<=pages;i++) pg+=`<button class="pg-btn ${i===riwayatPage?'act':''}" onclick="riwayatPage=${i};renderRiwayat()">${i}</button>`;
+  document.getElementById('riwayat-pagination').innerHTML=pg;
+}
+
+// ===== WA =====
+function buildWAPesan(santriId, bulan){
+  const s=getSantriById(santriId)||{};
+  const tagihan=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(santriId)&&(t.bulan||'')===(bulan||'')&&t.status!=='lunas');
+  const total=tagihan.reduce((a,t)=>a+Number(t.nominal)-(Number(t.nominal_bayar||0)),0);
+  const rincian=tagihan.map(t=>{
+    const sisa=Number(t.nominal)-Number(t.nominal_bayar||0);
+    return `• Tagihan ${t.bulan}: ${fmtRp(sisa)}`;
+  }).join('\n');
+  const tmpl=CONFIG.wa_template_bend||getDefaultWATemplate();
+  return tmpl.replace(/{{nama}}/g,s.nama||santriId).replace(/{{bulan}}/g,bulan||bulanAktif()).replace(/{{total}}/g,fmtRp(total)).replace(/{{rincian}}/g,rincian).replace(/{{pondok}}/g,'Pondok Pesantren An-Nur');
+}
+function getDefaultWATemplate(){
+  return `Assalamu'alaikum Wr. Wb. 🌿\n\nKepada Yth.\nOrang Tua / Wali Santri *{{nama}}*\n\nBerikut informasi tagihan bulan *{{bulan}}*:\n\n{{rincian}}\n\n*Total: {{total}}*\n\nMohon segera dilunasi.\n\nJazakumullahu Khairan 🙏\n*{{pondok}}*`;
+}
+function kirimWASantri(santriId, bulan){
+  const s=getSantriById(santriId)||{};
+  const noWA=(s.no_wa||'').replace(/\D/g,'').replace(/^0/,'62');
+  if(!noWA){ toast('⚠️ Nomor WA tidak tersedia!'); return; }
+  const pesan=buildWAPesan(santriId,bulan||bulanAktif());
+  window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`,'_blank');
+}
+function kirimWABelumBayar(){
+  bukaWAMassal();
+}
+function bukaWAMassal(){
+  const bulan=bulanAktif();
+  const belum=getTagihanFiltered().filter(t=>t.status!=='lunas'&&(t.bulan||'')==bulan);
+  const santriMap={};
+  belum.forEach(t=>{ if(!santriMap[t.santri_id]) santriMap[t.santri_id]=[]; santriMap[t.santri_id].push(t); });
+  let html='';
+  Object.entries(santriMap).forEach(([sid,tags])=>{
+    const s=getSantriById(sid)||{};
+    const total=tags.reduce((a,t)=>a+Number(t.nominal)-Number(t.nominal_bayar||0),0);
+    const hasWA=!!(s.no_wa);
+    html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);${hasWA?'':'opacity:.5'}">
+      <div>
+        <div style="font-weight:600;font-size:13px">${s.nama||sid}</div>
+        <div style="font-size:11px;color:var(--text-l)">${s.no_wa||'No WA tidak ada'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;font-weight:700;color:var(--red)">${fmtRp(total)}</span>
+        ${hasWA?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${sid}','${bulan}')">📱 Kirim</button>`:'<span style="font-size:11px;color:var(--text-l)">No WA N/A</span>'}
+      </div>
+    </div>`;
+  });
+  document.getElementById('wa-list').innerHTML=html||`<div class="empty"><span class="ei">✅</span><p>Semua sudah bayar!</p></div>`;
+  openMo('mo-wa-massal');
+}
+function kirimWASemua(){
+  const bulan=bulanAktif();
+  const belum=getTagihanFiltered().filter(t=>t.status!=='lunas'&&(t.bulan||'')==bulan);
+  const santriIds=new Set(belum.map(t=>t.santri_id));
+  let count=0;
+  santriIds.forEach(sid=>{ const s=getSantriById(sid)||{}; if(s.no_wa){ setTimeout(()=>kirimWASantri(sid,bulan),count*500); count++; } });
+  toast(`📱 Membuka ${count} chat WA...`);
+}
+
+// ===== IMPORT =====
+function handleDrop(e){ e.preventDefault(); document.getElementById('drop-zone').classList.remove('drag'); const file=e.dataTransfer.files[0]; if(file) handleImportFile(file); }
+function handleImportFile(file){
+  if(!file) return;
+  const ext=file.name.split('.').pop().toLowerCase();
+  const reader=new FileReader();
+  reader.onload=function(e){
+    let rows=[];
+    if(ext==='csv'){ const text=e.target.result; rows=text.split('\n').map(r=>r.split(',').map(c=>c.trim().replace(/^"|"$/g,''))); }
+    else { const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; rows=XLSX.utils.sheet_to_json(ws,{header:1}); }
+    const header=rows[0]?.map(h=>String(h).toLowerCase().trim());
+    const dataRows=rows.slice(1).filter(r=>r.some(c=>c));
+    IMPORT_PARSED=dataRows.map(r=>{
+      const get=idx=>idx>=0?String(r[idx]||'').trim():'';
+      const iN=header?header.findIndex(h=>h.includes('nama')):0;
+      const iJ=header?header.findIndex(h=>h.includes('jenis')):1;
+      const iB=header?header.findIndex(h=>h.includes('bulan')):2;
+      const iNo=header?header.findIndex(h=>h.includes('nominal')):3;
+      const iK=header?header.findIndex(h=>h.includes('keterangan')):4;
+      const namaSantri=get(iN), jenis=get(iJ), bulan=get(iB);
+      const nominal=parseInt(get(iNo).replace(/\D/g,''))||0;
+      const ket=get(iK);
+      const matchSantri=ALL_SANTRI.find(s=>s.nama.toLowerCase()===namaSantri.toLowerCase());
+      return {namaSantri,jenis,bulan,nominal,ket,matchSantri};
+    }).filter(r=>r.namaSantri&&r.bulan&&r.nominal>0);
+    renderImportPreview();
+  };
+  if(ext==='csv') reader.readAsText(file); else reader.readAsArrayBuffer(file);
+}
+function renderImportPreview(){
+  if(!IMPORT_PARSED.length){ toast('⚠️ Tidak ada data valid!'); return; }
+  const rows=IMPORT_PARSED.map((r,i)=>{
+    const ok=!!r.matchSantri;
+    return `<tr style="background:${ok?'':'#fff8f8'}">
+      <td>${i+1}</td><td>${r.namaSantri} ${ok?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>'}</td>
+      <td>${r.jenis}</td><td>${r.bulan}</td><td>${fmtRp(r.nominal)}</td><td>${r.ket||'—'}</td>
+      <td><span class="badge ${ok?'badge-lunas':'badge-belum'}">${ok?'✅ Siap':'⚠️ Perlu cek'}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('import-tbody').innerHTML=rows;
+  const siap=IMPORT_PARSED.filter(r=>r.matchSantri).length;
+  document.getElementById('import-preview-title').textContent=`Preview: ${IMPORT_PARSED.length} baris · ${siap} siap · ${IMPORT_PARSED.length-siap} perlu cek`;
+  document.getElementById('import-preview').style.display='block';
+}
+async function prosesImport(){
+  const valid=IMPORT_PARSED.filter(r=>r.matchSantri);
+  if(!valid.length){ toast('⚠️ Tidak ada data valid!'); return; }
+  // Tentukan dapur dari jenis: makan atau listrik
+  const toInsert=valid.map(r=>{
+    const isMakan=r.jenis.toLowerCase().includes('makan');
+    return {
+      santri_id:r.matchSantri.id, santri_nama:r.matchSantri.nama,
+      dapur_id:r.matchSantri.dapur_id||null,
+      bulan:r.bulan,
+      nominal_makan:isMakan?r.nominal:0,
+      nominal_listrik:!isMakan?r.nominal:0,
+      nominal:r.nominal,
+      status:'belum',
+      tgl_tagihan:today(),
+      keterangan:r.ket||'Import dari file',
+      dicatat_oleh:SESSION.nama||SESSION.username
+    };
+  });
+  const {error}=await SB.from('tagihan_pondok').insert(toInsert);
+  if(error){ toast('❌ Gagal import: '+error.message); return; }
+  toast(`✅ ${toInsert.length} tagihan diimport!`);
+  document.getElementById('import-log').innerHTML=`<div class="success-box">✅ Import selesai: <strong>${toInsert.length}</strong> tagihan ditambahkan.</div>`;
+  IMPORT_PARSED=[]; document.getElementById('import-preview').style.display='none';
+  document.getElementById('import-file').value='';
+  await loadAllData(); fillSelects();
+}
+function downloadTemplateImport(){
+  const rows=[['nama_santri','jenis_tagihan','bulan','nominal','keterangan'],['Ahmad Fauzi','Uang Makan','Januari 2024','380000','Tunggakan lama'],['Ahmad Fauzi','Uang Listrik','Januari 2024','40000','Tunggakan lama']];
+  const ws=XLSX.utils.aoa_to_sheet(rows); const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Template'); XLSX.writeFile(wb,'template_import.xlsx');
+  toast('📄 Template didownload!');
+}
+
+// ===== MANAJEMEN BENDAHARA =====
+async function renderManajemenBendahara(){
+  const content=document.getElementById('manajemen-content');
+  if(!ALL_AKUN.length){ content.innerHTML='<div class="empty"><span class="ei">👥</span><p>Belum ada akun bendahara.</p></div>'; return; }
+  content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">`+
+  ALL_AKUN.map(a=>{
+    const aksesA=ALL_AKSES.filter(x=>x.bendahara_id===a.id);
+    const chips=aksesA.map(x=>`<span class="asrama-chip">${x.asrama_nama||getAsramaNama(x.asrama_id)}</span>`).join('')||'<span style="font-size:11px;color:var(--text-l)">Semua asrama</span>';
+    const dapur=a.dapur_id?`<span class="badge badge-dapur">${getDapurEmoji(a.dapur_id)} ${getDapurNama(a.dapur_id)}</span>`:'';
+    return `<div class="akun-card">
+      <div class="akun-av">${a.nama_tampilan?a.nama_tampilan[0].toUpperCase():'?'}</div>
+      <div class="akun-info">
+        <strong>${a.nama_tampilan||a.username}</strong>
+        <div class="akun-un">@${a.username} ${dapur}</div>
+        <div class="asrama-chips" style="margin-top:8px">${chips}</div>
+      </div>
+      <div class="akun-actions">
+        <button class="btn btn-b btn-xs" onclick="editAkun(${a.id})">✏️</button>
+        <button class="btn btn-d btn-xs" onclick="hapusAkun(${a.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function bukaModalTambahAkun(){
+  document.getElementById('mo-akun-title').textContent='Tambah Akun Bendahara';
+  document.getElementById('akun-id').value='';
+  document.getElementById('akun-nama').value='';
+  document.getElementById('akun-user').value='';
+  document.getElementById('akun-pass').value='';
+  document.getElementById('fg-akun-pass').style.display='block';
+  const sel=document.getElementById('akun-dapur');
+  sel.innerHTML='<option value="">-- Pilih Dapur --</option>'+DAPUR_LIST.map(d=>`<option value="${d.id}">${d.emoji} ${d.nama}</option>`).join('');
+  renderAksesAsramaList([]);
+  openMo('mo-akun');
+}
+
+function editAkun(id){
+  const a=ALL_AKUN.find(x=>x.id===id); if(!a) return;
+  document.getElementById('mo-akun-title').textContent='Edit Akun Bendahara';
+  document.getElementById('akun-id').value=id;
+  document.getElementById('akun-nama').value=a.nama_tampilan||'';
+  document.getElementById('akun-user').value=a.username||'';
+  document.getElementById('akun-pass').value='';
+  document.getElementById('fg-akun-pass').style.display='block';
+  const sel=document.getElementById('akun-dapur');
+  sel.innerHTML='<option value="">-- Pilih Dapur --</option>'+DAPUR_LIST.map(d=>`<option value="${d.id}" ${a.dapur_id===d.id?'selected':''}>${d.emoji} ${d.nama}</option>`).join('');
+  const aksesIds=ALL_AKSES.filter(x=>x.bendahara_id===id).map(x=>String(x.asrama_id));
+  renderAksesAsramaList(aksesIds);
+  openMo('mo-akun');
+}
+
+function renderAksesAsramaList(selectedIds){
+  const el=document.getElementById('akun-asrama-list');
+  el.innerHTML=ALL_ASRAMA.map(a=>{
+    const checked=selectedIds.includes(String(a.id));
+    return `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)">
+      <input type="checkbox" name="akun-asrama" value="${a.id}" ${checked?'checked':''} style="width:16px;height:16px;accent-color:var(--green)">
+      ${a.nama}
+    </label>`;
+  }).join('');
+}
+
+async function simpanAkun(){
+  const id=document.getElementById('akun-id').value;
+  const nama=document.getElementById('akun-nama').value.trim();
+  const user=document.getElementById('akun-user').value.trim().toLowerCase().replace(/\s/g,'');
+  const pass=document.getElementById('akun-pass').value;
+  const dapur_id=document.getElementById('akun-dapur').value||null;
+  if(!nama||!user){ toast('⚠️ Nama dan username wajib diisi!'); return; }
+  const aksesIds=[...document.querySelectorAll('input[name="akun-asrama"]:checked')].map(c=>c.value);
+
+  if(id){
+    const upd={nama_tampilan:nama,username:user,dapur_id};
+    if(pass) upd.password_hash=btoa(pass);
+    const {error}=await SB.from('bendahara_users').update(upd).eq('id',id);
+    if(error){ toast('❌ Gagal: '+error.message); return; }
+    // Update akses asrama
+    await SB.from('bendahara_akses').delete().eq('bendahara_id',id);
+    if(aksesIds.length){
+      const toInsert=aksesIds.map(aid=>({ bendahara_id:parseInt(id), asrama_id:parseInt(aid), asrama_nama:getAsramaNama(aid) }));
+      await SB.from('bendahara_akses').insert(toInsert);
+    }
+  } else {
+    if(!pass){ toast('⚠️ Password wajib diisi!'); return; }
+    const {data:newAkun,error}=await SB.from('bendahara_users').insert({nama_tampilan:nama,username:user,password_hash:btoa(pass),role:'pengelola',dapur_id}).select().single();
+    if(error){ toast('❌ Gagal: '+error.message); return; }
+    if(aksesIds.length){
+      const toInsert=aksesIds.map(aid=>({ bendahara_id:newAkun.id, asrama_id:parseInt(aid), asrama_nama:getAsramaNama(aid) }));
+      await SB.from('bendahara_akses').insert(toInsert);
+    }
+  }
+  toast('✅ Akun berhasil disimpan!');
+  closeMo('mo-akun');
+  await loadAllData(); renderManajemenBendahara();
+}
+
+async function hapusAkun(id){
+  if(!confirm('Hapus akun ini?')) return;
+  const {error}=await SB.from('bendahara_users').delete().eq('id',id);
+  if(error){ toast('❌ Gagal: '+error.message); return; }
+  toast('🗑 Akun dihapus!');
+  await loadAllData(); renderManajemenBendahara();
+}
+
+// ===== MONITOR =====
+async function renderMonitor(){
+  const sec=document.getElementById('sec-monitor');
+  sec.innerHTML=`<div class="panel"><div class="ph"><h2>👁️ Monitor Aktivitas Bendahara</h2><button class="btn btn-b btn-sm" onclick="renderMonitor()">🔄 Refresh</button></div><div class="pb" id="monitor-body"><div class="empty"><span class="ei">⏳</span><p>Memuat...</p></div></div></div>`;
+  const {data:logs,error}=await SB.from('bendahara_activity').select('*').order('last_seen',{ascending:false}).limit(50);
+  const body=document.getElementById('monitor-body'); if(!body) return;
+  if(error||!logs||!logs.length){
+    body.innerHTML=`<div class="info-box">Belum ada data aktivitas atau tabel <code>bendahara_activity</code> belum dibuat. Salin SQL migrasi dari tab Pengaturan.</div>`;
+    return;
+  }
+  const nowMs=Date.now();
+  const online=logs.filter(l=>nowMs-new Date(l.last_seen).getTime()<5*60*1000).length;
+  const rows=logs.map(l=>{
+    const diff=nowMs-new Date(l.last_seen).getTime(); const diffMin=Math.floor(diff/60000);
+    const isOn=diff<5*60*1000;
+    const dot=isOn?'dot-green':'dot-red';
+    const waktu=diffMin<1?'Baru saja':diffMin<60?`${diffMin} mnt lalu`:diffMin<1440?`${Math.floor(diffMin/60)} jam lalu`:new Date(l.last_seen).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+    return `<tr><td><span class="dot ${dot}" style="display:inline-block"></span> ${isOn?'Online':'Offline'}</td><td><strong>${l.nama||l.username}</strong><br><span style="font-size:11px;color:var(--text-l)">@${l.username}</span></td><td>${l.role||'—'}</td><td style="font-size:12px">${l.device||'—'}</td><td style="font-size:12px;color:var(--text-m)">${waktu}</td></tr>`;
+  }).join('');
+  body.innerHTML=`<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+    <div class="sc" style="flex:1;min-width:120px"><div class="sci g">🟢</div><div class="sil"><label>Online Sekarang</label><div class="val">${online}</div></div></div>
+    <div class="sc" style="flex:1;min-width:120px"><div class="sci b">👥</div><div class="sil"><label>Total Tercatat</label><div class="val">${logs.length}</div></div></div>
+  </div>
+  <div class="tbl-wrap"><table><thead><tr><th>Status</th><th>Nama</th><th>Role</th><th>Device</th><th>Terakhir Aktif</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+async function trackActivity(){
+  if(!SESSION) return;
+  const device=/Mobile|Android|iPhone/i.test(navigator.userAgent)?'📱 Mobile':'💻 Desktop';
+  try { await SB.from('bendahara_activity').upsert({ username:SESSION.username, nama:SESSION.nama||SESSION.username, role:SESSION.role, device, last_seen:new Date().toISOString() },{onConflict:'username'}); } catch(e){}
+}
+
+// ===== PENGATURAN =====
+function renderPengaturan(){
+  document.getElementById('set-makan').value=getNominalMakan();
+  document.getElementById('set-listrik').value=getNominalListrik();
+  document.getElementById('set-bulan').value=bulanAktif();
+  const tmpl=document.getElementById('set-wa-template');
+  if(tmpl) tmpl.value=CONFIG.wa_template_bend||getDefaultWATemplate();
+}
+
+async function simpanPengaturan(){
+  const makan=parseInt(document.getElementById('set-makan').value)||380000;
+  const listrik=parseInt(document.getElementById('set-listrik').value)||40000;
+  const bulan=document.getElementById('set-bulan').value.trim();
+  const upserts=[
+    {key:'nominal_makan',value:String(makan)},
+    {key:'nominal_listrik',value:String(listrik)},
+  ];
+  if(bulan) upserts.push({key:'bulan_aktif',value:bulan});
+  await SB.from('settings').upsert(upserts);
+  upserts.forEach(u=>CONFIG[u.key]=u.value);
+  document.getElementById('hdr-bulan').textContent=bulanAktif();
+  toast('✅ Pengaturan disimpan!');
+}
+
+async function gantiPassAdmin(){
+  const p1=document.getElementById('set-pass1').value;
+  const p2=document.getElementById('set-pass2').value;
+  if(!p1||p1!==p2){ toast('⚠️ Password tidak cocok atau kosong!'); return; }
+  const enc=new TextEncoder().encode(p1);
+  const h=await crypto.subtle.digest('SHA-256',enc);
+  const hex=Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  await SB.from('settings').upsert({key:'super_pass',value:hex});
+  document.getElementById('set-pass1').value=''; document.getElementById('set-pass2').value='';
+  toast('✅ Password berhasil diubah!');
+}
+
+async function simpanTemplateWA(){
+  const tmpl=document.getElementById('set-wa-template')?.value.trim();
+  if(!tmpl){ toast('⚠️ Template kosong!'); return; }
+  await SB.from('settings').upsert({key:'wa_template_bend',value:tmpl});
+  CONFIG.wa_template_bend=tmpl; toast('✅ Template WA disimpan!');
+}
+function resetTemplateWA(){ if(!confirm('Reset template?')) return; document.getElementById('set-wa-template').value=getDefaultWATemplate(); }
+
+// ===== BACKUP =====
+function backupLengkap(){
+  const santri=getSantriFiltered();
+  const tagihan=getTagihanFiltered();
+  const wb=XLSX.utils.book_new();
+  const wsSantri=XLSX.utils.json_to_sheet(santri.map(s=>({Nama:s.nama,Kelas:s.kelas||'—',Kobong:s.kobong?.nama||getKobongNama(s.kobong_id)||'—',Dapur:getDapurNama(s.dapur_id),WA:s.no_wa||'—'})));
+  const wsTagihan=XLSX.utils.json_to_sheet(tagihan.map(t=>{const s=getSantriById(t.santri_id)||{}; return {Santri:s.nama||t.santri_nama,Bulan:t.bulan,Makan:t.nominal_makan,Listrik:t.nominal_listrik,Total:t.nominal,Bayar:t.nominal_bayar||0,Status:t.status,TglBayar:t.tgl_bayar||'—',DicatatOleh:t.dicatat_oleh||'—'}}));
+  XLSX.utils.book_append_sheet(wb,wsSantri,'Santri'); XLSX.utils.book_append_sheet(wb,wsTagihan,'Tagihan');
+  XLSX.writeFile(wb,`backup_bendahara_${today()}.xlsx`);
+  toast('✅ Backup didownload!');
+}
+function backupSemuaData(){ backupLengkap(); }
+
+// ===== SQL MIGRASI =====
+function getSQLMigrasi(){
+  return `-- Tabel tagihan_pondok (bendahara)
+create table if not exists tagihan_pondok (
+  id bigserial primary key,
+  santri_id bigint references santri(id) on delete cascade,
+  santri_nama text,
+  dapur_id text,
+  bulan text not null,
+  nominal_makan integer default 0,
+  nominal_listrik integer default 0,
+  nominal integer not null,
+  nominal_bayar integer default 0,
+  status text default 'belum',
+  tgl_tagihan date,
+  tgl_bayar date,
+  keterangan text,
+  dicatat_oleh text,
+  created_at timestamptz default now()
+);
+alter table tagihan_pondok enable row level security;
+create policy "allow_all" on tagihan_pondok for all using (true) with check (true);
+
+-- Tabel bendahara_users
+create table if not exists bendahara_users (
+  id bigserial primary key,
+  username text unique not null,
+  password_hash text,
+  nama_tampilan text,
+  role text default 'pengelola',
+  dapur_id text,
+  created_at timestamptz default now()
+);
+alter table bendahara_users enable row level security;
+create policy "allow_all" on bendahara_users for all using (true) with check (true);
+
+-- Tabel akses asrama per bendahara
+create table if not exists bendahara_akses (
+  id bigserial primary key,
+  bendahara_id bigint references bendahara_users(id) on delete cascade,
+  asrama_id bigint,
+  asrama_nama text,
+  created_at timestamptz default now(),
+  unique(bendahara_id, asrama_id)
+);
+alter table bendahara_akses enable row level security;
+create policy "allow_all" on bendahara_akses for all using (true) with check (true);
+
+-- Tabel deposit santri
+create table if not exists santri_deposit (
+  id bigserial primary key,
+  santri_id bigint references santri(id) on delete cascade,
+  saldo integer default 0,
+  tgl_terakhir date,
+  keterangan text,
+  dicatat_oleh text,
+  created_at timestamptz default now(),
+  unique(santri_id)
+);
+alter table santri_deposit enable row level security;
+create policy "allow_all" on santri_deposit for all using (true) with check (true);
+
+-- Tabel monitor aktivitas
+create table if not exists bendahara_activity (
+  id bigserial primary key,
+  username text unique,
+  nama text, role text, device text,
+  last_seen timestamptz default now(),
+  login_at timestamptz default now()
+);
+alter table bendahara_activity enable row level security;
+create policy "allow_all" on bendahara_activity for all using (true) with check (true);`;
+}
+
+// ===== MODAL HELPERS =====
+function openMo(id){ document.getElementById(id)?.classList.add('open'); }
+function closeMo(id){ document.getElementById(id)?.classList.remove('open'); }
+document.querySelectorAll('.mo').forEach(m=>{ m.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); }); });
+
+// ===== LOGOUT =====
+function doLogout(){
+  clearSession(); SESSION=null;
+  if(MONITOR_INTERVAL){ clearInterval(MONITOR_INTERVAL); MONITOR_INTERVAL=null; }
+  document.getElementById('pg-app').style.display='none';
+  document.getElementById('pg-login').style.display='flex';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('admin-user').value='';
+  document.getElementById('admin-pass').value='';
+  switchLoginTab('bend');
+}
+
+// ===== TOAST =====
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3200); }
+</script>
+</body>
+</html>
