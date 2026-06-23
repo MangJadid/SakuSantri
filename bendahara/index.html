@@ -198,17 +198,17 @@ header::after{
 .brand-txt{color:#fff}
 .brand-txt strong{display:block;font-size:14.5px;font-weight:700;line-height:1.2;letter-spacing:.2px}
 .brand-txt span{font-size:11px;opacity:.6;font-weight:400}
-.hright{display:flex;align-items:center;gap:8px}
+.hright{display:flex;align-items:center;gap:6px}
 .hchip{
-  padding:3px 10px;border-radius:14px;font-size:10.5px;font-weight:600;
+  padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;
   border:1px solid rgba(255,255,255,.25);color:#fff;
-  background:rgba(255,255,255,.12);letter-spacing:.2px;line-height:1.6
+  background:rgba(255,255,255,.12);letter-spacing:.2px;line-height:1.6;white-space:nowrap
 }
-.hchip.gold{background:rgba(180,130,0,.45);border-color:rgba(255,210,80,.4);box-shadow:none}
+.hchip.gold{background:rgba(140,100,0,.5);border-color:rgba(220,170,50,.4);box-shadow:none}
 .hbtn{
-  padding:5px 12px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);
-  color:#fff;border-radius:10px;font-size:11.5px;font-weight:600;cursor:pointer;
-  transition:all .2s;display:inline-flex;align-items:center;gap:6px
+  padding:4px 10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);
+  color:#fff;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;
+  transition:all .2s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;height:28px
 }
 .hbtn:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.5)}
 
@@ -703,7 +703,7 @@ tbody tr{transition:background .15s}
     <div class="hright">
       <span class="hchip gold" id="hdr-role">—</span>
       <button class="hbtn" id="hbtn-profil" onclick="bukaModalProfil()" style="display:none">
-        <span id="hdr-profil-av" style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.3);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;flex-shrink:0"></span>
+        <span id="hdr-profil-av" style="width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.3);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;overflow:hidden;flex-shrink:0"></span>
         Profil
       </button>
       <button class="hbtn" onclick="doLogout()">↩ Keluar</button>
