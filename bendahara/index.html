@@ -298,9 +298,9 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 .sci.g{background:linear-gradient(135deg,#d4f5e6,#a8edcc)}.sci.r{background:linear-gradient(135deg,#ffe4e4,#ffc9c9)}.sci.gg{background:linear-gradient(135deg,#fef3c7,#fde68a)}.sci.b{background:linear-gradient(135deg,#dbeafe,#bfdbfe)}.sci.p{background:linear-gradient(135deg,#ede9fe,#ddd6fe)}
 .sil{min-width:0;flex:1}
 .sil label{font-size:10.5px;color:var(--text-l);font-weight:700;text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:4px;overflow-wrap:break-word}
-.sil .val{font-size:22px;font-weight:800;color:var(--text);line-height:1.1;letter-spacing:-.5px;overflow-wrap:anywhere}
-.sil small{font-size:11.5px;color:var(--text-l);font-weight:500;overflow-wrap:anywhere}
-@media(max-width:480px){.sil .val{font-size:19px}}
+.sil .val{font-size:22px;font-weight:800;color:var(--text);line-height:1.15;letter-spacing:-.5px;word-break:keep-all;overflow-wrap:normal}
+.sil small{font-size:11.5px;color:var(--text-l);font-weight:500;word-break:keep-all;overflow-wrap:normal;display:inline-block}
+@media(max-width:480px){.sil .val{font-size:18px}}
 
 /* === TABLE === */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rad-sm)}
@@ -2004,15 +2004,15 @@ const avColors=['#1a5c3a','#2471a3','#6c3483','#b8860b','#c0392b','#16a085','#8e
 function avColor(n){ if(!n) return avColors[0]; let h=0; for(let i=0;i<n.length;i++) h=(h+n.charCodeAt(i)*31)%avColors.length; return avColors[h]; }
 function avLetter(n){ return n?n[0].toUpperCase():'?'; }
 function fmtRp(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
-// Ukuran font otomatis mengecil kalau teks nilainya makin panjang (cegah card kepotong di HP)
-function fitValPx(text, base=22, min=14){
+// Ukuran font otomatis mengecil kalau teks nilainya makin panjang (cegah card kepotong/wrap aneh di HP)
+function fitValPx(text, base=22, min=12){
   const len = String(text).length;
-  let size = base;
-  if(len>16) size = min;
-  else if(len>13) size = min+2;
-  else if(len>10) size = min+4;
-  else if(len>7) size = base-2;
-  return Math.min(size, base);
+  if(len<=7) return base;
+  if(len<=9) return base-3;
+  if(len<=11) return base-6;
+  if(len<=13) return Math.max(min, base-8);
+  if(len<=16) return Math.max(min-1, base-10);
+  return Math.max(min-2, 9);
 }
 function today(){ return new Date().toISOString().split('T')[0]; }
 function fmtTgl(s){ if(!s) return '—'; try{ return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return s; } }
@@ -2424,9 +2424,9 @@ function renderDashboard(){
   // Stat cards
   document.getElementById('dash-stats').innerHTML=`
     <div class="sc"><div class="sci g">📋</div><div class="sil"><label>Total Tagihan</label><div class="val">${tagihanBulan.length}</div><small>${bulan}</small></div></div>
-    <div class="sc"><div class="sci g">✅</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small style="font-size:${fitValPx(fmtRp(totalLunas),11.5,9.5)}px">${fmtRp(totalLunas)}</small></div></div>
-    <div class="sc"><div class="sci r">❌</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small style="font-size:${fitValPx(fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0)),11.5,9.5)}px">${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
-    <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Terkumpul</label><div class="val" style="color:var(--gold);font-size:${fitValPx(fmtRp(totalLunas))}px">${fmtRp(totalLunas)}</div><small style="font-size:${fitValPx('dari '+fmtRp(totalTagihan),11.5,9.5)}px">dari ${fmtRp(totalTagihan)}</small></div></div>
+    <div class="sc"><div class="sci g">✅</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small>${fmtRp(totalLunas)}</small></div></div>
+    <div class="sc"><div class="sci r">❌</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
+    <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Terkumpul</label><div class="val" style="color:var(--gold);font-size:${fitValPx(fmtRp(totalLunas))}px">${fmtRp(totalLunas)}</div><small>dari ${fmtRp(totalTagihan)}</small></div></div>
     <div class="sc" style="grid-column:1/-1;background:linear-gradient(135deg,var(--green-p),#fff);border:1.5px solid var(--green-b)">
       <div class="sci g">👥</div>
       <div class="sil" style="flex:1">
