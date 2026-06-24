@@ -873,6 +873,8 @@ tbody tr{transition:background .15s}
             <select id="filter-wali-rekap" onchange="updateFilterBadge('rekap',REKAP_FILTER_IDS);renderRekap()"><option value="">Semua Wali</option></select>
             <button class="filter-reset-btn" onclick="resetFilterPanel('rekap',REKAP_FILTER_IDS,renderRekap)">↺ Reset Filter</button>
           </div>
+
+          </div>
           <div id="rekap-summary"></div>
           <div id="rekap-content"></div>
         </div>
@@ -1013,7 +1015,6 @@ tbody tr{transition:background .15s}
       <div id="asrama-kobong-grid-bend"></div>
         </div>
       </div>
-    </div><!-- /sec-kobong -->
 
     <div class="sec" id="sec-manajemen">
       <div class="panel">
@@ -1164,6 +1165,8 @@ tbody tr{transition:background .15s}
           </div>
         </div>
       </div>
+      </div>
+    </div>
     </div>
 
   </main>
@@ -4859,13 +4862,57 @@ function bukaWAMassal(){
   document.getElementById('wa-list').innerHTML=html||`<div class="empty"><span class="ei">✅</span><p>Semua sudah bayar!</p></div>`;
   openMo('mo-wa-massal');
 }
+// State WA antrian
+let _waMassalQueue = [];
+let _waMassalIdx = 0;
+let _waMassalBulan = '';
+
 function kirimWASemua(){
-  const bulan=bulanAktif();
-  const belum=getTagihanFiltered().filter(t=>t.status!=='lunas'&&(t.bulan||'')==bulan);
-  const santriIds=new Set(belum.map(t=>t.santri_id));
-  let count=0;
-  santriIds.forEach(sid=>{ const s=getSantriById(sid)||{}; if(s.no_wa){ setTimeout(()=>kirimWASantri(sid,bulan),count*500); count++; } });
-  toast(`📱 Membuka ${count} chat WA...`);
+  const bulan = bulanAktif();
+  const belum = getTagihanFiltered().filter(t=>t.status!=='lunas'&&(t.bulan||'')==bulan);
+  const santriIds = [...new Set(belum.map(t=>t.santri_id))];
+  const adaWA = santriIds.filter(sid=>{ const s=getSantriById(sid)||{}; return !!(s.no_wa); });
+  const tanpaWA = santriIds.length - adaWA.length;
+
+  if(!adaWA.length){ toast('⚠️ Tidak ada santri belum bayar yang punya no WA!', false); return; }
+
+  const info = `Kirim WA ke <strong>${adaWA.length} santri</strong> yang belum bayar?` +
+    (tanpaWA>0?`<br><br>✅ Ada no WA: <strong>${adaWA.length} santri</strong><br>⚠️ Tanpa no WA: <strong>${tanpaWA} santri</strong> (akan dilewati)<br><br>Pesan akan dibuka satu per satu di WhatsApp.`:'<br><br>Pesan akan dibuka satu per satu di WhatsApp.');
+
+  konfirm(info, ()=>{
+    _waMassalQueue = adaWA;
+    _waMassalIdx = 0;
+    _waMassalBulan = bulan;
+    closeMo('mo-wa-massal');
+    kirimWAMassalNext();
+  }, 'wa');
+}
+
+function kirimWAMassalNext(){
+  if(_waMassalIdx >= _waMassalQueue.length){
+    toast(`✅ Selesai! ${_waMassalQueue.length} chat WA sudah dibuka.`);
+    return;
+  }
+  const sid = _waMassalQueue[_waMassalIdx];
+  const s = getSantriById(sid)||{};
+  const noWA = (s.no_wa||'').replace(/\D/g,'').replace(/^0/,'62');
+  const bulan = _waMassalBulan;
+  const pesan = buildWAPesan(sid, bulan);
+  window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`, '_blank');
+  _waMassalIdx++;
+
+  // Tampilkan progress modal
+  const remaining = _waMassalQueue.length - _waMassalIdx;
+  if(remaining > 0){
+    konfirm(
+      `📱 Chat WA untuk <strong>${s.nama}</strong> sudah dibuka.<br><br>Sisa: <strong>${remaining} santri</strong> lagi.`,
+      ()=>{ kirimWAMassalNext(); },
+      'wa',
+      null
+    );
+  } else {
+    toast(`✅ Selesai! Semua ${_waMassalQueue.length} chat WA sudah dibuka.`);
+  }
 }
 
 // ===== IMPORT =====
