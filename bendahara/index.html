@@ -2902,7 +2902,7 @@ let _lastDetailSantriId = null;
 
 
 // ===== HAPUS TAGIHAN DARI DETAIL MODAL =====
-function hapusTagihanDetail(tagihanId, bulanLabel){
+async function hapusTagihanDetail(tagihanId, bulanLabel){
   konfirm(
     `Hapus tagihan <strong>${bulanLabel}</strong> secara permanen?<br><span style="color:var(--red);font-size:12px">⚠️ Aksi ini tidak bisa dibatalkan!</span>`,
     async()=>{
@@ -2927,7 +2927,7 @@ async function openDetailModal(santriId){
 
   // Load tagihan santri ini - sort kronologis (tahun dulu, lalu bulan)
   const _bulanOrder=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  function _parseBulanTahun(str){ const p=(str||'').split(' '); const bIdx=_bulanOrder.indexOf(p[0]); const thn=parseInt(p[1])||0; return thn*100+(bIdx>=0?bIdx:99); }
+  async function _parseBulanTahun(str){ const p=(str||'').split(' '); const bIdx=_bulanOrder.indexOf(p[0]); const thn=parseInt(p[1])||0; return thn*100+(bIdx>=0?bIdx:99); }
   const tagSantri=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(santriId)).sort((a,b)=>_parseBulanTahun(b.bulan)-_parseBulanTahun(a.bulan));
 
   // Kalkulasi benar: total nominal, total sudah bayar (nominal_bayar), sisa
@@ -3294,7 +3294,7 @@ async function generateTagihanBulanIni(){
   const sudahAda=getTagihanFiltered().filter(t=>(t.bulan||'').toLowerCase()===bulan.toLowerCase());
   const santriSudah=new Set(sudahAda.map(t=>String(t.santri_id)));
   const URUTAN_BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  function bulanToNum(b){ if(!b) return 0; const [nm,thn]=b.split(' '); return parseInt(thn||0)*12+URUTAN_BULAN.indexOf(nm); }
+  async function bulanToNum(b){ if(!b) return 0; const [nm,thn]=b.split(' '); return parseInt(thn||0)*12+URUTAN_BULAN.indexOf(nm); }
   const bulanNum = bulanToNum(bulan);
 
   const toProcess=sf.filter(s=>s.dapur_id&&s.dapur_id!==null&&s.dapur_id!=='').filter(s=>{
@@ -3966,7 +3966,7 @@ async function simpanSantri(){
       dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
     return dp[m][n];
   }
-  function normalize(s){ return s.toLowerCase().replace(/\s+/g,' ').trim(); }
+  async function normalize(s){ return s.toLowerCase().replace(/\s+/g,' ').trim(); }
   const namaInput=normalize(nama);
   const mirip=ALL_SANTRI.filter(s=>{
     const namaDb=normalize(s.nama||'');
@@ -4229,7 +4229,7 @@ function kirimWASantriRekap(santriId, namaSantri, tunggakan, bulanTunggak){
   );
 }
 
-function kirimWAMassal(){
+async function kirimWAMassal(){
   // Ambil semua santri yang punya tunggakan dari data yang sedang ditampilkan
   const mode = document.getElementById('rekap-mode').value;
   if(mode !== 'santri'){ toast('⚠️ Ganti mode ke Per Santri dulu!', false); return; }
@@ -5443,7 +5443,7 @@ async function prosesGenerateTagihan(){
 
         // Helper bulan_mulai_tagihan check
         const URUTAN_BULAN_GEN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-        function bulanToNumGen(b){ if(!b) return 0; const [nm,thn]=b.split(' '); return parseInt(thn||0)*12+URUTAN_BULAN_GEN.indexOf(nm); }
+        async function bulanToNumGen(b){ if(!b) return 0; const [nm,thn]=b.split(' '); return parseInt(thn||0)*12+URUTAN_BULAN_GEN.indexOf(nm); }
 
         // Ambil deposit dari memory juga jika ada, fallback ke DB per batch kecil
         const depositMap={};
@@ -5772,7 +5772,7 @@ function closeMo(id){ document.getElementById(id)?.classList.remove('open'); }
 
 // ===== KONFIRM MODAL KUSTOM =====
 let _konfirmFn = null;
-function konfirm(msg, fn, tipe='hapus', inputKonfirm=null){
+async function konfirm(msg, fn, tipe='hapus', inputKonfirm=null){
   const judul = document.getElementById('konfirm-judul');
   const wrap = document.getElementById('konfirm-msg-wrap');
   const ok = document.getElementById('konfirm-ok');
