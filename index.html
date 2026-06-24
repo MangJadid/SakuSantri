@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SakuSantri</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-dark: #1a6b3c;
+      --green-mid:  #2e9e5b;
+      --green-light:#e8f5ee;
+      --gold:       #c9933a;
+      --gold-light: #fdf3e2;
+      --text-dark:  #1a2a1f;
+      --text-soft:  #5a7265;
+      --white:      #ffffff;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--green-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* Decorative top bar */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--green-dark), var(--gold), var(--green-mid));
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 40px rgba(30,80,50,0.10);
+      text-align: center;
+    }
+
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .logo-text {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--green-dark);
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text span {
+      color: var(--gold);
+    }
+
+    .tagline {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-bottom: 36px;
+      letter-spacing: 0.01em;
+    }
+
+    .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 16px;
+    }
+
+    .role-btn {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+      padding: 18px 22px;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+      margin-bottom: 14px;
+    }
+
+    .role-btn:last-child { margin-bottom: 0; }
+
+    .role-btn.santri {
+      background: var(--green-light);
+      border-color: #b6dcc7;
+    }
+
+    .role-btn.bendahara {
+      background: var(--gold-light);
+      border-color: #f0d9ae;
+    }
+
+    .role-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(30,80,50,0.12);
+    }
+
+    .role-btn.santri:hover   { border-color: var(--green-mid); }
+    .role-btn.bendahara:hover{ border-color: var(--gold); }
+
+    .role-btn:active { transform: translateY(0); }
+
+    .icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .santri    .icon-circle { background: #c5ecd6; }
+    .bendahara .icon-circle { background: #f5e4c0; }
+
+    .role-info { text-align: left; }
+
+    .role-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    .role-desc {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .arrow {
+      margin-left: auto;
+      font-size: 18px;
+      color: var(--text-soft);
+      flex-shrink: 0;
+    }
+
+    .footer {
+      margin-top: 28px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .role-btn { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-wrap">
+      <div class="logo-icon">💰</div>
+      <div class="logo-text">Saku<span>Santri</span></div>
+    </div>
+    <p class="tagline">Sistem keuangan pesantren digital</p>
+
+    <p class="label">Masuk sebagai</p>
+
+    <a href="santri/index.html" class="role-btn santri">
+      <div class="icon-circle">🎓</div>
+      <div class="role-info">
+        <div class="role-name">Santri</div>
+        <div class="role-desc">Lihat saldo & riwayat transaksi</div>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+
+    <a href="bendahara/index.html" class="role-btn bendahara">
+      <div class="icon-circle">📊</div>
+      <div class="role-info">
+        <div class="role-name">Bendahara</div>
+        <div class="role-desc">Kelola keuangan & laporan</div>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+
+    <p class="footer">© 2025 SakuSantri · Pesantren Digital</p>
+  </div>
+</body>
+</html>
