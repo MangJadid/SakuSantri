@@ -235,9 +235,13 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 .tabs{
   display:flex;gap:2px;background:var(--white);
   border:1px solid var(--border-l);border-radius:var(--rad);
-  padding:5px;margin-bottom:28px;width:fit-content;max-width:100%;
+  padding:5px;margin-bottom:28px;width:100%;
   overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;
   box-shadow:var(--sh)
+}
+@media(min-width:768px){
+  .tabs{flex-wrap:wrap;overflow-x:visible;width:fit-content}
+  .tb{flex-shrink:1}
 }
 .tb{
   padding:9px 17px;border:none;background:none;border-radius:11px;
@@ -271,29 +275,32 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 @media(max-width:640px){.two{grid-template-columns:1fr}}
 
 /* === STAT CARDS === */
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats{grid-template-columns:repeat(2,1fr);gap:10px}}
 .sc{
   background:var(--white);border:1px solid var(--border-l);
-  border-radius:var(--rad);padding:14px 16px;
-  display:flex;align-items:center;gap:12px;
+  border-radius:var(--rad);padding:16px;
+  display:flex;flex-direction:column;gap:10px;
   box-shadow:var(--sh);transition:all .25s ease;
-  position:relative;overflow:hidden
+  position:relative;overflow:hidden;min-height:100px
 }
 .sc::before{
   content:'';position:absolute;top:-20px;right:-20px;
   width:80px;height:80px;border-radius:50%;
   background:currentColor;opacity:.04;pointer-events:none
 }
-.sc:hover{box-shadow:var(--shh);transform:translateY(-3px)}
+.sc:hover{box-shadow:var(--shh);transform:translateY(-2px)}
+.sc-row{display:flex;align-items:center;justify-content:space-between}
 .sci{
-  width:42px;height:42px;border-radius:12px;
+  width:38px;height:38px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
-  font-size:20px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.08)
+  font-size:18px;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.08)
 }
 .sci.g{background:linear-gradient(135deg,#d4f5e6,#a8edcc)}.sci.r{background:linear-gradient(135deg,#ffe4e4,#ffc9c9)}.sci.gg{background:linear-gradient(135deg,#fef3c7,#fde68a)}.sci.b{background:linear-gradient(135deg,#dbeafe,#bfdbfe)}.sci.p{background:linear-gradient(135deg,#ede9fe,#ddd6fe)}
-.sil label{font-size:10.5px;color:var(--text-l);font-weight:700;text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:4px}
-.sil .val{font-size:22px;font-weight:800;color:var(--text);line-height:1.1;letter-spacing:-.5px}
-.sil small{font-size:11.5px;color:var(--text-l);font-weight:500}
+.sil label{font-size:10px;color:var(--text-l);font-weight:700;text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:4px}
+.sil .val{font-size:24px;font-weight:800;color:var(--text);line-height:1.1;letter-spacing:-.5px}
+.sil small{font-size:11px;color:var(--text-l);font-weight:500}
 
 /* === TABLE === */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rad-sm)}
@@ -1930,7 +1937,7 @@ async function enterApp(){
   hideLoginOverlay();
 }
 
-function isKangAdmin(){ return SESSION && SESSION.role==='kangadmin'; }
+function isKangAdmin(){ return SESSION && (SESSION.role==='kangadmin' || SESSION.role==='super'); }
 
 // ===== LOAD DATA =====
 let ALL_PIUTANG_ALUMNI = [];
@@ -2401,26 +2408,33 @@ function renderDashboard(){
 
   // Stat cards
   document.getElementById('dash-stats').innerHTML=`
-    <div class="sc"><div class="sci g">📋</div><div class="sil"><label>Total Tagihan</label><div class="val">${tagihanBulan.length}</div><small>${bulan}</small></div></div>
-    <div class="sc"><div class="sci g">✅</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small>${fmtRp(totalLunas)}</small></div></div>
-    <div class="sc"><div class="sci r">❌</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
-    <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Terkumpul</label><div class="val" style="color:var(--gold);font-size:16px">${fmtRp(totalLunas)}</div><small>dari ${fmtRp(totalTagihan)}</small></div></div>
-    <div class="sc" style="grid-column:1/-1;background:linear-gradient(135deg,var(--green-p),#fff);border:1.5px solid var(--green-b)">
-      <div class="sci g">👥</div>
-      <div class="sil" style="flex:1">
-        <label>Total Santri Aktif</label>
-        <div class="val" style="color:var(--green)">${santriDapur.length}</div>
-        <small>${ACTIVE_DAPUR?getDapurNama(ACTIVE_DAPUR):'Semua Dapur'} · tidak termasuk alumni</small>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
-          ${santriPerDapur.map(d=>`
-            <div style="background:#fff;border:1.5px solid var(--green-b);border-radius:8px;padding:6px 12px;font-size:12px;display:flex;align-items:center;gap:6px">
-              <span>${d.emoji}</span>
-              <span style="font-weight:600;color:var(--text)">${d.nama}</span>
-              <span style="font-weight:800;color:var(--green);font-size:14px">${d.jumlah}</span>
-              <span style="color:var(--text-l)">santri</span>
-            </div>
-          `).join('')}
-        </div>
+    <div class="sc">
+      <div class="sc-row"><div class="sil"><label>Total Tagihan</label></div><div class="sci g">📋</div></div>
+      <div class="sil"><div class="val">${tagihanBulan.length}</div><small>${bulan}</small></div>
+    </div>
+    <div class="sc">
+      <div class="sc-row"><div class="sil"><label>Sudah Lunas</label></div><div class="sci g">✅</div></div>
+      <div class="sil"><div class="val" style="color:var(--green)">${lunas.length}</div><small>${fmtRp(totalLunas)}</small></div>
+    </div>
+    <div class="sc">
+      <div class="sc-row"><div class="sil"><label>Belum Bayar</label></div><div class="sci r">❌</div></div>
+      <div class="sil"><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div>
+    </div>
+    <div class="sc">
+      <div class="sc-row"><div class="sil"><label>Total Terkumpul</label></div><div class="sci gg">💰</div></div>
+      <div class="sil"><div class="val" style="color:var(--gold)">${fmtRp(totalLunas)}</div><small>dari ${fmtRp(totalTagihan)}</small></div>
+    </div>
+    <div class="sc" style="background:linear-gradient(135deg,var(--green-p),#fff);border:1.5px solid var(--green-b)">
+      <div class="sc-row"><div class="sil"><label>Total Santri Aktif</label></div><div class="sci g">👥</div></div>
+      <div class="sil"><div class="val" style="color:var(--green)">${santriDapur.length}</div><small>${ACTIVE_DAPUR?getDapurNama(ACTIVE_DAPUR):'Semua Dapur'} · tidak termasuk alumni</small></div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+        ${santriPerDapur.map(d=>`
+          <div style="background:#fff;border:1.5px solid var(--green-b);border-radius:8px;padding:4px 10px;font-size:11px;display:flex;align-items:center;gap:5px">
+            <span>${d.emoji}</span>
+            <span style="font-weight:600;color:var(--text)">${d.nama}</span>
+            <span style="font-weight:800;color:var(--green)">${d.jumlah}</span>
+          </div>
+        `).join('')}
       </div>
     </div>
     <div style="grid-column:1/-1;background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--sh)">
