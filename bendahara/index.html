@@ -275,14 +275,14 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 @media(max-width:640px){.two{grid-template-columns:1fr}}
 
 /* === STAT CARDS === */
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
-@media(min-width:900px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px}
+@media(min-width:900px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .sc{
   background:var(--white);border:1px solid var(--border-l);
   border-radius:var(--rad);padding:14px 16px;
   display:flex;align-items:center;gap:12px;
   box-shadow:var(--sh);transition:all .25s ease;
-  position:relative;overflow:hidden
+  position:relative;overflow:hidden;min-width:0
 }
 .sc::before{
   content:'';position:absolute;top:-20px;right:-20px;
@@ -296,9 +296,11 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
   font-size:20px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.08)
 }
 .sci.g{background:linear-gradient(135deg,#d4f5e6,#a8edcc)}.sci.r{background:linear-gradient(135deg,#ffe4e4,#ffc9c9)}.sci.gg{background:linear-gradient(135deg,#fef3c7,#fde68a)}.sci.b{background:linear-gradient(135deg,#dbeafe,#bfdbfe)}.sci.p{background:linear-gradient(135deg,#ede9fe,#ddd6fe)}
-.sil label{font-size:10.5px;color:var(--text-l);font-weight:700;text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:4px}
-.sil .val{font-size:22px;font-weight:800;color:var(--text);line-height:1.1;letter-spacing:-.5px}
-.sil small{font-size:11.5px;color:var(--text-l);font-weight:500}
+.sil{min-width:0;flex:1}
+.sil label{font-size:10.5px;color:var(--text-l);font-weight:700;text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:4px;overflow-wrap:break-word}
+.sil .val{font-size:22px;font-weight:800;color:var(--text);line-height:1.1;letter-spacing:-.5px;overflow-wrap:anywhere}
+.sil small{font-size:11.5px;color:var(--text-l);font-weight:500;overflow-wrap:anywhere}
+@media(max-width:480px){.sil .val{font-size:19px}}
 
 /* === TABLE === */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rad-sm)}
@@ -1587,7 +1589,7 @@ tbody tr{transition:background .15s}
     <div class="mo-b">
       <div class="info-box" style="margin-bottom:14px">Kirim pesan WA ke orang tua santri yang belum bayar.</div>
       <div class="fg"><label>Bulan</label>
-        <select id="wa-bulan"><option value="">Bulan aktif</option></select>
+        <select id="wa-bulan" onchange="bukaWAMassal()"><option value="">Bulan aktif</option></select>
       </div>
       <div id="wa-list" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
       <div style="margin-top:14px">
@@ -2002,6 +2004,16 @@ const avColors=['#1a5c3a','#2471a3','#6c3483','#b8860b','#c0392b','#16a085','#8e
 function avColor(n){ if(!n) return avColors[0]; let h=0; for(let i=0;i<n.length;i++) h=(h+n.charCodeAt(i)*31)%avColors.length; return avColors[h]; }
 function avLetter(n){ return n?n[0].toUpperCase():'?'; }
 function fmtRp(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
+// Ukuran font otomatis mengecil kalau teks nilainya makin panjang (cegah card kepotong di HP)
+function fitValPx(text, base=22, min=14){
+  const len = String(text).length;
+  let size = base;
+  if(len>16) size = min;
+  else if(len>13) size = min+2;
+  else if(len>10) size = min+4;
+  else if(len>7) size = base-2;
+  return Math.min(size, base);
+}
 function today(){ return new Date().toISOString().split('T')[0]; }
 function fmtTgl(s){ if(!s) return '—'; try{ return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return s; } }
 
@@ -2412,9 +2424,9 @@ function renderDashboard(){
   // Stat cards
   document.getElementById('dash-stats').innerHTML=`
     <div class="sc"><div class="sci g">📋</div><div class="sil"><label>Total Tagihan</label><div class="val">${tagihanBulan.length}</div><small>${bulan}</small></div></div>
-    <div class="sc"><div class="sci g">✅</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small>${fmtRp(totalLunas)}</small></div></div>
-    <div class="sc"><div class="sci r">❌</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
-    <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Terkumpul</label><div class="val" style="color:var(--gold)">${fmtRp(totalLunas)}</div><small>dari ${fmtRp(totalTagihan)}</small></div></div>
+    <div class="sc"><div class="sci g">✅</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small style="font-size:${fitValPx(fmtRp(totalLunas),11.5,9.5)}px">${fmtRp(totalLunas)}</small></div></div>
+    <div class="sc"><div class="sci r">❌</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small style="font-size:${fitValPx(fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0)),11.5,9.5)}px">${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
+    <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Terkumpul</label><div class="val" style="color:var(--gold);font-size:${fitValPx(fmtRp(totalLunas))}px">${fmtRp(totalLunas)}</div><small style="font-size:${fitValPx('dari '+fmtRp(totalTagihan),11.5,9.5)}px">dari ${fmtRp(totalTagihan)}</small></div></div>
     <div class="sc" style="grid-column:1/-1;background:linear-gradient(135deg,var(--green-p),#fff);border:1.5px solid var(--green-b)">
       <div class="sci g">👥</div>
       <div class="sil" style="flex:1">
@@ -4839,7 +4851,8 @@ function kirimWABelumBayar(){
   bukaWAMassal();
 }
 function bukaWAMassal(){
-  const bulan=bulanAktif();
+  const bulanPilih = document.getElementById('wa-bulan')?.value || '';
+  const bulan = bulanPilih || bulanAktif();
   const belum=getTagihanFiltered().filter(t=>t.status!=='lunas'&&(t.bulan||'')==bulan);
   const santriMap={};
   belum.forEach(t=>{ if(!santriMap[t.santri_id]) santriMap[t.santri_id]=[]; santriMap[t.santri_id].push(t); });
@@ -4859,7 +4872,7 @@ function bukaWAMassal(){
       </div>
     </div>`;
   });
-  document.getElementById('wa-list').innerHTML=html||`<div class="empty"><span class="ei">✅</span><p>Semua sudah bayar!</p></div>`;
+  document.getElementById('wa-list').innerHTML=html||`<div class="empty"><span class="ei">✅</span><p>Semua sudah bayar untuk bulan ${bulan}!</p></div>`;
   openMo('mo-wa-massal');
 }
 // State WA antrian
@@ -4868,7 +4881,8 @@ let _waMassalIdx = 0;
 let _waMassalBulan = '';
 
 function kirimWASemua(){
-  const bulan = bulanAktif();
+  const bulanPilih = document.getElementById('wa-bulan')?.value || '';
+  const bulan = bulanPilih || bulanAktif();
   const belum = getTagihanFiltered().filter(t=>t.status!=='lunas'&&(t.bulan||'')==bulan);
   const santriIds = [...new Set(belum.map(t=>t.santri_id))];
   const adaWA = santriIds.filter(sid=>{ const s=getSantriById(sid)||{}; return !!(s.no_wa); });
