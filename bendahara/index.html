@@ -1935,7 +1935,10 @@ async function enterApp(){
   hideLoginOverlay();
 }
 
-function isKangAdmin(){ return SESSION && (SESSION.role==='kangadmin' || SESSION.role==='super'); }
+function isKangAdmin(){ 
+  if(!SESSION) return false;
+  return SESSION.role==='kangadmin' || SESSION.role==='super' || SESSION.username==='kangadmin';
+}
 
 // ===== LOAD DATA =====
 let ALL_PIUTANG_ALUMNI = [];
@@ -2090,7 +2093,9 @@ function tab(id,l){ return `<button class="tb" id="tab-${id}" onclick="showTab('
 
 function showTab(id){
   const isAdmin=isKangAdmin();
-  if(['pengaturan','manajemen','monitor','tanpaDapur'].includes(id) && !isAdmin) return;
+  // Cek role dari hdr-role sebagai fallback jika SESSION belum siap
+  const isAdminFallback = document.getElementById('hdr-role')?.textContent?.includes('Kang Admin');
+  if(['pengaturan','manajemen','monitor','tanpaDapur'].includes(id) && !isAdmin && !isAdminFallback) return;
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));
   document.querySelectorAll('.tb').forEach(t=>t.classList.remove('act'));
   const s=document.getElementById('sec-'+id), t=document.getElementById('tab-'+id);
