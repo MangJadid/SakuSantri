@@ -6988,11 +6988,8 @@ async function massalKobongHapus(){
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
 
-  if (isInstalled) {
-    // Sudah install, sembunyikan banner
-    banner.style.display = 'none';
-  } else {
-    // Cek apakah PWA bisa di-install
+  // Banner hanya muncul kalau PWA belum terinstall
+  if (!isInstalled) {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -7002,24 +6999,12 @@ async function massalKobongHapus(){
       setTimeout(() => banner.classList.add('show'), 1500);
     });
 
-    // Kalau beforeinstallprompt tidak muncul (sudah install sebelumnya)
-    setTimeout(() => {
-      if (!deferredPrompt && !isInstalled) {
-        desc.textContent = 'Buka versi aplikasi';
-        btn.textContent = '↗ Buka App';
-        btn.className = 'pwa-btn open';
-        banner.classList.add('show');
-      }
-    }, 2000);
-
     btn.addEventListener('click', async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') banner.classList.remove('show');
         deferredPrompt = null;
-      } else {
-        window.location.href = '/santri/';
       }
     });
   }
