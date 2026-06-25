@@ -651,9 +651,93 @@ tbody tr{transition:background .15s}
 /* === CARD NUMBER EMPHASIS === */
 .num-big{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-1px;font-feature-settings:'tnum'}
 .num-mono{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.5px}
+
+/* === OFFLINE DETECTION === */
+#offline-banner{
+  display:none;
+  position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:linear-gradient(135deg,#b91c1c,#dc2626);
+  color:#fff;padding:10px 16px;
+  flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  text-align:center;
+  box-shadow:0 4px 16px rgba(185,28,28,.4);
+  animation:slideDown .3s ease;
+}
+#offline-banner.show{display:flex}
+.offline-title{font-size:13px;font-weight:700;letter-spacing:.3px}
+.offline-sub{font-size:11px;opacity:.85}
+.offline-icon{font-size:20px;margin-bottom:2px}
+
+#online-toast{
+  display:none;
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:99999;
+  background:#0f4c2a;color:#fff;
+  padding:10px 20px;border-radius:99px;
+  font-size:13px;font-weight:600;
+  box-shadow:0 4px 20px rgba(15,76,42,.4);
+  animation:toastIn .3s ease;
+  white-space:nowrap;
+}
+#online-toast.show{display:block}
+
+/* Push konten ke bawah saat offline */
+body.is-offline header{ margin-top:58px }
+body.is-offline #pg-login{ padding-top:80px }
+
+
+/* === OFFLINE DETECTION === */
+#offline-banner{
+  display:none;
+  position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:linear-gradient(135deg,#b91c1c,#dc2626);
+  color:#fff;padding:10px 16px;
+  flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  text-align:center;
+  box-shadow:0 4px 16px rgba(185,28,28,.4);
+  animation:slideDown .3s ease;
+}
+#offline-banner.show{display:flex}
+.offline-title{font-size:13px;font-weight:700;letter-spacing:.3px}
+.offline-sub{font-size:11px;opacity:.85}
+.offline-icon{font-size:20px;margin-bottom:2px}
+
+#online-toast{
+  display:none;
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:99999;
+  background:#0f4c2a;color:#fff;
+  padding:10px 20px;border-radius:99px;
+  font-size:13px;font-weight:600;
+  box-shadow:0 4px 20px rgba(15,76,42,.4);
+  animation:toastIn .3s ease;
+  white-space:nowrap;
+}
+#online-toast.show{display:block}
+body.is-offline header{ margin-top:58px }
+body.is-offline #pg-login{ padding-top:80px }
 </style>
 </head>
 <body>
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner">
+  <div class="offline-icon">📡</div>
+  <div class="offline-title">Tidak Ada Koneksi Internet</div>
+  <div class="offline-sub">Data tidak akan tersimpan. Periksa jaringan Anda sebelum melanjutkan.</div>
+</div>
+<div id="online-toast">✅ Koneksi internet kembali</div>
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner">
+  <div class="offline-icon">📡</div>
+  <div class="offline-title">Tidak Ada Koneksi Internet</div>
+  <div class="offline-sub">Data tidak akan tersimpan. Periksa jaringan Anda sebelum melanjutkan.</div>
+</div>
+
+<!-- ONLINE TOAST -->
+<div id="online-toast">✅ Koneksi internet kembali</div>
+
 <script>
 /* ===== Proteksi Anti-Plagiasi ===== */
 (function(){
@@ -6321,8 +6405,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('appinstalled', () => banner.classList.remove('show'));
 </script>
 
-</body>
-</html>
+
 <script>
 async function hapusKobongBendahara(id){
   const k = ALL_KOBONG.find(x=>String(x.id)===String(id));
@@ -6384,3 +6467,42 @@ function bukaMoRincianPiutang(id){
 }
 
 </script>
+
+
+<script>
+// === OFFLINE DETECTION ===
+(function(){
+  const banner = document.getElementById('offline-banner');
+  const toast  = document.getElementById('online-toast');
+  let toastTimer = null;
+  function showOffline(){
+    if(banner) banner.classList.add('show');
+    document.body.classList.add('is-offline');
+    if(toast) toast.classList.remove('show');
+  }
+  function showOnline(){
+    if(banner) banner.classList.remove('show');
+    document.body.classList.remove('is-offline');
+    if(toast){
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>toast.classList.remove('show'),3000);
+    }
+  }
+  if(!navigator.onLine) showOffline();
+  window.addEventListener('offline', showOffline);
+  window.addEventListener('online', showOnline);
+  document.addEventListener('click', function(e){
+    if(!navigator.onLine){
+      const el = e.target.closest('button[type=submit], #btn-masuk, #btn-login');
+      if(el){
+        e.preventDefault();
+        e.stopPropagation();
+        alert('⚠️ Tidak ada koneksi internet!\nData tidak dapat disimpan. Silakan periksa jaringan Anda.');
+      }
+    }
+  }, true);
+})();
+</script>
+</body>
+</html>
