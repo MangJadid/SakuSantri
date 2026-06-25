@@ -1,4 +1,4 @@
-const CACHE_NAME = 'saku-santri-' + '{{BUILD_TIME}}';
+const CACHE_NAME = 'saku-santri-' + '1782377704';
 const ASSETS = [
   '/santri/',
   '/santri/index.html',
