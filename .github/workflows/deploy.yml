@@ -1,1 +1,26 @@
+name: Auto Update Cache Version
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-sw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Inject timestamp ke sw.js
+        run: |
+          TIMESTAMP=$(date +%s)
+          sed -i "s/{{BUILD_TIME}}/$TIMESTAMP/g" santri/sw.js
+          sed -i "s/{{BUILD_TIME}}/$TIMESTAMP/g" bendahara/sw.js
+
+      - name: Commit & Push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add santri/sw.js bendahara/sw.js
+          git commit -m "Auto: update cache $TIMESTAMP" || echo "No changes"
+          git push
