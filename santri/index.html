@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Saku Santri">
 <meta name="theme-color" content="#1a5c3a">
-<link rel="manifest" href="./manifest.json">
-<link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -6881,12 +6881,157 @@ async function massalKobongHapus(){
   </div>
 
 
-<script>
-  if('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js', { scope: '/santri/' })
-      .then(function(reg) { console.log('SW Saku Santri registered', reg); })
-      .catch(function(err) { console.log('SW registration failed', err); });
+<!-- PWA Install Banner -->
+<style>
+  #pwa-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    padding: 12px 16px;
+    background: #ffffff;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+    border-top: 1px solid #e8f5e9;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
+  #pwa-banner.show {
+    transform: translateY(0);
+  }
+  #pwa-banner .pwa-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  #pwa-banner .pwa-info {
+    flex: 1;
+  }
+  #pwa-banner .pwa-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 2px 0;
+    font-family: 'DM Sans', sans-serif;
+  }
+  #pwa-banner .pwa-desc {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+    font-family: 'DM Sans', sans-serif;
+  }
+  #pwa-banner .pwa-btn {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    border-radius: 50px;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: transform 0.15s, box-shadow 0.15s;
+    animation: pulse-btn 2.5s infinite;
+  }
+  #pwa-banner .pwa-btn.install {
+    background: linear-gradient(135deg, #1a5c3a, #2d8a5e);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(26,92,58,0.35);
+  }
+  #pwa-banner .pwa-btn.open {
+    background: linear-gradient(135deg, #2196F3, #1565C0);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(33,150,243,0.35);
+  }
+  #pwa-banner .pwa-btn:active {
+    transform: scale(0.96);
+  }
+  #pwa-banner .pwa-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-btn {
+    0%, 100% { box-shadow: 0 4px 14px rgba(26,92,58,0.35); }
+    50% { box-shadow: 0 4px 22px rgba(26,92,58,0.6); }
+  }
+</style>
+
+<div id="pwa-banner">
+  <img class="pwa-icon" src="./icon-192.png" alt="Saku Santri">
+  <div class="pwa-info">
+    <p class="pwa-title">Saku Santri</p>
+    <p class="pwa-desc" id="pwa-desc">Tersedia sebagai aplikasi</p>
+  </div>
+  <button class="pwa-btn install" id="pwa-btn">⬇ Install</button>
+  <button class="pwa-close" id="pwa-close">✕</button>
+</div>
+
+<script>
+  let deferredPrompt = null;
+  const banner = document.getElementById('pwa-banner');
+  const btn = document.getElementById('pwa-btn');
+  const desc = document.getElementById('pwa-desc');
+  const closeBtn = document.getElementById('pwa-close');
+
+  // Cek apakah sudah install (standalone mode)
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+
+  if (isInstalled) {
+    // Sudah install, sembunyikan banner
+    banner.style.display = 'none';
+  } else {
+    // Cek apakah PWA bisa di-install
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      desc.textContent = 'Instal untuk pengalaman lebih baik';
+      btn.textContent = '⬇ Install App';
+      btn.className = 'pwa-btn install';
+      setTimeout(() => banner.classList.add('show'), 1500);
+    });
+
+    // Kalau beforeinstallprompt tidak muncul (sudah install sebelumnya)
+    setTimeout(() => {
+      if (!deferredPrompt && !isInstalled) {
+        desc.textContent = 'Buka versi aplikasi';
+        btn.textContent = '↗ Buka App';
+        btn.className = 'pwa-btn open';
+        banner.classList.add('show');
+      }
+    }, 2000);
+
+    btn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') banner.classList.remove('show');
+        deferredPrompt = null;
+      } else {
+        window.location.href = '/santri/';
+      }
+    });
+  }
+
+  closeBtn.addEventListener('click', () => {
+    banner.classList.remove('show');
+  });
+
+  // Sembunyikan setelah berhasil install
+  window.addEventListener('appinstalled', () => {
+    banner.classList.remove('show');
+  });
 </script>
 
 </body>
