@@ -6238,9 +6238,8 @@ if(navigator.serviceWorker){navigator.serviceWorker.register("./sw.js");}
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
 
-  if (isInstalled) {
-    banner.style.display = 'none';
-  } else {
+  // Banner hanya muncul kalau PWA belum terinstall
+  if (!isInstalled) {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -6250,23 +6249,12 @@ if(navigator.serviceWorker){navigator.serviceWorker.register("./sw.js");}
       setTimeout(() => banner.classList.add('show'), 1500);
     });
 
-    setTimeout(() => {
-      if (!deferredPrompt && !isInstalled) {
-        desc.textContent = 'Buka versi aplikasi';
-        btn.textContent = '↗ Buka App';
-        btn.className = 'pwa-btn open';
-        banner.classList.add('show');
-      }
-    }, 2000);
-
     btn.addEventListener('click', async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') banner.classList.remove('show');
         deferredPrompt = null;
-      } else {
-        window.location.href = '/bendahara/';
       }
     });
   }
