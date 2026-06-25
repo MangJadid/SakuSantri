@@ -612,9 +612,84 @@ img{-webkit-user-drag:none;-khtml-user-drag:none;-moz-user-drag:none;user-drag:n
   margin-top:18px;text-align:center;font-size:11px;
   color:rgba(255,255,255,.4);letter-spacing:.2px;line-height:1.6;
 }
+
+
+/* === OFFLINE DETECTION === */
+@keyframes offlineSlideDown{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:translateY(0)}}
+@keyframes offlineSlideUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-100%)}}
+@keyframes toastSlideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastSlideDown{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(20px)}}
+#offline-banner{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:#991b1b;padding:12px 20px;
+  flex-direction:row;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 4px 24px rgba(153,27,27,.5);
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+#offline-banner.show{display:flex;animation:offlineSlideDown .35s cubic-bezier(.34,1.56,.64,1) both}
+#offline-banner.hide{animation:offlineSlideUp .25s ease forwards}
+.offl-icon{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.offl-text{display:flex;flex-direction:column;gap:1px}
+.offl-title{font-size:13px;font-weight:700;color:#fff;letter-spacing:.2px}
+.offl-sub{font-size:11px;color:rgba(255,255,255,.7)}
+.offl-dot{width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;animation:pulseDot 1.5s ease-in-out infinite}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(248,113,113,.4)}70%{box-shadow:0 0 0 8px rgba(248,113,113,0)}100%{box-shadow:0 0 0 0 rgba(248,113,113,0)}}
+#online-toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  z-index:99999;background:#0f4c2a;border:1px solid rgba(45,143,86,.4);
+  color:#fff;padding:11px 20px;border-radius:99px;
+  font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(15,76,42,.35);
+  white-space:nowrap;display:none;align-items:center;gap:8px;
+}
+#online-toast.show{display:flex;animation:toastSlideUp .35s cubic-bezier(.34,1.56,.64,1) both}
+#online-toast.hide{animation:toastSlideDown .25s ease forwards}
+.toast-dot{width:8px;height:8px;border-radius:50%;background:#4caf7d;flex-shrink:0}
+#offline-modal{
+  display:none;position:fixed;inset:0;z-index:999999;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;padding:20px;
+}
+#offline-modal.show{display:flex;animation:fadeIn .2s ease}
+.offm-box{
+  background:#fff;border-radius:20px;padding:28px 24px;
+  width:100%;max-width:340px;text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.25);
+  animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);
+}
+.offm-icon{font-size:44px;margin-bottom:12px}
+.offm-title{font-size:17px;font-weight:800;color:#1a1a1a;margin-bottom:8px}
+.offm-desc{font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:20px}
+.offm-btn{width:100%;padding:13px;border:none;border-radius:12px;background:#0f4c2a;color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+.offm-btn:hover{background:#1a6b3c;transform:translateY(-1px)}
+body.is-offline header{margin-top:50px}
+body.is-offline .login{padding-top:70px}
 </style>
 </head>
 <body>
+
+<div id="offline-banner">
+  <div class="offl-dot"></div>
+  <div class="offl-icon">📡</div>
+  <div class="offl-text">
+    <div class="offl-title">Tidak Ada Koneksi Internet</div>
+    <div class="offl-sub">Tampilan mungkin tidak lengkap · Periksa jaringan Anda</div>
+  </div>
+</div>
+<div id="online-toast">
+  <div class="toast-dot"></div>
+  Koneksi internet kembali
+</div>
+<div id="offline-modal">
+  <div class="offm-box">
+    <div class="offm-icon">🔌</div>
+    <div class="offm-title">Tidak Ada Koneksi</div>
+    <div class="offm-desc" id="offm-desc-text">Periksa koneksi internet Anda sebelum melanjutkan.</div>
+    <button class="offm-btn" onclick="document.getElementById('offline-modal').classList.remove('show')">Tutup</button>
+  </div>
+</div>
+
+
+
 <script>
 /* ===== Proteksi Anti-Plagiasi ===== */
 (function(){
@@ -7079,5 +7154,69 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
+<script>
+(function(){
+  const banner=document.getElementById('offline-banner');
+  const toast=document.getElementById('online-toast');
+  const modal=document.getElementById('offline-modal');
+  const modalDesc=document.getElementById('offm-desc-text');
+  let toastTimer=null;
+
+  function updateHeaderStatus(isOnline){
+    const ind = document.getElementById('cloud-ind');
+    if(!ind) return;
+    if(isOnline){
+      ind.innerHTML = '<span class="cloud-dot ok"></span>Online';
+    } else {
+      ind.innerHTML = '<span class="cloud-dot err"></span>Offline';
+    }
+  }
+
+  function showOffline(){
+    if(!banner)return;
+    banner.classList.remove('hide');
+    banner.classList.add('show');
+    document.body.classList.add('is-offline');
+    if(toast)toast.classList.remove('show');
+    updateHeaderStatus(false);
+  }
+  function showOnline(){
+    if(!banner)return;
+    banner.classList.add('hide');
+    setTimeout(()=>{banner.classList.remove('show','hide');document.body.classList.remove('is-offline');},250);
+    if(toast){
+      toast.classList.remove('hide');
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer=setTimeout(()=>{toast.classList.add('hide');setTimeout(()=>toast.classList.remove('show','hide'),250);},3000);
+    }
+    updateHeaderStatus(true);
+  }
+  function showOfflineModal(pesan){
+    if(modalDesc)modalDesc.textContent=pesan;
+    if(modal)modal.classList.add('show');
+  }
+
+  if(!navigator.onLine)showOffline();
+  window.addEventListener('offline',showOffline);
+  window.addEventListener('online',showOnline);
+
+  document.addEventListener('click',function(e){
+    if(!navigator.onLine){
+      const loginBtn=e.target.closest('#btn-login,#btn-masuk,button[type=submit]');
+      if(loginBtn){
+        e.preventDefault();e.stopPropagation();
+        showOfflineModal('Tidak dapat masuk saat ini. Periksa koneksi internet Anda dan coba lagi.');
+        return;
+      }
+      const saveBtn=e.target.closest('button.btn-p,#btn-simpan,#btn-topup,#btn-transfer,#btn-bayar,#btn-kirim');
+      if(saveBtn){
+        e.preventDefault();e.stopPropagation();
+        showOfflineModal('Data tidak dapat disimpan tanpa koneksi internet. Pastikan Anda terhubung ke jaringan terlebih dahulu.');
+      }
+    }
+  },true);
+})();
+</script>
 </body>
 </html>
