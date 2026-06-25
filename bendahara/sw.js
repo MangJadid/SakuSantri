@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bendahara-' + '{{BUILD_TIME}}';
+const CACHE_NAME = 'bendahara-' + '1782376619';
 const ASSETS = [
   '/bendahara/',
   '/bendahara/index.html',
