@@ -26,7 +26,7 @@
 :root{
   /* Core palette */
   --green:#0f4c2a;--green-m:#1a6b3c;--green-l:#2d8f56;--green-xl:#4caf7d;
-  --green-p:#f0f7f3;--green-b:#d4ead e;
+  --green-p:#f0f7f3;--green-b:#d4eade;
   --gold:#b8820a;--gold-l:#e6a820;--gold-p:#fdf8ee;--gold-b:#f0d898;
   --red:#c0392b;--red-p:#fef2f2;--red-b:#fecaca;
   --blue:#1d5fa8;--blue-p:#eff6ff;--blue-b:#bfdbfe;
@@ -45,6 +45,8 @@
   --sh-lg:0 12px 32px rgba(0,0,0,.1),0 4px 8px rgba(0,0,0,.06);
   --sh-xl:0 24px 48px rgba(0,0,0,.14),0 8px 16px rgba(0,0,0,.08);
   --transition:.18s cubic-bezier(.4,0,.2,1);
+  --shh:0 8px 24px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.06);
+  --border-l:#e2ede8;
 
   --grad-primary:linear-gradient(160deg,#071a0f 0%,#0d2818 50%,#0a1f12 100%);
   --grad-gold:linear-gradient(135deg,#b8820a,#e6a820);
@@ -791,18 +793,6 @@ body.is-offline #pg-login{padding-top:70px}
     <button class="offm-btn" onclick="document.getElementById('offline-modal').classList.remove('show')">Tutup</button>
   </div>
 </div>
-
-
-
-<!-- OFFLINE BANNER -->
-<div id="offline-banner">
-  <div class="offline-icon">📡</div>
-  <div class="offline-title">Tidak Ada Koneksi Internet</div>
-  <div class="offline-sub">Data tidak akan tersimpan. Periksa jaringan Anda sebelum melanjutkan.</div>
-</div>
-
-<!-- ONLINE TOAST -->
-<div id="online-toast">✅ Koneksi internet kembali</div>
 
 <script>
 /* ===== Proteksi Anti-Plagiasi ===== */
@@ -2177,13 +2167,6 @@ async function loadAllData(){
   const santriIds = new Set(ALL_SANTRI.map(s=>String(s.id)));
   ALL_TAGIHAN = tagihan.filter(t=>santriIds.has(String(t.santri_id)));
 
-  // === DEBUG LOG ===
-  try {
-    var box = document.getElementById('debug-error-box');
-    box.style.display = 'block';
-    box.style.background = '#1a5c3a';
-    box.textContent += 'DEBUG loadAllData(): r0.error=' + JSON.stringify(r0.error) + ' | raw count=' + (r0.data?r0.data.length:'null') + ' | ALL_SANTRI count=' + ALL_SANTRI.length + ' | isAdmin=' + isAdmin + '\n\n---\n\n';
-  } catch(dbgErr) {}
 }
 
 // ===== HELPERS =====
@@ -3039,13 +3022,6 @@ function renderSantri(){
   const kobongF=document.getElementById('filter-kobong-santri')?.value||'';
   const kelasF=document.getElementById('filter-kelas-santri')?.value||'';
 
-  // === DEBUG LOG ===
-  try {
-    var box = document.getElementById('debug-error-box');
-    box.style.display = 'block';
-    box.style.background = '#7c3aed';
-    box.textContent += 'DEBUG renderSantri(): q="' + q + '" | ACTIVE_DAPUR=' + JSON.stringify(ACTIVE_DAPUR) + ' | ALL_SANTRI.length=' + ALL_SANTRI.length + ' | asramaF=' + asramaF + ' kobongF=' + kobongF + ' kelasF=' + kelasF + '\n\n---\n\n';
-  } catch(dbgErr) {}
 
   let filtered=ALL_SANTRI.filter(s=>{
     if(q && !s.nama.toLowerCase().includes(q)) return false;
@@ -4887,120 +4863,7 @@ function cetakSuratBebas(santriId,nama){
 function printSuratBebas(){
   const c=document.getElementById('surat-bebas-content').innerHTML;
   const w=window.open('','_blank');
-  w.document.write(`<html><head><style>body{font-family:'Times New Roman',serif;padding:40px;max-width:600px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>${c}
-  <!-- LOADING OVERLAY -->
-  <div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:14px">
-    <div style="width:52px;height:52px;border:5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div>
-    <div style="color:#fff;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif">Memproses...</div>
-  </div>
-
-
-<style>
-/* === LOGIN OVERLAY === */
-@keyframes loPulse {
-  0%,100%{transform:scale(1);opacity:1}
-  50%{transform:scale(1.08);opacity:.85}
-}
-@keyframes loDot {
-  0%,80%,100%{transform:scale(0);opacity:.3}
-  40%{transform:scale(1);opacity:1}
-}
-.lo-dot {
-  width:10px;height:10px;border-radius:50%;
-  background:rgba(255,255,255,.7);
-  animation:loDot 1.2s ease-in-out infinite;
-}
-
-/* === EXTRA POLISH === */
-/* Upgraded table header with gradient */
-th { background: var(--green) !important; }
-
-/* Sticky tab bar visual enhancement */
-.tabs {
-  scrollbar-width: none;
-}
-.tabs::-webkit-scrollbar { display: none; }
-
-/* Panel entrance animation */
-.sec.act > .panel, .sec.act > .stats, .sec.act > .asrama-block {
-  animation: fadeUp .3s ease both;
-}
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Login page polish */
-#pg-login .login-box {
-  border: 1px solid rgba(255,255,255,.15);
-}
-
-/* Upgrade the konfirm modal */
-#mo-konfirm .mo-box {
-  border-top: 4px solid var(--green-l);
-}
-
-/* Badge shadows */
-.badge {
-  box-shadow: 0 1px 3px rgba(0,0,0,.08);
-}
-
-/* Amount formatting - mono digits */
-.val, .dh-saldo .amt, .sil .val {
-  font-feature-settings: "tnum";
-}
-
-/* Smooth tab transitions */
-.sec { animation: none; }
-.sec.act { animation: secFade .25s ease; }
-@keyframes secFade {
-  from { opacity: .6; }
-  to { opacity: 1; }
-}
-
-/* Better form focus ring */
-input:focus, select:focus, textarea:focus {
-  outline: none;
-}
-
-/* Upgrade loading page */
-#pg-loading {
-  background: linear-gradient(160deg, #0a3d25 0%, #166843 50%, #0d5c35 100%);
-}
-
-/* Green glow on active tabs */
-.tb.act {
-  box-shadow: 0 2px 12px rgba(13,79,53,.3), inset 0 1px 0 rgba(255,255,255,.15) !important;
-}
-
-/* Subtle hover on table rows */
-tr:hover td {
-  background: rgba(34,163,102,.04) !important;
-}
-
-/* Upgrade asrama headers with gold left border */
-.asrama-block-header {
-  border-left: 4px solid transparent;
-  transition: border-color .2s, background .2s;
-}
-.asrama-block-header:hover {
-  border-left-color: var(--gold);
-}
-.asrama-block.expanded .asrama-block-header {
-  border-left-color: var(--gold);
-}
-
-/* Scrollable modal body improvement */
-.mo-box::-webkit-scrollbar { width: 4px; }
-.mo-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-/* Currency display */
-.fmtRp, [id*="-saldo"], [id*="-total"] {
-  font-feature-settings: "tnum";
-  letter-spacing: -.3px;
-}
-</style>
-</body></html>`);
+  w.document.write('<html><head><style>body{font-family:"Times New Roman",serif;padding:40px;max-width:600px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>'+c+'</body></html>');
   w.document.close(); w.print();
 }
 
@@ -5395,21 +5258,17 @@ async function simpanAkun(){
 
 async function hapusAkun(id){
   if(_isLoading) return;
-  try {
-
   const akun = ALL_AKUN.find(a=>String(a.id)===String(id));
   konfirm(`Hapus akun <strong>${akun?.nama||akun?.username||'ini'}</strong>? Mereka tidak akan bisa login lagi.`, async()=>{
     const _lBtn2 = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
     setLoading(true, _lBtn2);
     try {
-    const {error}=await SB.from('bendahara_users').delete().eq('id',id);
-    if(error){ toast('❌ Gagal: '+error.message); return; }
-    toast('🗑 Akun dihapus!');
-    await loadAllData(); renderManajemenBendahara();
-  
-    } finally { setLoading(false, _lBtn2); }}, 'hapus');
-
-  } finally { setLoading(false, _lBtn); }
+      const {error}=await SB.from('bendahara_users').delete().eq('id',id);
+      if(error){ toast('❌ Gagal: '+error.message); return; }
+      toast('🗑 Akun dihapus!');
+      await loadAllData(); renderManajemenBendahara();
+    } finally { setLoading(false, _lBtn2); }
+  }, 'hapus');
 }
 
 // ===== MONITOR =====
