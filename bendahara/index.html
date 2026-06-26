@@ -2977,7 +2977,7 @@ function renderTagihanTable(){
   const summEl = document.getElementById('tagihan-summary');
   if(summEl) summEl.innerHTML = filtered.length===0 ? '' : `
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-      <div style="flex:1;min-width:140px;background:var(--green-xl);border:1.5px solid var(--green-b);border-radius:10px;padding:10px 14px">
+      <div style="flex:1;min-width:140px;background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Total Tagihan</div>
         <div style="font-size:15px;font-weight:800;color:var(--text)">${fmtRp(totalNom)}</div>
         <div style="font-size:10px;color:var(--text-l);margin-top:4px;display:flex;gap:8px">
@@ -3164,31 +3164,25 @@ async function openDetailModal(santriId){
   const nomBulan=getNominalMakan()+getNominalListrik();
 
   document.getElementById('mo-detail-body').innerHTML=`
-    <!-- HEADER CARD - luas dengan gradient -->
-    <div style="background:var(--green);border-radius:18px;padding:24px 22px;margin-bottom:20px;position:relative;overflow:hidden">
-      <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,.06);border-radius:50%"></div>
-      <div style="position:absolute;right:60px;bottom:-30px;width:70px;height:70px;background:rgba(255,255,255,.04);border-radius:50%"></div>
-      <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1">
-        <div style="width:64px;height:64px;border-radius:50%;border:3px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden">
+    <!-- HEADER CARD - compact horizontal -->
+    <div style="background:var(--green);border-radius:16px;padding:16px 18px;margin-bottom:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;right:-16px;top:-16px;width:80px;height:80px;background:rgba(255,255,255,.06);border-radius:50%"></div>
+      <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1">
+        <div style="width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden">
           ${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama)}
         </div>
         <div style="flex:1;min-width:0">
-          <div style="font-family:'Amiri',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2">${s.nama}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.75);display:flex;flex-wrap:wrap;gap:6px">
-            <span>🏠 ${kobongNama}</span>
-            ${s.kelas?`<span>· Kelas ${s.kelas}</span>`:''}
-            <span>🍽️ ${getDapurNama(s.dapur_id)}</span>
-          </div>
-          ${asramaNama?`<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px">📍 ${asramaNama}</div>`:''}
+          <div style="font-family:'Amiri',serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:2px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.nama}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🏠 ${kobongNama}${s.kelas?` · Kelas ${s.kelas}`:''}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">🍽️ ${getDapurNama(s.dapur_id)}${asramaNama?` · 📍 ${asramaNama}`:''}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0;position:relative;z-index:1">
-          <div style="font-size:10px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Sisa Tagihan</div>
-          <div style="font-size:22px;font-weight:800;color:${hasTunggak?'#ff8a8a':'#a8f0c8'};letter-spacing:-.5px">${hasTunggak?fmtRp(totalSisa):'Lunas ✅'}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:3px">${hasTunggak?'⚠️ Ada tunggakan':'Semua terbayar'}</div>
+        <div style="text-align:right;flex-shrink:0;max-width:38%;position:relative;z-index:1">
+          <div style="font-size:9.5px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Sisa Tagihan</div>
+          <div style="font-size:15px;font-weight:800;color:${hasTunggak?'#ff8a8a':'#a8f0c8'};letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hasTunggak?fmtRp(totalSisa):'Lunas ✅'}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:2px">${hasTunggak?'⚠️ Ada tunggakan':'Semua terbayar'}</div>
         </div>
       </div>
     </div>
-
     <!-- DEPOSIT CARD (jika ada) -->
     ${saldoDeposit>0?`
     <div style="background:var(--gold-p);border:1.5px solid var(--gold-b);border-radius:16px;padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
