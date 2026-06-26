@@ -749,6 +749,22 @@ body.is-offline #pg-login{padding-top:70px}
 </style>
 </head>
 <body>
+<div id="debug-error-box" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:#b91c1c;color:#fff;padding:14px;font-size:13px;font-family:monospace;max-height:50vh;overflow:auto;white-space:pre-wrap;border-bottom:4px solid #fff"></div>
+<script>
+(function(){
+  var box = document.getElementById('debug-error-box');
+  function showErr(msg){
+    box.style.display = 'block';
+    box.textContent += msg + '\n\n---\n\n';
+  }
+  window.addEventListener('error', function(e){
+    showErr('JS ERROR: ' + e.message + '\nFile: ' + e.filename + ':' + e.lineno);
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    showErr('PROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : JSON.stringify(e.reason)));
+  });
+})();
+</script>
 
 <!-- OFFLINE BANNER -->
 <div id="offline-banner">
@@ -2160,6 +2176,14 @@ async function loadAllData(){
   let tagihan = r1.data||[];
   const santriIds = new Set(ALL_SANTRI.map(s=>String(s.id)));
   ALL_TAGIHAN = tagihan.filter(t=>santriIds.has(String(t.santri_id)));
+
+  // === DEBUG LOG ===
+  try {
+    var box = document.getElementById('debug-error-box');
+    box.style.display = 'block';
+    box.style.background = '#1a5c3a';
+    box.textContent += 'DEBUG loadAllData(): r0.error=' + JSON.stringify(r0.error) + ' | raw count=' + (r0.data?r0.data.length:'null') + ' | ALL_SANTRI count=' + ALL_SANTRI.length + ' | isAdmin=' + isAdmin + '\n\n---\n\n';
+  } catch(dbgErr) {}
 }
 
 // ===== HELPERS =====
@@ -3014,6 +3038,14 @@ function renderSantri(){
   const asramaF=document.getElementById('filter-asrama-santri')?.value||'';
   const kobongF=document.getElementById('filter-kobong-santri')?.value||'';
   const kelasF=document.getElementById('filter-kelas-santri')?.value||'';
+
+  // === DEBUG LOG ===
+  try {
+    var box = document.getElementById('debug-error-box');
+    box.style.display = 'block';
+    box.style.background = '#7c3aed';
+    box.textContent += 'DEBUG renderSantri(): q="' + q + '" | ACTIVE_DAPUR=' + JSON.stringify(ACTIVE_DAPUR) + ' | ALL_SANTRI.length=' + ALL_SANTRI.length + ' | asramaF=' + asramaF + ' kobongF=' + kobongF + ' kelasF=' + kelasF + '\n\n---\n\n';
+  } catch(dbgErr) {}
 
   let filtered=ALL_SANTRI.filter(s=>{
     if(q && !s.nama.toLowerCase().includes(q)) return false;
