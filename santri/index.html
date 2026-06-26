@@ -471,6 +471,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .dh-item .dh-tx{min-width:0;overflow:hidden}
 .dh-item .dh-k{display:block;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.55;margin-bottom:1px;font-family:'DM Sans',sans-serif}
 .dh-item .dh-v{display:block;font-size:12px;font-weight:500;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Sans',sans-serif}
+.dh-divider{height:1px;background:rgba(255,255,255,.16);margin:11px -18px 12px}
 .dh-saldo{text-align:right;flex-shrink:0;position:relative;z-index:1;padding-top:2px}
 .dh-saldo .lbl{font-size:8.5px;opacity:.6;margin-bottom:2px;letter-spacing:.5px;text-transform:uppercase;font-weight:700}
 .dh-saldo .amt{font-size:18px;font-weight:800;color:var(--gold-l);font-family:'Amiri',serif;letter-spacing:-.3px;white-space:nowrap}
@@ -3207,6 +3208,7 @@ async function openDetailModal(id){
             <div class="amt" style="${saldoReal<0?'color:#ff6b6b':saldoReal<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoReal<0?'\u2212 ':''} ${rp(saldoReal)}</div>
           </div>
         </div>
+        <div class="dh-divider"></div>
         <div class="dh-detail">
           <div class="dh-grid">
             <div class="dh-item"><span class="dh-ic">🏠</span><div class="dh-tx"><span class="dh-k">Kamar</span><span class="dh-v">${k}</span></div></div>
@@ -5124,7 +5126,12 @@ async function renderDetailOrtu(){
     p_santri_id: String(s.id), p_pin: SESSION.pin||''
   });
   if(txRpc?.data) txs = txRpc.data;
-  const k=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
+  const k=s.kobong?.nama||getKobongNama(s.kobong_id)||'Belum ditentukan';
+  const _dapurMapO={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
+  const dapurValO = _dapurMapO[s.dapur_id] || s.dapur_id || '—';
+  const _kbForAsramaO = ALL_KOBONG.find(x=>x.id==s.kobong_id);
+  const asramaValO = _kbForAsramaO?.asrama?.nama || '—';
+  const kelasValO = s.kelas || '—';
   // Hitung saldo dari transaksi (SUMBER KEBENARAN)
   const totalMasukO  = (txs||[]).filter(t=>t.jenis==='masuk').reduce((a,t)=>a+t.nominal,0);
   const totalKeluarO = (txs||[]).filter(t=>t.jenis==='keluar').reduce((a,t)=>a+t.nominal,0);
@@ -5163,9 +5170,14 @@ async function renderDetailOrtu(){
             <div class="amt" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoRealO<0?'\u2212 ':''} ${rp(saldoRealO)}</div>
           </div>
         </div>
+        <div class="dh-divider"></div>
         <div class="dh-detail">
-          <p>🏠 ${k}${s.kelas?' · Kelas '+s.kelas:''}</p>
-          <p>${(()=>{const dapurNama=id=>(({'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'})[id]||id||'');const kb=ALL_KOBONG.find(x=>x.id==s.kobong_id);const asrama=kb?.asrama?.nama||'';const dapur=dapurNama(s.dapur_id);const parts=[];if(dapur)parts.push('🍽️ '+dapur);if(asrama)parts.push('📍 '+asrama);return parts.join(' · ') || '&nbsp;';})()}</p>
+          <div class="dh-grid">
+            <div class="dh-item"><span class="dh-ic">🏠</span><div class="dh-tx"><span class="dh-k">Kamar</span><span class="dh-v">${k}</span></div></div>
+            <div class="dh-item"><span class="dh-ic">🎓</span><div class="dh-tx"><span class="dh-k">Kelas</span><span class="dh-v">${kelasValO}</span></div></div>
+            <div class="dh-item"><span class="dh-ic">🍽️</span><div class="dh-tx"><span class="dh-k">Dapur</span><span class="dh-v">${dapurValO}</span></div></div>
+            <div class="dh-item"><span class="dh-ic">📍</span><div class="dh-tx"><span class="dh-k">Lokasi</span><span class="dh-v">${asramaValO}</span></div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -5202,17 +5214,32 @@ async function renderSyahriyahOrtu(){
     ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
     : `<span style="font-size:22px;font-weight:700;color:#fff">${santriNama.charAt(0).toUpperCase()}</span>`;
 
+  const _sObjSy = ALL_SANTRI.find(x=>x.id==santriId)||{};
+  const _kbSy = ALL_KOBONG.find(x=>x.id==_sObjSy.kobong_id);
+  const _dapurMapSy={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
+  const kamarSy = _kbSy?.nama || 'Belum ditentukan';
+  const kelasSy = _sObjSy.kelas || '—';
+  const dapurSy = _dapurMapSy[_sObjSy.dapur_id] || _sObjSy.dapur_id || '—';
+  const asramaSy = _kbSy?.asrama?.nama || '—';
+
   container.innerHTML = `
     <div class="dh" style="margin-bottom:20px">
       <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
       <div class="dh-inner">
         <div class="dh-top">
           <div class="dh-av" style="overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--green)">${avHtml}</div>
-          <div class="dh-name-wrap"><div class="dh-info"><h3>Uang Syahriyah</h3></div></div>
+          <div class="dh-name-wrap"><div class="dh-info"><h3>Uang Syahriyah</h3>
+            <div style="font-size:11px;opacity:.72;margin-top:3px;word-break:break-word;overflow-wrap:anywhere">${santriNama} · ${CONFIG.pesantren_nama||'Pesantren'}</div>
+          </div></div>
         </div>
+        <div class="dh-divider"></div>
         <div class="dh-detail">
-          <p>${santriNama} · ${CONFIG.pesantren_nama||'Pesantren'}</p>
-          <p>${(()=>{const sObj=ALL_SANTRI.find(x=>x.id==santriId)||{};const kb=ALL_KOBONG.find(x=>x.id==sObj.kobong_id);const kobong=kb?.nama||'';const kelas=sObj.kelas||'';const asrama=kb?.asrama?.nama||'';const dapurNama=id=>(({'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'})[id]||id||'');const dapur=dapurNama(sObj.dapur_id);const parts=[];if(kobong)parts.push('🏠 '+kobong+(kelas?' · Kelas '+kelas:''));if(dapur)parts.push('🍽️ '+dapur);if(asrama)parts.push('📍 '+asrama);return parts.join(' · ')||'&nbsp;';})()||'&nbsp;'}</p>
+          <div class="dh-grid">
+            <div class="dh-item"><span class="dh-ic">🏠</span><div class="dh-tx"><span class="dh-k">Kamar</span><span class="dh-v">${kamarSy}</span></div></div>
+            <div class="dh-item"><span class="dh-ic">🎓</span><div class="dh-tx"><span class="dh-k">Kelas</span><span class="dh-v">${kelasSy}</span></div></div>
+            <div class="dh-item"><span class="dh-ic">🍽️</span><div class="dh-tx"><span class="dh-k">Dapur</span><span class="dh-v">${dapurSy}</span></div></div>
+            <div class="dh-item"><span class="dh-ic">📍</span><div class="dh-tx"><span class="dh-k">Lokasi</span><span class="dh-v">${asramaSy}</span></div></div>
+          </div>
         </div>
       </div>
     </div>
