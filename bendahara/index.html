@@ -23,8 +23,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Amiri:wght@400;700&family=DM+Mono:wght@400;500&display=swap');
 
 /* === DESIGN TOKENS === */
-:root {
-  /* Selaras Saku Santri */
+:root{
+  /* Core palette */
   --green:#0f4c2a;--green-m:#1a6b3c;--green-l:#2d8f56;--green-xl:#4caf7d;
   --green-p:#f0f7f3;--green-b:#d4eade;
   --gold:#b8820a;--gold-l:#e6a820;--gold-p:#fdf8ee;--gold-b:#f0d898;
@@ -32,31 +32,31 @@
   --blue:#1d5fa8;--blue-p:#eff6ff;--blue-b:#bfdbfe;
   --purple:#5b21b6;--purple-p:#f5f3ff;--purple-b:#ddd6fe;
   --orange:#c2410c;--orange-p:#fff7ed;
-  --teal:#0f766e;--teal-p:#f0fdfa;--teal-b:#99f6e4;
 
   /* Neutrals */
-  --bg:#f6f8f6;--white:#ffffff;--surface:#ffffff;--surface-2:#f9fafb;
-  --text:#0d1f15;--text-m:#3d5a48;--text-l:#7a9a87;--text-xs:#b0c8bc;
-  --border:#e2ede8;--border-l:#c8ddd2;
+  --bg:#f6f8f6;--surface:#ffffff;--surface-2:#f9fafb;
+  --text:#0d1f15;--text-m:#3d5a48;--text-l:#7a9a87;--text-xl:#b0c8bc;
+  --border:#e2ede8;--border-m:#c8ddd2;
 
   /* Tokens */
-  --rad:16px;--rad-sm:10px;--rad-xs:6px;--rad-lg:16px;--rad-xl:20px;
+  --rad:10px;--rad-sm:7px;--rad-lg:16px;--rad-xl:20px;
   --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --shh:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
-  --sh-gold:0 4px 20px rgba(184,130,10,.20);
+  --sh-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
   --sh-lg:0 12px 32px rgba(0,0,0,.1),0 4px 8px rgba(0,0,0,.06);
   --sh-xl:0 24px 48px rgba(0,0,0,.14),0 8px 16px rgba(0,0,0,.08);
-
-  /* Glass */
-  --glass:rgba(255,255,255,.85);
-  --glass-border:rgba(255,255,255,.6);
   --transition:.18s cubic-bezier(.4,0,.2,1);
+  --shh:0 8px 24px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.06);
+  --border-l:#e2ede8;
 
-  /* Gradients */
-  --grad-primary:linear-gradient(160deg,#071a0f 0%,#0d2818 60%,#0a1f12 100%);
+  --grad-primary:linear-gradient(160deg,#071a0f 0%,#0d2818 50%,#0a1f12 100%);
+  --grad-gold:linear-gradient(135deg,#b8820a,#e6a820);
+  --white:#ffffff;
+  --glass:rgba(255,255,255,.88);
+  --glass-border:rgba(255,255,255,.55);
+  --grad-primary:linear-gradient(160deg,#071a0f 0%,#0d2818 50%,#0a1f12 100%);
   --grad-gold:linear-gradient(135deg,#b8820a,#e6a820);
   --grad-card:linear-gradient(145deg,#ffffff,#f6f8f6);
-}
+  --sh-gold:0 4px 20px rgba(184,130,10,.20);}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
@@ -103,7 +103,7 @@ select:focus{border-color:var(--green-l)!important;box-shadow:0 0 0 4px rgba(34,
 .btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.12)}
 .btn:hover::after{opacity:1}
 .btn:active{transform:translateY(0);box-shadow:none}
-.btn-p{background:var(--grad-primary);color:#fff;box-shadow:0 2px 8px rgba(13,79,53,.25)}
+.btn-p{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(13,79,53,.25)}
 .btn-b{background:var(--blue-p);color:var(--blue);border:1.5px solid var(--blue-b)}
 .btn-d{background:var(--red-p);color:var(--red);border:1.5px solid var(--red-b)}
 .btn-g{background:var(--gold-p);color:var(--gold);border:1.5px solid var(--gold-b)}
@@ -115,7 +115,7 @@ select:focus{border-color:var(--green-l)!important;box-shadow:0 0 0 4px rgba(34,
 /* === LOADING SCREEN === */
 #pg-loading{
   position:fixed;inset:0;
-  background:var(--grad-primary);
+  background:linear-gradient(160deg,#071a0f 0%,#0d2818 50%,#0a1f12 100%);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:9999;gap:20px
 }
@@ -191,11 +191,11 @@ select:focus{border-color:var(--green-l)!important;box-shadow:0 0 0 4px rgba(34,
 /* === HEADER === */
 #pg-app{display:none}
 header{
-  background:var(--grad-primary);
-  height:66px;padding:0 24px;
+  background:var(--green);
+  height:58px;padding:0 24px;
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:200;
-  box-shadow:0 2px 24px rgba(13,79,53,.25)
+  box-shadow:0 1px 0 rgba(255,255,255,.08),0 4px 16px rgba(0,0,0,.2)
 }
 header::after{
   content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
@@ -255,13 +255,14 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
   .tb{flex-shrink:1}
 }
 .tb{
-  padding:9px 17px;border:none;background:none;border-radius:11px;
-  font-size:13px;font-weight:600;color:var(--text-m);cursor:pointer;
-  transition:all .2s;display:flex;align-items:center;gap:6px;
+  padding:7px 15px;border:none;background:none;
+  border-radius:var(--rad-sm);
+  font-size:12.5px;font-weight:500;color:var(--text-l);cursor:pointer;
+  transition:var(--transition);display:flex;align-items:center;gap:5px;
   white-space:nowrap;flex-shrink:0
 }
 .tb:hover{background:var(--green-p);color:var(--green)}
-.tb.act{background:var(--grad-primary);color:#fff;box-shadow:0 2px 8px rgba(13,79,53,.25)}
+.tb.act{background:var(--green);color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(15,76,42,.25)}
 .sec{display:none}.sec.act{display:block}
 
 /* === PANEL === */
@@ -279,7 +280,7 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
   flex-wrap:wrap;gap:10px
 }
 .ph h2{
-  font-family:'Amiri',serif;font-size:19px;color:var(--green);
+  font-family:'Amiri',serif;font-size:16px;color:var(--green);
   display:flex;align-items:center;gap:9px;font-weight:700
 }
 .pb{padding:20px 22px}
@@ -317,7 +318,7 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rad-sm)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{
-  background:var(--grad-primary);color:rgba(255,255,255,.95);
+  background:var(--green);color:rgba(255,255,255,.95);
   padding:12px 14px;text-align:left;font-weight:600;
   font-size:11.5px;letter-spacing:.4px;white-space:nowrap;
   text-transform:uppercase
@@ -386,7 +387,7 @@ tbody tr{transition:background .15s}
 .filter-toggle-btn.active{border-color:var(--green-l);background:var(--green-p);color:var(--green)}
 .filter-toggle-btn .fb-badge{
   position:absolute;top:-7px;right:-7px;
-  background:var(--grad-primary);color:#fff;font-size:9.5px;font-weight:700;
+  background:var(--green);color:#fff;font-size:9.5px;font-weight:700;
   min-width:18px;height:18px;border-radius:9px;
   display:flex;align-items:center;justify-content:center;padding:0 4px;
   box-shadow:0 2px 6px rgba(13,79,53,.3)
@@ -448,7 +449,7 @@ tbody tr{transition:background .15s}
 
 /* === DETAIL HEADER === */
 .dh{
-  background:var(--grad-primary);border-radius:var(--rad);
+  background:var(--green);border-radius:var(--rad);
   padding:22px;display:flex;align-items:center;gap:16px;
   margin-bottom:18px;position:relative;overflow:hidden;
   box-shadow:0 4px 16px rgba(13,79,53,.2)
@@ -598,7 +599,7 @@ tbody tr{transition:background .15s}
   font-family:'Plus Jakarta Sans',sans-serif;color:var(--text-m);transition:all .2s
 }
 .pg-btn:hover{border-color:var(--green-l);color:var(--green);background:var(--green-p)}
-.pg-btn.act{background:var(--grad-primary);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(13,79,53,.25)}
+.pg-btn.act{background:var(--green);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(13,79,53,.25)}
 
 @media(max-width:640px){
   main{padding:16px 14px}
@@ -638,10 +639,12 @@ tbody tr{transition:background .15s}
 
 /* === GREETING CARD OVERRIDE === */
 #dash-greeting{
-  background:var(--grad-primary) !important;
-  border-radius:20px !important;
-  padding:22px 26px !important;
-  box-shadow:0 6px 24px rgba(13,79,53,.2) !important
+  background:var(--green) !important;
+  border-radius:var(--rad) !important;
+  padding:20px 24px !important;
+  color:#fff !important;
+  box-shadow:var(--sh-md) !important;
+  position:relative;overflow:hidden
 }
 
 /* === NICE DIVIDER === */
@@ -650,9 +653,147 @@ tbody tr{transition:background .15s}
 /* === CARD NUMBER EMPHASIS === */
 .num-big{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-1px;font-feature-settings:'tnum'}
 .num-mono{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.5px}
+
+
+
+
+/* === OFFLINE DETECTION === */
+@keyframes offlineSlideDown{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:translateY(0)}}
+@keyframes offlineSlideUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-100%)}}
+@keyframes toastSlideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastSlideDown{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(20px)}}
+
+#offline-banner{
+  display:none;
+  position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:#991b1b;
+  padding:12px 20px;
+  flex-direction:row;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 4px 24px rgba(153,27,27,.5);
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+#offline-banner.show{
+  display:flex;
+  animation:offlineSlideDown .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+#offline-banner.hide{
+  animation:offlineSlideUp .25s ease forwards;
+}
+.offl-icon{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:16px;
+}
+.offl-text{display:flex;flex-direction:column;gap:1px}
+.offl-title{font-size:13px;font-weight:700;color:#fff;letter-spacing:.2px}
+.offl-sub{font-size:11px;color:rgba(255,255,255,.7)}
+.offl-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#f87171;flex-shrink:0;
+  animation:pulse 1.5s ease-in-out infinite;
+  box-shadow:0 0 0 0 rgba(248,113,113,.4);
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(248,113,113,.4)}
+  70%{box-shadow:0 0 0 8px rgba(248,113,113,0)}
+  100%{box-shadow:0 0 0 0 rgba(248,113,113,0)}
+}
+
+#online-toast{
+  display:none;
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  z-index:99999;
+  background:#0f4c2a;
+  border:1px solid rgba(45,143,86,.4);
+  color:#fff;
+  padding:11px 20px;border-radius:99px;
+  font-size:13px;font-weight:600;
+  box-shadow:0 8px 24px rgba(15,76,42,.35);
+  white-space:nowrap;
+  display:none;align-items:center;gap:8px;
+}
+#online-toast.show{
+  display:flex;
+  animation:toastSlideUp .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+#online-toast.hide{
+  animation:toastSlideDown .25s ease forwards;
+}
+.toast-dot{width:8px;height:8px;border-radius:50%;background:#4caf7d;flex-shrink:0}
+
+/* Offline action modal */
+#offline-modal{
+  display:none;position:fixed;inset:0;z-index:999999;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;padding:20px;
+}
+#offline-modal.show{display:flex;animation:fadeIn .2s ease}
+.offm-box{
+  background:#fff;border-radius:20px;padding:28px 24px;
+  width:100%;max-width:340px;text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.25);
+  animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);
+}
+.offm-icon{font-size:44px;margin-bottom:12px}
+.offm-title{font-size:17px;font-weight:800;color:#1a1a1a;margin-bottom:8px}
+.offm-desc{font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:20px}
+.offm-btn{
+  width:100%;padding:13px;border:none;border-radius:12px;
+  background:#0f4c2a;color:#fff;
+  font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .2s;
+}
+.offm-btn:hover{background:#1a6b3c;transform:translateY(-1px)}
+
+body.is-offline header{margin-top:50px}
+body.is-offline #pg-login{padding-top:70px}
 </style>
 </head>
 <body>
+<div id="debug-error-box" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:#b91c1c;color:#fff;padding:14px;font-size:13px;font-family:monospace;max-height:50vh;overflow:auto;white-space:pre-wrap;border-bottom:4px solid #fff"></div>
+<script>
+(function(){
+  var box = document.getElementById('debug-error-box');
+  function showErr(msg){
+    box.style.display = 'block';
+    box.textContent += msg + '\n\n---\n\n';
+  }
+  window.addEventListener('error', function(e){
+    showErr('JS ERROR: ' + e.message + '\nFile: ' + e.filename + ':' + e.lineno);
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    showErr('PROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : JSON.stringify(e.reason)));
+  });
+})();
+</script>
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner">
+  <div class="offl-dot"></div>
+  <div class="offl-icon">📡</div>
+  <div class="offl-text">
+    <div class="offl-title">Tidak Ada Koneksi Internet</div>
+    <div class="offl-sub">Data tidak akan tersimpan · Periksa jaringan Anda</div>
+  </div>
+</div>
+
+<!-- ONLINE TOAST -->
+<div id="online-toast">
+  <div class="toast-dot"></div>
+  Koneksi internet kembali
+</div>
+
+<!-- OFFLINE ACTION MODAL -->
+<div id="offline-modal">
+  <div class="offm-box">
+    <div class="offm-icon">🔌</div>
+    <div class="offm-title">Tidak Ada Koneksi</div>
+    <div class="offm-desc" id="offm-desc-text">Periksa koneksi internet Anda sebelum melanjutkan.</div>
+    <button class="offm-btn" onclick="document.getElementById('offline-modal').classList.remove('show')">Tutup</button>
+  </div>
+</div>
+
 <script>
 /* ===== Proteksi Anti-Plagiasi ===== */
 (function(){
@@ -769,8 +910,15 @@ tbody tr{transition:background .15s}
     <!-- ===== DASHBOARD ===== -->
     <div class="sec" id="sec-dashboard">
       <!-- GREETING CARD -->
-      <div id="dash-greeting" style="background:var(--grad-primary);border-radius:20px;padding:22px 26px;margin-bottom:20px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(13,79,53,.2)">
-        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-family:'Amiri',serif;font-size:80px;opacity:.08;pointer-events:none;letter-spacing:-2px">﷽</div>
+      <div id="dash-greeting" style="background:var(--green);border-radius:20px;padding:22px 26px;margin-bottom:20px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(13,79,53,.2)">
+        <!-- Kaligrafi dekoratif diagonal -->
+        <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;z-index:0">
+          <div style="position:absolute;left:-10px;bottom:-10px;right:-10px;top:-10px;display:flex;flex-direction:column;gap:0px;transform:rotate(-18deg);transform-origin:center;opacity:.09">
+            <div style="font-family:'Amiri',serif;font-size:36px;font-weight:700;color:#fff;white-space:nowrap;letter-spacing:18px;line-height:1.8">النُّور  النُّور  النُّور  النُّور</div>
+            <div style="font-family:'Amiri',serif;font-size:36px;font-weight:700;color:#fff;white-space:nowrap;letter-spacing:18px;line-height:1.8;margin-left:60px">النُّور  النُّور  النُّور  النُّور</div>
+            <div style="font-family:'Amiri',serif;font-size:36px;font-weight:700;color:#fff;white-space:nowrap;letter-spacing:18px;line-height:1.8">النُّور  النُّور  النُّور  النُّور</div>
+          </div>
+        </div>
         <div id="dash-greeting-av" style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.3);flex-shrink:0"></div>
         <div style="flex:1;min-width:0;position:relative;z-index:1">
           <div id="dash-greeting-sub" style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;text-transform:uppercase;letter-spacing:.5px"></div>
@@ -2018,6 +2166,7 @@ async function loadAllData(){
   let tagihan = r1.data||[];
   const santriIds = new Set(ALL_SANTRI.map(s=>String(s.id)));
   ALL_TAGIHAN = tagihan.filter(t=>santriIds.has(String(t.santri_id)));
+
 }
 
 // ===== HELPERS =====
@@ -2842,7 +2991,7 @@ function renderTagihanTable(){
   const summEl = document.getElementById('tagihan-summary');
   if(summEl) summEl.innerHTML = filtered.length===0 ? '' : `
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-      <div style="flex:1;min-width:140px;background:var(--green-xl);border:1.5px solid var(--green-b);border-radius:10px;padding:10px 14px">
+      <div style="flex:1;min-width:140px;background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Total Tagihan</div>
         <div style="font-size:15px;font-weight:800;color:var(--text)">${fmtRp(totalNom)}</div>
         <div style="font-size:10px;color:var(--text-l);margin-top:4px;display:flex;gap:8px">
@@ -2872,6 +3021,7 @@ function renderSantri(){
   const asramaF=document.getElementById('filter-asrama-santri')?.value||'';
   const kobongF=document.getElementById('filter-kobong-santri')?.value||'';
   const kelasF=document.getElementById('filter-kelas-santri')?.value||'';
+
 
   let filtered=ALL_SANTRI.filter(s=>{
     if(q && !s.nama.toLowerCase().includes(q)) return false;
@@ -3029,32 +3179,37 @@ async function openDetailModal(santriId){
   const nomBulan=getNominalMakan()+getNominalListrik();
 
   document.getElementById('mo-detail-body').innerHTML=`
-    <!-- HEADER CARD - luas dengan gradient -->
-    <div style="background:var(--grad-primary);border-radius:18px;padding:24px 22px;margin-bottom:20px;position:relative;overflow:hidden">
-      <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,.06);border-radius:50%"></div>
-      <div style="position:absolute;right:60px;bottom:-30px;width:70px;height:70px;background:rgba(255,255,255,.04);border-radius:50%"></div>
-      <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1">
-        <div style="width:64px;height:64px;border-radius:50%;border:3px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden">
-          ${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama)}
+    <!-- HEADER CARD -->
+    <div style="background:var(--green);border-radius:var(--rad);padding:16px 18px 14px;margin-bottom:16px;position:relative;overflow:hidden;box-shadow:var(--sh-md)">
+      <!-- Kaligrafi dekoratif diagonal -->
+      <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;z-index:0">
+        <div style="position:absolute;left:-10px;bottom:-10px;right:-10px;top:-10px;display:flex;flex-direction:column;gap:0px;transform:rotate(-18deg);transform-origin:center;opacity:.09">
+          <div style="font-family:'Amiri',serif;font-size:36px;font-weight:700;color:#fff;white-space:nowrap;letter-spacing:18px;line-height:1.8">النُّور  النُّور  النُّور  النُّور</div>
+          <div style="font-family:'Amiri',serif;font-size:36px;font-weight:700;color:#fff;white-space:nowrap;letter-spacing:18px;line-height:1.8;margin-left:60px">النُّور  النُّور  النُّور  النُّور</div>
+          <div style="font-family:'Amiri',serif;font-size:36px;font-weight:700;color:#fff;white-space:nowrap;letter-spacing:18px;line-height:1.8">النُّور  النُّور  النُّور  النُّور</div>
         </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-family:'Amiri',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2">${s.nama}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.75);display:flex;flex-wrap:wrap;gap:6px">
-            <span>🏠 ${kobongNama}</span>
-            ${s.kelas?`<span>· Kelas ${s.kelas}</span>`:''}
-            <span>🍽️ ${getDapurNama(s.dapur_id)}</span>
+      </div>
+      <div style="position:relative;z-index:1">
+        <!-- Baris atas: avatar + nama + sisa tagihan -->
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="width:54px;height:54px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden">
+            ${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama)}
           </div>
-          ${asramaNama?`<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px">📍 ${asramaNama}</div>`:''}
-        </div>
-        <div style="text-align:right;flex-shrink:0;position:relative;z-index:1">
-          <div style="font-size:10px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Sisa Tagihan</div>
-          <div style="font-size:22px;font-weight:800;color:${hasTunggak?'#ff8a8a':'#a8f0c8'};letter-spacing:-.5px">${hasTunggak?fmtRp(totalSisa):'Lunas ✅'}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:3px">${hasTunggak?'⚠️ Ada tunggakan':'Semua terbayar'}</div>
+          <div style="flex:1;min-width:0;padding-top:2px">
+            <div style="font-family:'Amiri',serif;font-size:16px;font-weight:700;color:#fff;line-height:1.25;word-break:break-word;overflow-wrap:anywhere;margin-bottom:6px">${s.nama}</div>
+            <!-- Detail info langsung di bawah nama, sejajar bawah avatar -->
+            <div style="font-size:11px;color:rgba(255,255,255,.76);line-height:1.55;word-break:break-word;overflow-wrap:anywhere">🏠 ${kobongNama}${s.kelas?` · Kelas ${s.kelas}`:''}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.6);line-height:1.55;word-break:break-word;overflow-wrap:anywhere">🍽️ ${getDapurNama(s.dapur_id)}${asramaNama?` · 📍 ${asramaNama}`:''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;padding-top:2px">
+            <div style="font-size:8.5px;color:rgba(255,255,255,.55);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Sisa Tagihan</div>
+            <div style="font-size:15px;font-weight:800;color:${hasTunggak?'#ff8a8a':'#a8f0c8'};letter-spacing:-.3px;white-space:nowrap">${hasTunggak?fmtRp(totalSisa):'Lunas ✅'}</div>
+            <div style="font-size:9.5px;color:rgba(255,255,255,.6);margin-top:2px;white-space:nowrap">${hasTunggak?'⚠️ Ada tunggakan':'Semua terbayar'}</div>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- DEPOSIT CARD (jika ada) -->
+            <!-- DEPOSIT CARD (jika ada) -->
     ${saldoDeposit>0?`
     <div style="background:var(--gold-p);border:1.5px solid var(--gold-b);border-radius:16px;padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
       <div>
@@ -3982,7 +4137,7 @@ async function simpanSantri(){
   const kota=document.getElementById('s-kota').value.trim()||null;
   const bulan_mulai_tagihan=document.getElementById('s-bulan-mulai')?.value||null;
   if(!nama){ toast('⚠️ Nama santri wajib diisi!'); return; }
-  // kobong opsional
+  if(!kobong_id){ toast('⚠️ Kobong wajib dipilih!'); setLoading(false, _lBtn); return; }
 
   const btn = document.querySelector('#mo-santri .btn-p');
   if(btn){ btn.disabled=true; btn.textContent='⏳ Menyimpan...'; }
@@ -4216,7 +4371,7 @@ function updateRekapSummary(tagihanF){
   const tunggak = tagihanF.filter(t=>t.status!=='lunas').reduce((a,t)=>a+(Number(t.nominal)-Number(t.nominal_bayar||0)),0);
   el.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-        <div style="background:var(--green-xl);border:1.5px solid var(--green-b);border-radius:10px;padding:10px 12px">
+        <div style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px">
           <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Total Tagihan</div>
           <div style="font-size:14px;font-weight:800;color:var(--text)">${fmtRp(total)}</div>
           <div style="font-size:10px;color:var(--text-l)">${tagihanF.length} tagihan</div>
@@ -4708,120 +4863,7 @@ function cetakSuratBebas(santriId,nama){
 function printSuratBebas(){
   const c=document.getElementById('surat-bebas-content').innerHTML;
   const w=window.open('','_blank');
-  w.document.write(`<html><head><style>body{font-family:'Times New Roman',serif;padding:40px;max-width:600px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>${c}
-  <!-- LOADING OVERLAY -->
-  <div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:14px">
-    <div style="width:52px;height:52px;border:5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div>
-    <div style="color:#fff;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif">Memproses...</div>
-  </div>
-
-
-<style>
-/* === LOGIN OVERLAY === */
-@keyframes loPulse {
-  0%,100%{transform:scale(1);opacity:1}
-  50%{transform:scale(1.08);opacity:.85}
-}
-@keyframes loDot {
-  0%,80%,100%{transform:scale(0);opacity:.3}
-  40%{transform:scale(1);opacity:1}
-}
-.lo-dot {
-  width:10px;height:10px;border-radius:50%;
-  background:rgba(255,255,255,.7);
-  animation:loDot 1.2s ease-in-out infinite;
-}
-
-/* === EXTRA POLISH === */
-/* Upgraded table header with gradient */
-th { background: var(--grad-primary) !important; }
-
-/* Sticky tab bar visual enhancement */
-.tabs {
-  scrollbar-width: none;
-}
-.tabs::-webkit-scrollbar { display: none; }
-
-/* Panel entrance animation */
-.sec.act > .panel, .sec.act > .stats, .sec.act > .asrama-block {
-  animation: fadeUp .3s ease both;
-}
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Login page polish */
-#pg-login .login-box {
-  border: 1px solid rgba(255,255,255,.15);
-}
-
-/* Upgrade the konfirm modal */
-#mo-konfirm .mo-box {
-  border-top: 4px solid var(--green-l);
-}
-
-/* Badge shadows */
-.badge {
-  box-shadow: 0 1px 3px rgba(0,0,0,.08);
-}
-
-/* Amount formatting - mono digits */
-.val, .dh-saldo .amt, .sil .val {
-  font-feature-settings: "tnum";
-}
-
-/* Smooth tab transitions */
-.sec { animation: none; }
-.sec.act { animation: secFade .25s ease; }
-@keyframes secFade {
-  from { opacity: .6; }
-  to { opacity: 1; }
-}
-
-/* Better form focus ring */
-input:focus, select:focus, textarea:focus {
-  outline: none;
-}
-
-/* Upgrade loading page */
-#pg-loading {
-  background: linear-gradient(160deg, #0a3d25 0%, #166843 50%, #0d5c35 100%);
-}
-
-/* Green glow on active tabs */
-.tb.act {
-  box-shadow: 0 2px 12px rgba(13,79,53,.3), inset 0 1px 0 rgba(255,255,255,.15) !important;
-}
-
-/* Subtle hover on table rows */
-tr:hover td {
-  background: rgba(34,163,102,.04) !important;
-}
-
-/* Upgrade asrama headers with gold left border */
-.asrama-block-header {
-  border-left: 4px solid transparent;
-  transition: border-color .2s, background .2s;
-}
-.asrama-block-header:hover {
-  border-left-color: var(--gold);
-}
-.asrama-block.expanded .asrama-block-header {
-  border-left-color: var(--gold);
-}
-
-/* Scrollable modal body improvement */
-.mo-box::-webkit-scrollbar { width: 4px; }
-.mo-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-/* Currency display */
-.fmtRp, [id*="-saldo"], [id*="-total"] {
-  font-feature-settings: "tnum";
-  letter-spacing: -.3px;
-}
-</style>
-</body></html>`);
+  w.document.write('<html><head><style>body{font-family:"Times New Roman",serif;padding:40px;max-width:600px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>'+c+'</body></html>');
   w.document.close(); w.print();
 }
 
@@ -5216,21 +5258,17 @@ async function simpanAkun(){
 
 async function hapusAkun(id){
   if(_isLoading) return;
-  try {
-
   const akun = ALL_AKUN.find(a=>String(a.id)===String(id));
   konfirm(`Hapus akun <strong>${akun?.nama||akun?.username||'ini'}</strong>? Mereka tidak akan bisa login lagi.`, async()=>{
     const _lBtn2 = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
     setLoading(true, _lBtn2);
     try {
-    const {error}=await SB.from('bendahara_users').delete().eq('id',id);
-    if(error){ toast('❌ Gagal: '+error.message); return; }
-    toast('🗑 Akun dihapus!');
-    await loadAllData(); renderManajemenBendahara();
-  
-    } finally { setLoading(false, _lBtn2); }}, 'hapus');
-
-  } finally { setLoading(false, _lBtn); }
+      const {error}=await SB.from('bendahara_users').delete().eq('id',id);
+      if(error){ toast('❌ Gagal: '+error.message); return; }
+      toast('🗑 Akun dihapus!');
+      await loadAllData(); renderManajemenBendahara();
+    } finally { setLoading(false, _lBtn2); }
+  }, 'hapus');
 }
 
 // ===== MONITOR =====
@@ -6320,8 +6358,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('appinstalled', () => banner.classList.remove('show'));
 </script>
 
-</body>
-</html>
+
 <script>
 async function hapusKobongBendahara(id){
   const k = ALL_KOBONG.find(x=>String(x.id)===String(id));
@@ -6383,3 +6420,70 @@ function bukaMoRincianPiutang(id){
 }
 
 </script>
+
+
+<script>
+// === OFFLINE DETECTION ===
+(function(){
+  const banner = document.getElementById('offline-banner');
+  const toast  = document.getElementById('online-toast');
+  const modal  = document.getElementById('offline-modal');
+  const modalDesc = document.getElementById('offm-desc-text');
+  let toastTimer = null;
+  let bannerTimer = null;
+
+  function showOffline(){
+    if(!banner) return;
+    banner.classList.remove('hide');
+    banner.classList.add('show');
+    document.body.classList.add('is-offline');
+    if(toast) toast.classList.remove('show');
+  }
+
+  function showOnline(){
+    if(!banner) return;
+    banner.classList.add('hide');
+    bannerTimer = setTimeout(()=>{
+      banner.classList.remove('show','hide');
+      document.body.classList.remove('is-offline');
+    }, 250);
+
+    if(toast){
+      toast.classList.remove('hide');
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>{
+        toast.classList.add('hide');
+        setTimeout(()=>toast.classList.remove('show','hide'), 250);
+      }, 3000);
+    }
+  }
+
+  function showOfflineModal(pesan){
+    if(modalDesc) modalDesc.textContent = pesan;
+    if(modal) modal.classList.add('show');
+  }
+
+  if(!navigator.onLine) showOffline();
+  window.addEventListener('offline', showOffline);
+  window.addEventListener('online', showOnline);
+
+  document.addEventListener('click', function(e){
+    if(!navigator.onLine){
+      const loginBtn = e.target.closest('#btn-login, #btn-masuk, button[type=submit]');
+      if(loginBtn){
+        e.preventDefault(); e.stopPropagation();
+        showOfflineModal('Tidak dapat masuk saat ini. Periksa koneksi internet Anda dan coba lagi.');
+        return;
+      }
+      const saveBtn = e.target.closest('button.btn-p, #btn-simpan, #btn-topup, #btn-transfer, #btn-bayar');
+      if(saveBtn){
+        e.preventDefault(); e.stopPropagation();
+        showOfflineModal('Data tidak dapat disimpan tanpa koneksi internet. Pastikan Anda terhubung ke jaringan sebelum melakukan perubahan.');
+      }
+    }
+  }, true);
+})();
+</script>
+</body>
+</html>
