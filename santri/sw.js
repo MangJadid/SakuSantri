@@ -9,7 +9,7 @@ const ASSETS = [
 
 // Install: cache semua aset utama
 self.addEventListener('install', function(event) {
-  self.skipWaiting();
+  self.skipWaiting(); // langsung aktif tanpa tunggu tab lama ditutup
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(ASSETS);
@@ -24,11 +24,11 @@ self.addEventListener('activate', function(event) {
       return Promise.all(
         keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
       );
-    }).then(() => self.clients.claim())
+    }).then(() => self.clients.claim()) // ambil alih semua tab yang sudah terbuka
   );
 });
 
-// Fetch
+// Fetch: network-first untuk HTML, cache-first untuk aset lain
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
 
@@ -45,7 +45,7 @@ self.addEventListener('fetch', function(event) {
     || url.pathname.endsWith('/');
 
   if (isHTML) {
-    // Network-first untuk HTML
+    // Network-first untuk HTML: selalu ambil versi terbaru dari server
     event.respondWith(
       fetch(event.request)
         .then(function(response) {
@@ -56,6 +56,7 @@ self.addEventListener('fetch', function(event) {
           return response;
         })
         .catch(function() {
+          // Offline: fallback ke cache
           return caches.match(event.request) || caches.match('/santri/');
         })
     );
