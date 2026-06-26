@@ -3164,28 +3164,33 @@ async function openDetailModal(santriId){
   const nomBulan=getNominalMakan()+getNominalListrik();
 
   document.getElementById('mo-detail-body').innerHTML=`
-    <!-- HEADER CARD - sama seperti saku santri -->
+    <!-- HEADER CARD -->
     <div style="background:var(--green);border-radius:var(--rad);padding:18px 20px;margin-bottom:16px;position:relative;overflow:hidden;box-shadow:var(--sh-md)">
       <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,.06);border-radius:50%"></div>
       <div style="position:absolute;left:-10px;bottom:-20px;width:70px;height:70px;background:rgba(255,255,255,.04);border-radius:50%"></div>
-      <!-- Baris atas: avatar + nama + sisa tagihan -->
-      <div style="display:flex;align-items:flex-start;gap:14px;position:relative;z-index:1">
-        <div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden">
-          ${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama)}
+      <div style="position:relative;z-index:1">
+        <!-- Baris atas: avatar + nama + sisa tagihan -->
+        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:10px">
+          <div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden">
+            ${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama)}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:'Amiri',serif;font-size:17px;font-weight:700;color:#fff;line-height:1.3;word-break:break-word;overflow-wrap:anywhere">${s.nama}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:9px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Sisa Tagihan</div>
+            <div style="font-size:16px;font-weight:800;color:${hasTunggak?'#ff8a8a':'#a8f0c8'};letter-spacing:-.3px;white-space:nowrap">${hasTunggak?fmtRp(totalSisa):'Lunas ✅'}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:2px;white-space:nowrap">${hasTunggak?'⚠️ Ada tunggakan':'Semua terbayar'}</div>
+          </div>
         </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-family:'Amiri',serif;font-size:17px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.3;word-break:break-word;overflow-wrap:anywhere">${s.nama}</div>
-          <div style="font-size:11.5px;color:rgba(255,255,255,.78);word-break:break-word;overflow-wrap:anywhere;line-height:1.4">🏠 ${kobongNama}${s.kelas?` · Kelas ${s.kelas}`:''}</div>
-          <div style="font-size:11.5px;color:rgba(255,255,255,.62);word-break:break-word;overflow-wrap:anywhere;line-height:1.4;margin-top:2px">🍽️ ${getDapurNama(s.dapur_id)}${asramaNama?` · 📍 ${asramaNama}`:''}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;position:relative;z-index:1">
-          <div style="font-size:9px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Sisa Tagihan</div>
-          <div style="font-size:16px;font-weight:800;color:${hasTunggak?'#ff8a8a':'#a8f0c8'};letter-spacing:-.3px;white-space:nowrap">${hasTunggak?fmtRp(totalSisa):'Lunas ✅'}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:2px;white-space:nowrap">${hasTunggak?'⚠️ Ada tunggakan':'Semua terbayar'}</div>
+        <!-- Detail info mulai dari bawah avatar -->
+        <div style="padding-left:70px">
+          <div style="font-size:11.5px;color:rgba(255,255,255,.78);line-height:1.5;word-break:break-word;overflow-wrap:anywhere">🏠 ${kobongNama}${s.kelas?` · Kelas ${s.kelas}`:''}</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.62);line-height:1.5;word-break:break-word;overflow-wrap:anywhere;margin-top:2px">🍽️ ${getDapurNama(s.dapur_id)}${asramaNama?` · 📍 ${asramaNama}`:''}</div>
         </div>
       </div>
     </div>
-    <!-- DEPOSIT CARD (jika ada) -->
+        <!-- DEPOSIT CARD (jika ada) -->
     ${saldoDeposit>0?`
     <div style="background:var(--gold-p);border:1.5px solid var(--gold-b);border-radius:16px;padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
       <div>
