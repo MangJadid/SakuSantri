@@ -472,8 +472,8 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .dh-item .dh-k{display:block;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.55;margin-bottom:1px;font-family:'DM Sans',sans-serif}
 .dh-item .dh-v{display:block;font-size:12px;font-weight:500;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Sans',sans-serif}
 .dh-divider{height:1px;background:rgba(255,255,255,.16);margin:11px -18px 12px}
-.dh-meta{padding-left:0;display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:10px;min-width:0}
-.dh-meta-row{display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:1.4;opacity:1;font-family:'DM Sans',sans-serif;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;white-space:nowrap;font-weight:600}
+.dh-meta{padding-left:66px;display:flex;flex-direction:column;gap:1px;margin-top:5px;min-width:0}
+.dh-meta-row{display:flex;align-items:center;flex-wrap:wrap;gap:3px 6px;font-size:11.5px;line-height:1.35;opacity:.88;overflow-wrap:anywhere;font-family:'DM Sans',sans-serif}
 .dh-meta-row .sep{opacity:.5}
 .dh-saldo{text-align:right;flex-shrink:0;position:relative;z-index:1;padding-top:2px}
 .dh-saldo .lbl{font-size:8.5px;opacity:.6;margin-bottom:2px;letter-spacing:.5px;text-transform:uppercase;font-weight:700}
@@ -3212,10 +3212,8 @@ async function openDetailModal(id){
           </div>
         </div>
         <div class="dh-meta">
-          <span class="dh-meta-row">🏠 ${k}</span>
-          <span class="dh-meta-row">🎓 ${kelasVal}</span>
-          <span class="dh-meta-row">🍽️ ${dapurVal}</span>
-          <span class="dh-meta-row">📍 ${asramaVal}</span>
+          <div class="dh-meta-row"><span>🏠</span><span>${k}</span><span class="sep">·</span><span>🎓 Kelas ${kelasVal}</span></div>
+          <div class="dh-meta-row"><span>🍽️</span><span>${dapurVal}</span><span class="sep">·</span><span>📍</span><span>${asramaVal}</span></div>
         </div>
       </div>
     </div>
@@ -5169,10 +5167,8 @@ async function renderDetailOrtu(){
           </div>
         </div>
         <div class="dh-meta">
-          <span class="dh-meta-row">🏠 ${k}</span>
-          <span class="dh-meta-row">🎓 ${kelasValO}</span>
-          <span class="dh-meta-row">🍽️ ${dapurValO}</span>
-          <span class="dh-meta-row">📍 ${asramaValO}</span>
+          <div class="dh-meta-row"><span>🏠</span><span>${k}</span><span class="sep">·</span><span>🎓 Kelas ${kelasValO}</span></div>
+          <div class="dh-meta-row"><span>🍽️</span><span>${dapurValO}</span><span class="sep">·</span><span>📍</span><span>${asramaValO}</span></div>
         </div>
       </div>
     </div>
@@ -5209,12 +5205,21 @@ async function renderSyahriyahOrtu(){
     ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
     : `<span style="font-size:22px;font-weight:700;color:#fff">${santriNama.charAt(0).toUpperCase()}</span>`;
 
-  const _sObjSy = ALL_SANTRI.find(x=>x.id==santriId)||{};
-  const _kbSy = ALL_KOBONG.find(x=>x.id==_sObjSy.kobong_id);
+  // Untuk role ortu, ALL_SANTRI & ALL_KOBONG kosong — pakai SESSION.santri langsung
   const _dapurMapSy={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
-  const kamarSy = _kbSy?.nama || 'Belum ditentukan';
-  const kelasSy = _sObjSy.kelas || '—';
-  const dapurSy = _dapurMapSy[_sObjSy.dapur_id] || _sObjSy.dapur_id || '—';
+  let _sObjSy = ALL_SANTRI.find(x=>x.id==santriId) || santri || {};
+  let _kbSy = ALL_KOBONG.find(x=>x.id==_sObjSy.kobong_id);
+
+  // Jika kobong belum ada (ortu), fetch langsung dari DB
+  if(!_kbSy && (_sObjSy.kobong_id || santri?.kobong_id)){
+    const kbId = _sObjSy.kobong_id || santri?.kobong_id;
+    const {data:kbData} = await SB.from('kobong').select('id,nama,asrama(id,nama)').eq('id',kbId).maybeSingle();
+    if(kbData) _kbSy = kbData;
+  }
+
+  const kamarSy = _kbSy?.nama || santri?.kobong?.nama || santri?.kobong_nama || 'Belum ditentukan';
+  const kelasSy = (_sObjSy.kelas || santri?.kelas || '—');
+  const dapurSy = _dapurMapSy[_sObjSy.dapur_id || santri?.dapur_id] || _sObjSy.dapur_id || santri?.dapur_id || '—';
   const asramaSy = _kbSy?.asrama?.nama || '—';
 
   container.innerHTML = `
@@ -5228,10 +5233,8 @@ async function renderSyahriyahOrtu(){
           </div></div>
         </div>
         <div class="dh-meta">
-          <span class="dh-meta-row">🏠 ${kamarSy}</span>
-          <span class="dh-meta-row">🎓 ${kelasSy}</span>
-          <span class="dh-meta-row">🍽️ ${dapurSy}</span>
-          <span class="dh-meta-row">📍 ${asramaSy}</span>
+          <div class="dh-meta-row"><span>🏠</span><span>${kamarSy}</span><span class="sep">·</span><span>🎓 Kelas ${kelasSy}</span></div>
+          <div class="dh-meta-row"><span>🍽️</span><span>${dapurSy}</span><span class="sep">·</span><span>📍</span><span>${asramaSy}</span></div>
         </div>
       </div>
     </div>
