@@ -446,11 +446,11 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .dh-calligraphy-inner{
   position:absolute;left:-10px;bottom:-10px;right:-10px;top:-10px;
   display:flex;flex-direction:column;gap:0;
-  transform:rotate(-18deg);transform-origin:center;opacity:.09;
+  transform:rotate(-15deg);transform-origin:center;opacity:.055;
 }
 .dh-calligraphy-inner div{
-  font-family:'Amiri',serif;font-size:34px;font-weight:700;color:#fff;
-  white-space:nowrap;letter-spacing:16px;line-height:1.9;
+  font-family:'Amiri',serif;font-size:28px;font-weight:700;color:#fff;
+  white-space:nowrap;letter-spacing:12px;line-height:2.1;
 }
 .dh-inner{position:relative;z-index:1}
 .dh-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
@@ -3198,7 +3198,7 @@ async function openDetailModal(id){
         </div>
         <div class="dh-detail">
           <p>🏠 ${k}${s.kelas?' · Kelas '+s.kelas:''}</p>
-          <p>${(()=>{const kb=ALL_KOBONG.find(x=>x.id==s.kobong_id);const asrama=kb?.asrama?.nama||'';const dapur=s.dapur_id||'';const parts=[];if(dapur)parts.push('🍽️ '+dapur);if(asrama)parts.push('📍 '+asrama);return parts.join(' · ') || '&nbsp;';})()}</p>
+          <p>${(()=>{const dapurNama=id=>(({'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'})[id]||id||'');const kb=ALL_KOBONG.find(x=>x.id==s.kobong_id);const asrama=kb?.asrama?.nama||'';const dapur=dapurNama(s.dapur_id);const parts=[];if(dapur)parts.push('🍽️ '+dapur);if(asrama)parts.push('📍 '+asrama);return parts.join(' · ') || '&nbsp;';})()}</p>
         </div>
       </div>
     </div>
@@ -5150,7 +5150,7 @@ async function renderDetailOrtu(){
         </div>
         <div class="dh-detail">
           <p>🏠 ${k}${s.kelas?' · Kelas '+s.kelas:''}</p>
-          <p>${(()=>{const kb=ALL_KOBONG.find(x=>x.id==s.kobong_id);const asrama=kb?.asrama?.nama||'';const dapur=s.dapur_id||'';const parts=[];if(dapur)parts.push('🍽️ '+dapur);if(asrama)parts.push('📍 '+asrama);return parts.join(' · ') || '&nbsp;';})()}</p>
+          <p>${(()=>{const dapurNama=id=>(({'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'})[id]||id||'');const kb=ALL_KOBONG.find(x=>x.id==s.kobong_id);const asrama=kb?.asrama?.nama||'';const dapur=dapurNama(s.dapur_id);const parts=[];if(dapur)parts.push('🍽️ '+dapur);if(asrama)parts.push('📍 '+asrama);return parts.join(' · ') || '&nbsp;';})()}</p>
         </div>
       </div>
     </div>
@@ -5197,7 +5197,7 @@ async function renderSyahriyahOrtu(){
         </div>
         <div class="dh-detail">
           <p>${santriNama} · ${CONFIG.pesantren_nama||'Pesantren'}</p>
-          <p>${(()=>{const sObj=ALL_SANTRI.find(x=>x.id==santriId)||{};const kb=ALL_KOBONG.find(x=>x.id==sObj.kobong_id);const kobong=kb?.nama||'';const kelas=sObj.kelas||'';const asrama=kb?.asrama?.nama||'';const dapur=sObj.dapur_id||'';const parts=[];if(kobong)parts.push('🏠 '+kobong+(kelas?' · Kelas '+kelas:''));if(dapur)parts.push('🍽️ '+dapur);if(asrama)parts.push('📍 '+asrama);return parts.join(' · ')||'&nbsp;';})()||'&nbsp;'}</p>
+          <p>${(()=>{const sObj=ALL_SANTRI.find(x=>x.id==santriId)||{};const kb=ALL_KOBONG.find(x=>x.id==sObj.kobong_id);const kobong=kb?.nama||'';const kelas=sObj.kelas||'';const asrama=kb?.asrama?.nama||'';const dapurNama=id=>(({'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'})[id]||id||'');const dapur=dapurNama(sObj.dapur_id);const parts=[];if(kobong)parts.push('🏠 '+kobong+(kelas?' · Kelas '+kelas:''));if(dapur)parts.push('🍽️ '+dapur);if(asrama)parts.push('📍 '+asrama);return parts.join(' · ')||'&nbsp;';})()||'&nbsp;'}</p>
         </div>
       </div>
     </div>
