@@ -9,7 +9,7 @@ const ASSETS = [
 
 // Install: cache semua aset utama
 self.addEventListener('install', function(event) {
-  self.skipWaiting(); // langsung aktif tanpa tunggu tab lama ditutup
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(ASSETS);
@@ -24,21 +24,28 @@ self.addEventListener('activate', function(event) {
       return Promise.all(
         keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
       );
-    }).then(() => self.clients.claim()) // ambil alih semua tab yang sudah terbuka
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch: network-first untuk HTML, cache-first untuk aset lain
+// Fetch
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
+
+  // Supabase API → selalu dari network, jangan cache
+  if (url.hostname.includes('supabase.co') || url.hostname.includes('supabase.io')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   const isHTML = event.request.headers.get('accept')?.includes('text/html')
     || url.pathname.endsWith('.html')
     || url.pathname.endsWith('/');
 
   if (isHTML) {
-    // Network-first untuk HTML: selalu ambil versi terbaru dari server
+    // Network-first untuk HTML
     event.respondWith(
       fetch(event.request)
         .then(function(response) {
@@ -49,7 +56,6 @@ self.addEventListener('fetch', function(event) {
           return response;
         })
         .catch(function() {
-          // Offline: fallback ke cache
           return caches.match(event.request) || caches.match('/santri/');
         })
     );
