@@ -905,7 +905,7 @@ body.is-offline #pg-login{padding-top:70px}
     <div class="sec" id="sec-dashboard">
       <!-- GREETING CARD -->
       <div id="dash-greeting" style="background:var(--green);border-radius:20px;padding:22px 26px;margin-bottom:20px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(13,79,53,.2)">
-        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-family:'Amiri',serif;font-size:80px;opacity:.08;pointer-events:none;letter-spacing:-2px">﷽</div>
+        <div style="position:absolute;left:0;right:0;bottom:-14px;text-align:center;font-family:'Amiri',serif;font-size:68px;font-weight:700;color:rgba(255,255,255,.08);line-height:1;user-select:none;pointer-events:none;letter-spacing:8px;white-space:nowrap">النُّور</div>
         <div id="dash-greeting-av" style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.3);flex-shrink:0"></div>
         <div style="flex:1;min-width:0;position:relative;z-index:1">
           <div id="dash-greeting-sub" style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;text-transform:uppercase;letter-spacing:.5px"></div>
@@ -3166,11 +3166,8 @@ async function openDetailModal(santriId){
   document.getElementById('mo-detail-body').innerHTML=`
     <!-- HEADER CARD -->
     <div style="background:var(--green);border-radius:var(--rad);padding:16px 18px 14px;margin-bottom:16px;position:relative;overflow:hidden;box-shadow:var(--sh-md)">
-      <!-- Dekorasi lingkaran -->
-      <div style="position:absolute;right:-24px;top:-24px;width:110px;height:110px;background:rgba(255,255,255,.05);border-radius:50%"></div>
-      <div style="position:absolute;left:-14px;bottom:-24px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%"></div>
-      <!-- Watermark Arab النور -->
-      <div style="position:absolute;right:-4px;bottom:-18px;font-family:'Amiri',serif;font-size:72px;font-weight:700;color:rgba(255,255,255,.07);line-height:1;user-select:none;pointer-events:none;letter-spacing:-2px">النُور</div>
+      <!-- Watermark النُّور full width -->
+      <div style="position:absolute;left:0;right:0;bottom:-14px;text-align:center;font-family:'Amiri',serif;font-size:68px;font-weight:700;color:rgba(255,255,255,.08);line-height:1;user-select:none;pointer-events:none;letter-spacing:8px;white-space:nowrap">النُّور</div>
       <div style="position:relative;z-index:1">
         <!-- Baris atas: avatar + nama + sisa tagihan -->
         <div style="display:flex;align-items:flex-start;gap:12px">
