@@ -2153,7 +2153,7 @@ async function loadAllData(){
   // Load asrama & kobong DULU — karena loadSantriForRole butuh ALL_KOBONG sudah terisi
   const [as, ks, ps] = await Promise.all([
     SB.from('asrama').select('*').order('nama'),
-    SB.from('kobong').select('*,asrama(id,nama)').order('nama'),
+    SB.from('kobong').select('*,asrama!left(id,nama)').order('nama'),
     (SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') ? SB.from('pengurus').select('*').order('nama') : {data:[]}
   ]);
   ALL_ASRAMA = as.data||[];
@@ -2173,7 +2173,7 @@ async function loadAllData(){
 async function loadSantriForRole(){
   try{
   if(SESSION.role==='super'){
-    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').eq('is_arsip',false).order('nama');
+    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong!left(id,nama)').eq('is_arsip',false).order('nama');
     if(error) throw error;
     return data||[];
   }
@@ -2182,7 +2182,7 @@ async function loadSantriForRole(){
     if(!asramaIds.length) return [];
     const kobongIds = ALL_KOBONG.filter(k=>asramaIds.includes(String(k.asrama_id))).map(k=>k.id);
     if(!kobongIds.length) return [];
-    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').in('kobong_id',kobongIds).eq('is_arsip',false).order('nama');
+    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong!left(id,nama)').in('kobong_id',kobongIds).eq('is_arsip',false).order('nama');
     if(error) throw error;
     return data||[];
   }
@@ -2193,14 +2193,14 @@ async function loadSantriForRole(){
     const kobongIds = JSON.parse(SESSION.user?.kobong_ids||'[]').map(Number).filter(Boolean);
 
     // Load santri berdasarkan created_by = username (santri baru setelah fix)
-    const q1 = SB.from('santri').select('*,kobong(id,nama)').eq('created_by', username).eq('is_arsip',false).order('nama');
+    const q1 = SB.from('santri').select('*,kobong!left(id,nama)').eq('created_by', username).eq('is_arsip',false).order('nama');
     const {data:d1, error:e1} = await q1;
     if(e1) throw e1;
 
     // Load santri berdasarkan kobong_ids yang dimiliki pengurus (data lama created_by=kangadmin)
     let d2 = [];
     if(kobongIds.length>0){
-      const {data, error:e2} = await SB.from('santri').select('*,kobong(id,nama)').in('kobong_id', kobongIds).eq('is_arsip',false).order('nama');
+      const {data, error:e2} = await SB.from('santri').select('*,kobong!left(id,nama)').in('kobong_id', kobongIds).eq('is_arsip',false).order('nama');
       if(e2) throw e2;
       d2 = data||[];
     }
@@ -2216,7 +2216,7 @@ async function loadSantriForRole(){
     console.warn('loadSantriForRole fallback (is_arsip mungkin belum ada):', e.message);
     try{
       if(SESSION.role==='super'){
-        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').order('nama');
+        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong!left(id,nama)').order('nama');
         return data||[];
       }
       if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
@@ -2224,17 +2224,17 @@ async function loadSantriForRole(){
         if(!asramaIds.length) return [];
         const kobongIds = ALL_KOBONG.filter(k=>asramaIds.includes(String(k.asrama_id))).map(k=>k.id);
         if(!kobongIds.length) return [];
-        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').in('kobong_id',kobongIds).order('nama');
+        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong!left(id,nama)').in('kobong_id',kobongIds).order('nama');
         return data||[];
       }
       if(SESSION.role==='pengurus'){
         const username = SESSION.user?.username||'';
         if(!username) return [];
         const kobongIds = JSON.parse(SESSION.user?.kobong_ids||'[]').map(Number).filter(Boolean);
-        const {data:d1} = await SB.from('santri').select('*,kobong(id,nama)').eq('created_by', username).order('nama');
+        const {data:d1} = await SB.from('santri').select('*,kobong!left(id,nama)').eq('created_by', username).order('nama');
         let d2 = [];
         if(kobongIds.length>0){
-          const {data} = await SB.from('santri').select('*,kobong(id,nama)').in('kobong_id', kobongIds).order('nama');
+          const {data} = await SB.from('santri').select('*,kobong!left(id,nama)').in('kobong_id', kobongIds).order('nama');
           d2 = data||[];
         }
         const map = new Map();
@@ -2249,13 +2249,13 @@ async function loadSantriForRole(){
 async function loadTxForRole(){
   if(SESSION.role==='ortu') return [];
   if(SESSION.role==='super'){
-    const {data} = await SB.from('transaksi').select('*,santri(nama,kobong(id,nama))').order('tanggal',{ascending:false}).order('created_at',{ascending:false}).limit(500);
+    const {data} = await SB.from('transaksi').select('*,santri!left(nama,kobong!left(id,nama))').order('tanggal',{ascending:false}).order('created_at',{ascending:false}).limit(500);
     return data||[];
   }
   if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'||SESSION.role==='pengurus'){
     const sids = ALL_SANTRI.map(s=>s.id);
     if(!sids.length) return [];
-    const {data} = await SB.from('transaksi').select('*,santri(nama,kobong(id,nama))').in('santri_id',sids).order('tanggal',{ascending:false}).limit(1000);
+    const {data} = await SB.from('transaksi').select('*,santri!left(nama,kobong!left(id,nama))').in('santri_id',sids).order('tanggal',{ascending:false}).limit(1000);
     return data||[];
   }
   return [];
@@ -5213,7 +5213,7 @@ async function renderSyahriyahOrtu(){
   // Jika kobong belum ada (ortu), fetch langsung dari DB
   if(!_kbSy && (_sObjSy.kobong_id || santri?.kobong_id)){
     const kbId = _sObjSy.kobong_id || santri?.kobong_id;
-    const {data:kbData} = await SB.from('kobong').select('id,nama,asrama(id,nama)').eq('id',kbId).maybeSingle();
+    const {data:kbData} = await SB.from('kobong').select('id,nama,asrama!left(id,nama)').eq('id',kbId).maybeSingle();
     if(kbData) _kbSy = kbData;
   }
 
@@ -5463,7 +5463,7 @@ async function exportLengkap(){
       const tglStart = mm ? `${yy}-${mm}-01` : null;
       const tglEnd = mm ? `${yy}-${mm}-31` : null;
 
-      let q = SB.from('transaksi').select('*,santri(nama,kobong(nama))').in('santri_id',sids).order('tanggal').order('created_at');
+      let q = SB.from('transaksi').select('*,santri!left(nama,kobong!left(nama))').in('santri_id',sids).order('tanggal').order('created_at');
       if(tglStart) q = q.gte('tanggal',tglStart).lte('tanggal',tglEnd);
       const {data} = await q;
       txsBulan = data||[];
@@ -6842,7 +6842,7 @@ async function renderMonitor(){
 
   try{
     const {data:logs} = await SB.from('activity_log')
-      .select('*, pengurus(nama, role)')
+      .select('*, pengurus!left(nama, role)')
       .order('last_seen', {ascending:false});
 
     const entries = (logs||[]).map(log=>{
