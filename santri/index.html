@@ -435,49 +435,28 @@ tbody td{padding:10px 14px;vertical-align:middle}
 /* ── DETAIL HEADER ───────────────────────── */
 .dh{
   background:var(--green);
-  border-radius:var(--rad);padding:16px 18px 14px;
+  border-radius:var(--rad);padding:20px 22px;
   color:#fff;margin-bottom:18px;
   position:relative;overflow:hidden;
+  display:flex;align-items:center;gap:14px;
   box-shadow:var(--sh-md);
 }
-.dh-calligraphy{
-  position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;z-index:0;
+.dh::after{
+  content:'﷽';position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  font-family:'Amiri',serif;font-size:60px;opacity:.06;pointer-events:none;
 }
-.dh-calligraphy-inner{
-  position:absolute;left:-10px;bottom:-10px;right:-10px;top:-10px;
-  display:flex;flex-direction:column;gap:0;
-  transform:rotate(-15deg);transform-origin:center;opacity:.055;
-}
-.dh-calligraphy-inner div{
-  font-family:'Amiri',serif;font-size:28px;font-weight:700;color:#fff;
-  white-space:nowrap;letter-spacing:12px;line-height:2.1;
-}
-.dh-inner{position:relative;z-index:1}
-.dh-top{display:flex;align-items:flex-start;gap:12px}
 .dh-av{
-  width:54px;height:54px;
-  background:rgba(255,255,255,.16);border-radius:50%;
+  width:52px;height:52px;
+  background:rgba(255,255,255,.15);border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:22px;border:2px solid rgba(255,255,255,.3);flex-shrink:0;
+  font-size:22px;border:2px solid rgba(255,255,255,.25);flex-shrink:0;
   overflow:hidden;
 }
-.dh-name-wrap{flex:1;min-width:0;padding-top:2px}
-.dh-info h3{font-family:'Amiri',serif;font-size:17px;font-weight:700;margin-bottom:0;line-height:1.25;word-break:break-word;overflow-wrap:anywhere}
-.dh-detail{padding-left:66px}
-.dh-detail p{font-size:11px;opacity:.72;line-height:1.6;margin:0;word-break:break-word;overflow-wrap:anywhere}
-.dh-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:2px}
-.dh-item{display:flex;align-items:flex-start;gap:7px;min-width:0}
-.dh-item .dh-ic{font-size:13px;line-height:1.45;flex-shrink:0;opacity:.85}
-.dh-item .dh-tx{min-width:0;overflow:hidden}
-.dh-item .dh-k{display:block;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.55;margin-bottom:1px;font-family:'DM Sans',sans-serif}
-.dh-item .dh-v{display:block;font-size:12px;font-weight:500;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Sans',sans-serif}
-.dh-divider{height:1px;background:rgba(255,255,255,.16);margin:11px -18px 12px}
-.dh-meta{padding-left:66px;display:flex;flex-direction:column;gap:1px;margin-top:5px;min-width:0}
-.dh-meta-row{display:flex;align-items:center;flex-wrap:wrap;gap:3px 6px;font-size:11.5px;line-height:1.35;opacity:.88;overflow-wrap:anywhere;font-family:'DM Sans',sans-serif}
-.dh-meta-row .sep{opacity:.5}
-.dh-saldo{text-align:right;flex-shrink:0;position:relative;z-index:1;padding-top:2px}
-.dh-saldo .lbl{font-size:8.5px;opacity:.6;margin-bottom:2px;letter-spacing:.5px;text-transform:uppercase;font-weight:700}
-.dh-saldo .amt{font-size:18px;font-weight:800;color:var(--gold-l);font-family:'Amiri',serif;letter-spacing:-.3px;white-space:nowrap}
+.dh-info h3{font-family:'Amiri',serif;font-size:19px;margin-bottom:2px}
+.dh-info p{font-size:12px;opacity:.65}
+.dh-saldo{margin-left:auto;text-align:right;position:relative;z-index:1}
+.dh-saldo .lbl{font-size:10.5px;opacity:.65;margin-bottom:2px;letter-spacing:.3px}
+.dh-saldo .amt{font-size:26px;font-weight:700;color:var(--gold-l);font-family:'Amiri',serif;letter-spacing:-.5px}
 
 /* ── TIMELINE ────────────────────────────── */
 .tl{list-style:none;position:relative;padding-left:16px}
@@ -633,84 +612,9 @@ img{-webkit-user-drag:none;-khtml-user-drag:none;-moz-user-drag:none;user-drag:n
   margin-top:18px;text-align:center;font-size:11px;
   color:rgba(255,255,255,.4);letter-spacing:.2px;line-height:1.6;
 }
-
-
-/* === OFFLINE DETECTION === */
-@keyframes offlineSlideDown{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:translateY(0)}}
-@keyframes offlineSlideUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-100%)}}
-@keyframes toastSlideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-@keyframes toastSlideDown{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(20px)}}
-#offline-banner{
-  display:none;position:fixed;top:0;left:0;right:0;z-index:99999;
-  background:#991b1b;padding:12px 20px;
-  flex-direction:row;align-items:center;justify-content:center;gap:10px;
-  box-shadow:0 4px 24px rgba(153,27,27,.5);
-  border-bottom:1px solid rgba(255,255,255,.1);
-}
-#offline-banner.show{display:flex;animation:offlineSlideDown .35s cubic-bezier(.34,1.56,.64,1) both}
-#offline-banner.hide{animation:offlineSlideUp .25s ease forwards}
-.offl-icon{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
-.offl-text{display:flex;flex-direction:column;gap:1px}
-.offl-title{font-size:13px;font-weight:700;color:#fff;letter-spacing:.2px}
-.offl-sub{font-size:11px;color:rgba(255,255,255,.7)}
-.offl-dot{width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;animation:pulseDot 1.5s ease-in-out infinite}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(248,113,113,.4)}70%{box-shadow:0 0 0 8px rgba(248,113,113,0)}100%{box-shadow:0 0 0 0 rgba(248,113,113,0)}}
-#online-toast{
-  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
-  z-index:99999;background:#0f4c2a;border:1px solid rgba(45,143,86,.4);
-  color:#fff;padding:11px 20px;border-radius:99px;
-  font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(15,76,42,.35);
-  white-space:nowrap;display:none;align-items:center;gap:8px;
-}
-#online-toast.show{display:flex;animation:toastSlideUp .35s cubic-bezier(.34,1.56,.64,1) both}
-#online-toast.hide{animation:toastSlideDown .25s ease forwards}
-.toast-dot{width:8px;height:8px;border-radius:50%;background:#4caf7d;flex-shrink:0}
-#offline-modal{
-  display:none;position:fixed;inset:0;z-index:999999;
-  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
-  align-items:center;justify-content:center;padding:20px;
-}
-#offline-modal.show{display:flex;animation:fadeIn .2s ease}
-.offm-box{
-  background:#fff;border-radius:20px;padding:28px 24px;
-  width:100%;max-width:340px;text-align:center;
-  box-shadow:0 24px 60px rgba(0,0,0,.25);
-  animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);
-}
-.offm-icon{font-size:44px;margin-bottom:12px}
-.offm-title{font-size:17px;font-weight:800;color:#1a1a1a;margin-bottom:8px}
-.offm-desc{font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:20px}
-.offm-btn{width:100%;padding:13px;border:none;border-radius:12px;background:#0f4c2a;color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
-.offm-btn:hover{background:#1a6b3c;transform:translateY(-1px)}
-body.is-offline header{margin-top:50px}
-body.is-offline .login{padding-top:70px}
 </style>
 </head>
 <body>
-
-<div id="offline-banner">
-  <div class="offl-dot"></div>
-  <div class="offl-icon">📡</div>
-  <div class="offl-text">
-    <div class="offl-title">Tidak Ada Koneksi Internet</div>
-    <div class="offl-sub">Tampilan mungkin tidak lengkap · Periksa jaringan Anda</div>
-  </div>
-</div>
-<div id="online-toast">
-  <div class="toast-dot"></div>
-  Koneksi internet kembali
-</div>
-<div id="offline-modal">
-  <div class="offm-box">
-    <div class="offm-icon">🔌</div>
-    <div class="offm-title">Tidak Ada Koneksi</div>
-    <div class="offm-desc" id="offm-desc-text">Periksa koneksi internet Anda sebelum melanjutkan.</div>
-    <button class="offm-btn" onclick="document.getElementById('offline-modal').classList.remove('show')">Tutup</button>
-  </div>
-</div>
-
-
-
 <script>
 /* ===== Proteksi Anti-Plagiasi ===== */
 (function(){
@@ -2153,7 +2057,7 @@ async function loadAllData(){
   // Load asrama & kobong DULU — karena loadSantriForRole butuh ALL_KOBONG sudah terisi
   const [as, ks, ps] = await Promise.all([
     SB.from('asrama').select('*').order('nama'),
-    SB.from('kobong').select('*,asrama!left(id,nama)').order('nama'),
+    SB.from('kobong').select('*,asrama(id,nama)').order('nama'),
     (SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') ? SB.from('pengurus').select('*').order('nama') : {data:[]}
   ]);
   ALL_ASRAMA = as.data||[];
@@ -2173,7 +2077,7 @@ async function loadAllData(){
 async function loadSantriForRole(){
   try{
   if(SESSION.role==='super'){
-    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong!left(id,nama)').eq('is_arsip',false).order('nama');
+    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').eq('is_arsip',false).order('nama');
     if(error) throw error;
     return data||[];
   }
@@ -2182,7 +2086,7 @@ async function loadSantriForRole(){
     if(!asramaIds.length) return [];
     const kobongIds = ALL_KOBONG.filter(k=>asramaIds.includes(String(k.asrama_id))).map(k=>k.id);
     if(!kobongIds.length) return [];
-    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong!left(id,nama)').in('kobong_id',kobongIds).eq('is_arsip',false).order('nama');
+    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').in('kobong_id',kobongIds).eq('is_arsip',false).order('nama');
     if(error) throw error;
     return data||[];
   }
@@ -2193,14 +2097,14 @@ async function loadSantriForRole(){
     const kobongIds = JSON.parse(SESSION.user?.kobong_ids||'[]').map(Number).filter(Boolean);
 
     // Load santri berdasarkan created_by = username (santri baru setelah fix)
-    const q1 = SB.from('santri').select('*,kobong!left(id,nama)').eq('created_by', username).eq('is_arsip',false).order('nama');
+    const q1 = SB.from('santri').select('*,kobong(id,nama)').eq('created_by', username).eq('is_arsip',false).order('nama');
     const {data:d1, error:e1} = await q1;
     if(e1) throw e1;
 
     // Load santri berdasarkan kobong_ids yang dimiliki pengurus (data lama created_by=kangadmin)
     let d2 = [];
     if(kobongIds.length>0){
-      const {data, error:e2} = await SB.from('santri').select('*,kobong!left(id,nama)').in('kobong_id', kobongIds).eq('is_arsip',false).order('nama');
+      const {data, error:e2} = await SB.from('santri').select('*,kobong(id,nama)').in('kobong_id', kobongIds).eq('is_arsip',false).order('nama');
       if(e2) throw e2;
       d2 = data||[];
     }
@@ -2216,7 +2120,7 @@ async function loadSantriForRole(){
     console.warn('loadSantriForRole fallback (is_arsip mungkin belum ada):', e.message);
     try{
       if(SESSION.role==='super'){
-        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong!left(id,nama)').order('nama');
+        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').order('nama');
         return data||[];
       }
       if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
@@ -2224,17 +2128,17 @@ async function loadSantriForRole(){
         if(!asramaIds.length) return [];
         const kobongIds = ALL_KOBONG.filter(k=>asramaIds.includes(String(k.asrama_id))).map(k=>k.id);
         if(!kobongIds.length) return [];
-        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong!left(id,nama)').in('kobong_id',kobongIds).order('nama');
+        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').in('kobong_id',kobongIds).order('nama');
         return data||[];
       }
       if(SESSION.role==='pengurus'){
         const username = SESSION.user?.username||'';
         if(!username) return [];
         const kobongIds = JSON.parse(SESSION.user?.kobong_ids||'[]').map(Number).filter(Boolean);
-        const {data:d1} = await SB.from('santri').select('*,kobong!left(id,nama)').eq('created_by', username).order('nama');
+        const {data:d1} = await SB.from('santri').select('*,kobong(id,nama)').eq('created_by', username).order('nama');
         let d2 = [];
         if(kobongIds.length>0){
-          const {data} = await SB.from('santri').select('*,kobong!left(id,nama)').in('kobong_id', kobongIds).order('nama');
+          const {data} = await SB.from('santri').select('*,kobong(id,nama)').in('kobong_id', kobongIds).order('nama');
           d2 = data||[];
         }
         const map = new Map();
@@ -2249,13 +2153,13 @@ async function loadSantriForRole(){
 async function loadTxForRole(){
   if(SESSION.role==='ortu') return [];
   if(SESSION.role==='super'){
-    const {data} = await SB.from('transaksi').select('*,santri!left(nama,kobong!left(id,nama))').order('tanggal',{ascending:false}).order('created_at',{ascending:false}).limit(500);
+    const {data} = await SB.from('transaksi').select('*,santri(nama,kobong(id,nama))').order('tanggal',{ascending:false}).order('created_at',{ascending:false}).limit(500);
     return data||[];
   }
   if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'||SESSION.role==='pengurus'){
     const sids = ALL_SANTRI.map(s=>s.id);
     if(!sids.length) return [];
-    const {data} = await SB.from('transaksi').select('*,santri!left(nama,kobong!left(id,nama))').in('santri_id',sids).order('tanggal',{ascending:false}).limit(1000);
+    const {data} = await SB.from('transaksi').select('*,santri(nama,kobong(id,nama))').in('santri_id',sids).order('tanggal',{ascending:false}).limit(1000);
     return data||[];
   }
   return [];
@@ -3120,12 +3024,7 @@ async function openDetailModal(id){
   const {data:txs} = await SB.from('transaksi').select('*').eq('santri_id',id).order('tanggal',{ascending:false}).order('created_at',{ascending:false});
   const {data:tagihan} = await SB.from('tagihan_pondok').select('*').eq('santri_id',String(id)).order('created_at',{ascending:false});
   const kritis = parseInt(CONFIG.kritis_batas)||50000;
-  const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'Belum ditentukan';
-  const _dapurMap={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
-  const dapurVal = _dapurMap[s.dapur_id] || s.dapur_id || '—';
-  const _kbForAsrama = ALL_KOBONG.find(x=>x.id==s.kobong_id);
-  const asramaVal = _kbForAsrama?.asrama?.nama || '—';
-  const kelasVal = s.kelas || '—';
+  const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
 
   // Build tagihan pondok HTML
   let tagihanHtml = '';
@@ -3201,20 +3100,15 @@ async function openDetailModal(id){
   document.getElementById('mo-detail-nama').textContent = s.nama;
   document.getElementById('mo-detail-body').innerHTML=`
     <div class="dh">
-      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
-      <div class="dh-inner">
-        <div class="dh-top">
-          <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
-          <div class="dh-name-wrap"><div class="dh-info"><h3>${s.nama}</h3></div></div>
-          <div class="dh-saldo">
-            <div class="lbl">Saldo Akhir</div>
-            <div class="amt" style="${saldoReal<0?'color:#ff6b6b':saldoReal<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoReal<0?'\u2212 ':''} ${rp(saldoReal)}</div>
-          </div>
-        </div>
-        <div class="dh-meta">
-          <div class="dh-meta-row"><span>🏠</span><span>${k}</span><span class="sep">·</span><span>🎓 Kelas ${kelasVal}</span></div>
-          <div class="dh-meta-row"><span>🍽️</span><span>${dapurVal}</span><span class="sep">·</span><span>📍</span><span>${asramaVal}</span></div>
-        </div>
+      <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
+      <div class="dh-info">
+        <h3>${s.nama}</h3>
+        <p>🏠 ${k} ${s.catatan?'· '+s.catatan:''}</p>
+      </div>
+      <div class="dh-saldo">
+        <div class="lbl">Saldo Akhir</div>
+        <div class="amt" style="${saldoReal<0?'color:#ff6b6b':saldoReal<kritis?'color:var(--gold-l)':''}}">${saldoReal<0?'\u2212 ':''} ${rp(saldoReal)}</div>
+        <div style="font-size:11px;margin-top:4px">${saldoReal<0?'🔴 Saldo minus!':saldoReal<kritis?'⚠️ Mendekati habis':'✅ Aman'}</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
@@ -4774,8 +4668,7 @@ function updateHdrProfilAv(){
   if(!av) return;
   const p = SESSION.user;
   if(p?.foto_url){
-    const url = p._foto_cache || p.foto_url;
-    av.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    av.innerHTML = `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
   } else {
     av.textContent = avLetter(p?.nama||'P');
   }
@@ -4846,20 +4739,15 @@ async function simpanProfilPengurus(){
       if(!res.ok) throw new Error('Upload gagal');
       const r = await res.json();
       upd.foto_url = r.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_400/');
-    }catch(e){
-      console.error(e);
-      toast('❌ Gagal upload foto, profil tidak disimpan: '+e.message, false);
-      return;
-    }
+    }catch(e){ console.error(e); toast('Gagal upload foto: '+e.message, false); }
   } else if(_profilHapusFoto){
     upd.foto_url = null;
   }
 
   let saveError = null;
-  const fotoVal = upd.foto_url !== undefined ? upd.foto_url : SESSION.user.foto_url;
   if(SESSION.role === 'super'){
-    const profilJson = JSON.stringify({nama: upd.nama||SESSION.user.nama, foto_url: fotoVal, no_wa: upd.no_wa||SESSION.user.no_wa||''});
-    const {error: e} = await SB.from('settings').upsert({key:'super_profil', value: profilJson}, {onConflict:'key'});
+    const profilJson = JSON.stringify({nama: upd.nama||SESSION.user.nama, foto_url: upd.foto_url!==undefined?upd.foto_url:SESSION.user.foto_url, no_wa: upd.no_wa||SESSION.user.no_wa||''});
+    const {error: e} = await SB.from('settings').upsert({key:'super_profil', value: profilJson});
     saveError = e;
   } else {
     const {error: e} = await SB.from('pengurus').update(upd).eq('id', SESSION.user.id);
@@ -4868,9 +4756,15 @@ async function simpanProfilPengurus(){
   const error = saveError;
   if(error){ toast('Gagal simpan: '+error.message, false); return; }
 
-  // Pakai langsung nilai yang baru kita simpan — jangan baca ulang dari DB,
-  // supaya tidak ke-overwrite oleh data lama (mis. saat ada baris duplikat di settings)
-  upd.foto_url = fotoVal;
+  // Ambil data terbaru dari DB termasuk foto_url
+  if(SESSION.role === 'super'){
+    const {data: fsp} = await SB.from('settings').select('value').eq('key','super_profil').single();
+    let spObj = {}; try{ spObj = JSON.parse(fsp?.value||'{}'); }catch(e){}
+    if(spObj.foto_url !== undefined) upd.foto_url = spObj.foto_url;
+  } else {
+    const { data: freshData } = await SB.from('pengurus').select('*').eq('id', SESSION.user.id).single();
+    if(freshData){ upd.foto_url = freshData.foto_url; }
+  }
 
   // Update SESSION lokal
   SESSION.user = {...SESSION.user, ...upd};
@@ -4885,12 +4779,7 @@ async function simpanProfilPengurus(){
   // Update nama di header
   const roleLabels = {super:'👑 Kang Admin', pengurus:'👨\u200d💼 '+(SESSION.user?.nama||'Pengurus'), sekretaris:'📋 '+(SESSION.user?.nama||'Sekretaris'), sekretariat:'🏢 '+(SESSION.user?.nama||'Sekretariat')};
   document.getElementById('hdr-role').textContent = roleLabels[SESSION.role]||SESSION.role;
-  // Update avatar foto di header dan greeting dashboard - bust cache dengan timestamp
-  if(SESSION.user.foto_url){
-    SESSION.user._foto_cache = SESSION.user.foto_url + '?t=' + Date.now();
-  } else {
-    SESSION.user._foto_cache = null;
-  }
+  // Update avatar foto di header dan greeting dashboard
   updateHdrProfilAv();
   renderGreeting();
 
@@ -5122,12 +5011,7 @@ async function renderDetailOrtu(){
     p_santri_id: String(s.id), p_pin: SESSION.pin||''
   });
   if(txRpc?.data) txs = txRpc.data;
-  const k=s.kobong?.nama||getKobongNama(s.kobong_id)||'Belum ditentukan';
-  const _dapurMapO={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
-  const dapurValO = _dapurMapO[s.dapur_id] || s.dapur_id || '—';
-  const _kbForAsramaO = ALL_KOBONG.find(x=>x.id==s.kobong_id);
-  const asramaValO = _kbForAsramaO?.asrama?.nama || '—';
-  const kelasValO = s.kelas || '—';
+  const k=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
   // Hitung saldo dari transaksi (SUMBER KEBENARAN)
   const totalMasukO  = (txs||[]).filter(t=>t.jenis==='masuk').reduce((a,t)=>a+t.nominal,0);
   const totalKeluarO = (txs||[]).filter(t=>t.jenis==='keluar').reduce((a,t)=>a+t.nominal,0);
@@ -5156,20 +5040,17 @@ async function renderDetailOrtu(){
 
   document.getElementById('detail-content').innerHTML=`
     <div class="dh">
-      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
-      <div class="dh-inner">
-        <div class="dh-top">
-          <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
-          <div class="dh-name-wrap"><div class="dh-info"><h3>${s.nama}</h3></div></div>
-          <div class="dh-saldo">
-            <div class="lbl">Saldo Akhir</div>
-            <div class="amt" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoRealO<0?'\u2212 ':''} ${rp(saldoRealO)}</div>
-          </div>
-        </div>
-        <div class="dh-meta">
-          <div class="dh-meta-row"><span>🏠</span><span>${k}</span><span class="sep">·</span><span>🎓 Kelas ${kelasValO}</span></div>
-          <div class="dh-meta-row"><span>🍽️</span><span>${dapurValO}</span><span class="sep">·</span><span>📍</span><span>${asramaValO}</span></div>
-        </div>
+      <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
+      <div class="dh-info">
+        <h3>${s.nama}</h3>
+        <p>🏠 ${k} · ${CONFIG.pesantren_nama||'Pesantren'}</p>
+        <p style="margin-top:4px;font-size:11px;opacity:.7">${CONFIG.bulan_aktif||''}</p>
+      </div>
+      <div class="dh-saldo">
+        <div class="lbl">Saldo Akhir</div>
+        <div class="amt" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':''}}">${saldoRealO<0?'\u2212 ':''} ${rp(saldoRealO)}</div>
+        <div style="font-size:11px;margin-top:4px">${saldoRealO<0?'🔴 Saldo minus!':saldoRealO<kritis?'⚠️ Mendekati habis':'✅ Aman'}</div>
+      </div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
@@ -5205,37 +5086,12 @@ async function renderSyahriyahOrtu(){
     ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
     : `<span style="font-size:22px;font-weight:700;color:#fff">${santriNama.charAt(0).toUpperCase()}</span>`;
 
-  // Untuk role ortu, ALL_SANTRI & ALL_KOBONG kosong — pakai SESSION.santri langsung
-  const _dapurMapSy={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
-  let _sObjSy = ALL_SANTRI.find(x=>x.id==santriId) || santri || {};
-  let _kbSy = ALL_KOBONG.find(x=>x.id==_sObjSy.kobong_id);
-
-  // Jika kobong belum ada (ortu), fetch langsung dari DB
-  if(!_kbSy && (_sObjSy.kobong_id || santri?.kobong_id)){
-    const kbId = _sObjSy.kobong_id || santri?.kobong_id;
-    const {data:kbData} = await SB.from('kobong').select('id,nama,asrama!left(id,nama)').eq('id',kbId).maybeSingle();
-    if(kbData) _kbSy = kbData;
-  }
-
-  const kamarSy = _kbSy?.nama || santri?.kobong?.nama || santri?.kobong_nama || 'Belum ditentukan';
-  const kelasSy = (_sObjSy.kelas || santri?.kelas || '—');
-  const dapurSy = _dapurMapSy[_sObjSy.dapur_id || santri?.dapur_id] || _sObjSy.dapur_id || santri?.dapur_id || '—';
-  const asramaSy = _kbSy?.asrama?.nama || '—';
-
   container.innerHTML = `
     <div class="dh" style="margin-bottom:20px">
-      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
-      <div class="dh-inner">
-        <div class="dh-top">
-          <div class="dh-av" style="overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--green)">${avHtml}</div>
-          <div class="dh-name-wrap"><div class="dh-info"><h3>Uang Syahriyah</h3>
-            <div style="font-size:11px;opacity:.72;margin-top:3px;word-break:break-word;overflow-wrap:anywhere">${santriNama} · ${CONFIG.pesantren_nama||'Pesantren'}</div>
-          </div></div>
-        </div>
-        <div class="dh-meta">
-          <div class="dh-meta-row"><span>🏠</span><span>${kamarSy}</span><span class="sep">·</span><span>🎓 Kelas ${kelasSy}</span></div>
-          <div class="dh-meta-row"><span>🍽️</span><span>${dapurSy}</span><span class="sep">·</span><span>📍</span><span>${asramaSy}</span></div>
-        </div>
+      <div class="dh-av" style="overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--green)">${avHtml}</div>
+      <div class="dh-info">
+        <h3>Uang Syahriyah</h3>
+        <p>${santriNama} · ${CONFIG.pesantren_nama||'Pesantren'}</p>
       </div>
     </div>
     <div id="syahriyah-deposit-info" style="margin-bottom:14px"></div>
@@ -5463,7 +5319,7 @@ async function exportLengkap(){
       const tglStart = mm ? `${yy}-${mm}-01` : null;
       const tglEnd = mm ? `${yy}-${mm}-31` : null;
 
-      let q = SB.from('transaksi').select('*,santri!left(nama,kobong!left(nama))').in('santri_id',sids).order('tanggal').order('created_at');
+      let q = SB.from('transaksi').select('*,santri(nama,kobong(nama))').in('santri_id',sids).order('tanggal').order('created_at');
       if(tglStart) q = q.gte('tanggal',tglStart).lte('tanggal',tglEnd);
       const {data} = await q;
       txsBulan = data||[];
@@ -6842,7 +6698,7 @@ async function renderMonitor(){
 
   try{
     const {data:logs} = await SB.from('activity_log')
-      .select('*, pengurus!left(nama, role)')
+      .select('*, pengurus(nama, role)')
       .order('last_seen', {ascending:false});
 
     const entries = (logs||[]).map(log=>{
@@ -7223,69 +7079,5 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-<script>
-(function(){
-  const banner=document.getElementById('offline-banner');
-  const toast=document.getElementById('online-toast');
-  const modal=document.getElementById('offline-modal');
-  const modalDesc=document.getElementById('offm-desc-text');
-  let toastTimer=null;
-
-  function updateHeaderStatus(isOnline){
-    const ind = document.getElementById('cloud-ind');
-    if(!ind) return;
-    if(isOnline){
-      ind.innerHTML = '<span class="cloud-dot ok"></span>Online';
-    } else {
-      ind.innerHTML = '<span class="cloud-dot err"></span>Offline';
-    }
-  }
-
-  function showOffline(){
-    if(!banner)return;
-    banner.classList.remove('hide');
-    banner.classList.add('show');
-    document.body.classList.add('is-offline');
-    if(toast)toast.classList.remove('show');
-    updateHeaderStatus(false);
-  }
-  function showOnline(){
-    if(!banner)return;
-    banner.classList.add('hide');
-    setTimeout(()=>{banner.classList.remove('show','hide');document.body.classList.remove('is-offline');},250);
-    if(toast){
-      toast.classList.remove('hide');
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer=setTimeout(()=>{toast.classList.add('hide');setTimeout(()=>toast.classList.remove('show','hide'),250);},3000);
-    }
-    updateHeaderStatus(true);
-  }
-  function showOfflineModal(pesan){
-    if(modalDesc)modalDesc.textContent=pesan;
-    if(modal)modal.classList.add('show');
-  }
-
-  if(!navigator.onLine)showOffline();
-  window.addEventListener('offline',showOffline);
-  window.addEventListener('online',showOnline);
-
-  document.addEventListener('click',function(e){
-    if(!navigator.onLine){
-      const loginBtn=e.target.closest('#btn-login,#btn-masuk,button[type=submit]');
-      if(loginBtn){
-        e.preventDefault();e.stopPropagation();
-        showOfflineModal('Tidak dapat masuk saat ini. Periksa koneksi internet Anda dan coba lagi.');
-        return;
-      }
-      const saveBtn=e.target.closest('button.btn-p,#btn-simpan,#btn-topup,#btn-transfer,#btn-bayar,#btn-kirim');
-      if(saveBtn){
-        e.preventDefault();e.stopPropagation();
-        showOfflineModal('Data tidak dapat disimpan tanpa koneksi internet. Pastikan Anda terhubung ke jaringan terlebih dahulu.');
-      }
-    }
-  },true);
-})();
-</script>
 </body>
 </html>
