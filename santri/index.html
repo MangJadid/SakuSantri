@@ -473,7 +473,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .dh-item .dh-v{display:block;font-size:12px;font-weight:500;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Sans',sans-serif}
 .dh-divider{height:1px;background:rgba(255,255,255,.16);margin:11px -18px 12px}
 .dh-meta{padding-left:66px;display:flex;flex-direction:column;gap:1px;margin-top:5px;min-width:0}
-.dh-meta-row{display:flex;align-items:center;gap:5px;font-size:11.5px;line-height:1.35;opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Sans',sans-serif}
+.dh-meta-row{display:flex;align-items:center;flex-wrap:wrap;gap:3px 6px;font-size:11.5px;line-height:1.35;opacity:.88;overflow-wrap:anywhere;font-family:'DM Sans',sans-serif}
 .dh-meta-row .sep{opacity:.5}
 .dh-saldo{text-align:right;flex-shrink:0;position:relative;z-index:1;padding-top:2px}
 .dh-saldo .lbl{font-size:8.5px;opacity:.6;margin-bottom:2px;letter-spacing:.5px;text-transform:uppercase;font-weight:700}
@@ -4846,16 +4846,20 @@ async function simpanProfilPengurus(){
       if(!res.ok) throw new Error('Upload gagal');
       const r = await res.json();
       upd.foto_url = r.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_400/');
-    }catch(e){ console.error(e); toast('Gagal upload foto: '+e.message, false); }
+    }catch(e){
+      console.error(e);
+      toast('❌ Gagal upload foto, profil tidak disimpan: '+e.message, false);
+      return;
+    }
   } else if(_profilHapusFoto){
     upd.foto_url = null;
   }
 
   let saveError = null;
+  const fotoVal = upd.foto_url !== undefined ? upd.foto_url : SESSION.user.foto_url;
   if(SESSION.role === 'super'){
-    const fotoVal = upd.foto_url !== undefined ? upd.foto_url : SESSION.user.foto_url;
     const profilJson = JSON.stringify({nama: upd.nama||SESSION.user.nama, foto_url: fotoVal, no_wa: upd.no_wa||SESSION.user.no_wa||''});
-    const {error: e} = await SB.from('settings').upsert({key:'super_profil', value: profilJson});
+    const {error: e} = await SB.from('settings').upsert({key:'super_profil', value: profilJson}, {onConflict:'key'});
     saveError = e;
   } else {
     const {error: e} = await SB.from('pengurus').update(upd).eq('id', SESSION.user.id);
@@ -4864,15 +4868,9 @@ async function simpanProfilPengurus(){
   const error = saveError;
   if(error){ toast('Gagal simpan: '+error.message, false); return; }
 
-  // Ambil data terbaru dari DB termasuk foto_url
-  if(SESSION.role === 'super'){
-    const {data: fsp} = await SB.from('settings').select('value').eq('key','super_profil').single();
-    let spObj = {}; try{ spObj = JSON.parse(fsp?.value||'{}'); }catch(e){}
-    if(spObj.foto_url !== undefined) upd.foto_url = spObj.foto_url;
-  } else {
-    const { data: freshData } = await SB.from('pengurus').select('*').eq('id', SESSION.user.id).single();
-    if(freshData){ upd.foto_url = freshData.foto_url; }
-  }
+  // Pakai langsung nilai yang baru kita simpan — jangan baca ulang dari DB,
+  // supaya tidak ke-overwrite oleh data lama (mis. saat ada baris duplikat di settings)
+  upd.foto_url = fotoVal;
 
   // Update SESSION lokal
   SESSION.user = {...SESSION.user, ...upd};
