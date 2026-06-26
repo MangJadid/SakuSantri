@@ -2144,7 +2144,7 @@ let ALL_PIUTANG_ALUMNI = [];
 async function loadAllData(){
   const isAdmin = isKangAdmin();
   const queries = [
-    (async()=>{ let all=[],from=0,step=1000; while(true){ const {data,error}=await SB.from('santri').select('id,nama,kelas,kobong_id,kobong(id,nama,asrama_id),no_wa,dapur_id,catatan,foto_url,pin,created_by').neq('is_arsip',true).order('nama').order('id').range(from,from+step-1); if(error||!data||!data.length) break; all=[...all,...data]; if(data.length<step) break; from+=step; } return {data:all}; })(),
+    (async()=>{ let all=[],from=0,step=1000; while(true){ const {data,error}=await SB.from('santri').select('id,nama,kelas,kobong_id,kobong!left(id,nama,asrama_id),no_wa,dapur_id,catatan,foto_url,pin,created_by').neq('is_arsip',true).order('nama').order('id').range(from,from+step-1); if(error||!data||!data.length) break; all=[...all,...data]; if(data.length<step) break; from+=step; } return {data:all}; })(),
     (async()=>{ let all=[],from=0,step=1000; while(true){ const {data,error}=await SB.from('tagihan_pondok').select('id,santri_id,santri_nama,dapur_id,bulan,nominal,nominal_makan,nominal_listrik,nominal_bayar,status,tgl_tagihan,tgl_bayar,keterangan,dicatat_oleh,created_at').order('created_at',{ascending:false}).order('id',{ascending:false}).range(from,from+step-1); if(error||!data||!data.length) break; all=[...all,...data]; if(data.length<step) break; from+=step; } return {data:all}; })(),
     SB.from('asrama').select('*').order('nama'),
     SB.from('kobong').select('*,asrama(id,nama)').order('nama'),
