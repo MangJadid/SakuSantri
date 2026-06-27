@@ -1,5 +1,5 @@
 // CACHE_NAME angka di belakang akan otomatis diupdate oleh deploy.yml setiap push
-const CACHE_NAME = 'bendahara-1782543395';
+const CACHE_NAME = 'bendahara-0';
 const ASSETS = [
   '/bendahara/',
   '/bendahara/index.html',
@@ -35,9 +35,9 @@ self.addEventListener('fetch', function(event) {
 
   const url = new URL(event.request.url);
 
-  // Supabase API → selalu dari network, jangan cache
+  // Supabase API → selalu dari network, jangan cache (SW cache MAUPUN cache HTTP browser)
   if (url.hostname.includes('supabase.co') || url.hostname.includes('supabase.io')) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(fetch(event.request, {cache: 'no-store'}));
     return;
   }
 
