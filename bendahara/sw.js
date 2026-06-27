@@ -1,5 +1,5 @@
 // CACHE_NAME angka di belakang akan otomatis diupdate oleh deploy.yml setiap push
-const CACHE_NAME = 'bendahara-1782560695';
+const CACHE_NAME = 'bendahara-1782560987';
 const ASSETS = [
   '/bendahara/manifest.json',
   '/bendahara/icon-192.png',
