@@ -2174,7 +2174,10 @@ async function loadSantriForRole(){
   try{
   if(SESSION.role==='super'){
     const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').eq('is_arsip',false).order('nama');
-    if(error) throw error;
+    if(error){
+      alert('[DEBUG] Query super ERROR:\n' + error.message);
+      throw error;
+    }
     return data||[];
   }
   if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
@@ -2213,7 +2216,8 @@ async function loadSantriForRole(){
   return [];
   } catch(e){
     // Fallback: kolom is_arsip belum ada — query tanpa filter is_arsip
-    console.warn('loadSantriForRole fallback (is_arsip mungkin belum ada):', e.message);
+    console.warn('[DEBUG] loadSantriForRole fallback (is_arsip mungkin belum ada):', e.message);
+    alert('[DEBUG] Fallback aktif!\nError: ' + e.message);
     try{
       if(SESSION.role==='super'){
         const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').order('nama');
@@ -3727,11 +3731,16 @@ async function simpanSantri(){
   closeMo('mo-santri');
   hapusFoto();
   fotoFile = null;
-  await loadAllData();
+  try {
+    await loadAllData();
+  } catch(errLoad) {
+    alert('[DEBUG] loadAllData ERROR:\n' + errLoad);
+  }
   await loadSantriNames();
   renderTabelSantri();
   renderDashboard();
   updateNotif();
+  alert('[DEBUG] Selesai!\nRole: ' + SESSION?.role + '\nJumlah santri di ALL_SANTRI: ' + ALL_SANTRI.length + '\n3 santri pertama:\n' + ALL_SANTRI.slice(0,3).map(s=>s.nama).join('\n'));
 
   } finally { setLoading(false, _lBtn); }
 }
