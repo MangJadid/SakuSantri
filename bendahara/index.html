@@ -2189,13 +2189,39 @@ const RT_CHANNEL_NAME = 'pondok-data-sync'; // sama dengan nama channel di app S
 function setupRealtimeSync(){
   if(_rtChannel) return; // sudah aktif, jangan dobel subscribe
   _rtChannel = SB.channel(RT_CHANNEL_NAME)
+    // Broadcast: notif antar device saat simpan data (tetap dipertahankan)
     .on('broadcast', {event:'data-changed'}, handleRealtimeChange)
+    // Realtime: dengarkan perubahan langsung dari database (semua tabel)
+    .on('postgres_changes', {event:'*', schema:'public', table:'santri'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'transaksi'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'kobong'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'asrama'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'tagihan_pondok'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'santri_tagihan'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'santri_deposit'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'permintaan_hapus_santri'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'pengurus'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'jenis_tagihan'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'piutang_alumni'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'settings'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'bendahara_users'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'bendahara_akses'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'activity_log'}, handleRealtimeChange)
+    .on('postgres_changes', {event:'*', schema:'public', table:'bendahara_activity'}, handleRealtimeChange)
     .subscribe();
+
+  // Fallback: refresh saat app kembali ke foreground (misal HP dari background)
+  document.addEventListener('visibilitychange', _onVisibilityChange);
+}
+
+function _onVisibilityChange(){
+  if(!document.hidden) refreshFromRealtime();
 }
 
 function teardownRealtimeSync(){
   if(_rtChannel){ SB.removeChannel(_rtChannel); _rtChannel=null; }
   clearTimeout(_rtDebounceTimer);
+  document.removeEventListener('visibilitychange', _onVisibilityChange);
 }
 
 function broadcastDataChanged(){
