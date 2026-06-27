@@ -1,5 +1,5 @@
 // CACHE_NAME angka di belakang akan otomatis diupdate oleh deploy.yml setiap push
-const CACHE_NAME = 'bendahara-1782543457';
+const CACHE_NAME = 'bendahara-1782557804';
 const ASSETS = [
   '/bendahara/',
   '/bendahara/index.html',
