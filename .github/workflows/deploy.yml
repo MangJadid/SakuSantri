@@ -18,18 +18,10 @@ jobs:
           sed -i -E "s/(saku-santri-)[0-9]+/\1$TIMESTAMP/" santri/sw.js
           sed -i -E "s/(bendahara-)[0-9]+/\1$TIMESTAMP/" bendahara/sw.js
 
-      - name: Tambah meta no-cache ke HTML
-        run: |
-          for f in santri/index.html bendahara/index.html; do
-            if ! grep -q "Cache-Control" "$f"; then
-              sed -i 's|<head>|<head>\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">|' "$f"
-            fi
-          done
-
       - name: Commit & Push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add santri/sw.js bendahara/sw.js santri/index.html bendahara/index.html
+          git add santri/sw.js bendahara/sw.js
           git commit -m "Auto: update cache $TIMESTAMP" || echo "No changes"
           git push
