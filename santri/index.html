@@ -2130,7 +2130,10 @@ async function enterApp(){
   const roleLabels = {super:'🛡️ Admin', pengurus:'👨‍💼 '+((SESSION.user?.nama)||'Pengurus'), ortu:'👨‍👩‍👦 Orang Tua', sekretaris:'📋 '+((SESSION.user?.nama)||'Sekretaris'), sekretariat:'🏢 '+((SESSION.user?.nama)||'Sekretariat')};
   document.getElementById('hdr-role').textContent = roleLabels[SESSION.role]||'—';
 
+  _suppressBroadcast = true;
   await loadAllData();
+  _suppressBroadcast = false;
+  setupRealtimeSync();
   buildTabs();
   updateNotif();
   if(SESSION.role==='super') updateBadgePersetujuan();
@@ -2149,7 +2152,14 @@ async function enterApp(){
   hideLoginOverlay();
 }
 
+// loadAllData = ambil data + (opsional) kasih tahu device lain via broadcast
+let _suppressBroadcast = false;
 async function loadAllData(){
+  await _loadAllDataCore();
+  if(!_suppressBroadcast) broadcastDataChanged();
+}
+
+async function _loadAllDataCore(){
   // Load asrama & kobong DULU — karena loadSantriForRole butuh ALL_KOBONG sudah terisi
   const [as, ks, ps] = await Promise.all([
     SB.from('asrama').select('*').order('nama'),
@@ -2168,6 +2178,50 @@ async function loadAllData(){
   populateKobongSelects();
   populateWaliSelects();
   populateFilterKelas();
+}
+
+// ===== REALTIME SYNC (via Supabase Broadcast — TIDAK butuh setting Replication apapun) =====
+// Begitu satu device berhasil simpan/ubah/hapus data, dia broadcast pesan kecil
+// ke channel bersama. Device lain yang sedang online langsung dengar & refresh.
+let _rtChannel = null;
+let _rtDebounceTimer = null;
+const RT_CHANNEL_NAME = 'pondok-data-sync'; // sama dengan nama channel di app Bendahara
+
+function setupRealtimeSync(){
+  if(_rtChannel) return; // sudah aktif, jangan dobel subscribe
+  _rtChannel = SB.channel(RT_CHANNEL_NAME)
+    .on('broadcast', {event:'data-changed'}, handleRealtimeChange)
+    .subscribe();
+}
+
+function teardownRealtimeSync(){
+  if(_rtChannel){ SB.removeChannel(_rtChannel); _rtChannel=null; }
+  clearTimeout(_rtDebounceTimer);
+}
+
+function broadcastDataChanged(){
+  if(_rtChannel) _rtChannel.send({type:'broadcast', event:'data-changed', payload:{ts:Date.now(), from:'santri'}});
+}
+
+function handleRealtimeChange(payload){
+  // Debounce: kalau banyak event numpuk hampir bersamaan, refresh sekali saja
+  clearTimeout(_rtDebounceTimer);
+  _rtDebounceTimer = setTimeout(refreshFromRealtime, 600);
+}
+
+async function refreshFromRealtime(){
+  // Jangan ganggu kalau user sedang buka modal (sedang input/edit form)
+  if(document.querySelector('.modal.open')) return;
+  if(_isLoading) return; // sedang ada proses simpan/hapus berjalan
+
+  _suppressBroadcast = true; // jangan ikut broadcast balik, cegah loop
+  await loadAllData();
+  _suppressBroadcast = false;
+  resetAllFilters();
+  renderDashboard();
+  renderTabelSantri();
+  renderRiwayat();
+  if(SESSION.role==='ortu') renderDetailOrtu();
 }
 
 async function loadSantriForRole(){
@@ -5976,6 +6030,7 @@ async function tutupBulan(){
 function doLogout(){
   cancelSessionTimer();
   stopActivityTracking();
+  teardownRealtimeSync();
   clearPersistentSession();
   if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
   sessionStorage.removeItem('greeting_idx');
