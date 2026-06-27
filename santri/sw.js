@@ -1,5 +1,5 @@
 // CACHE_NAME angka di belakang akan otomatis diupdate oleh deploy.yml setiap push
-const CACHE_NAME = 'saku-santri-1782560653';
+const CACHE_NAME = 'saku-santri-1782560676';
 const ASSETS = [
   '/santri/manifest.json',
   '/santri/icon-192.png',
