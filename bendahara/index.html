@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bendahara — Pondok Pesantren An-Nur</title>
@@ -4944,10 +4941,7 @@ function cetakSuratBebas(santriId,nama){
 function printSuratBebas(){
   const c=document.getElementById('surat-bebas-content').innerHTML;
   const w=window.open('','_blank');
-  w.document.write('<html><head>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0"><style>body{font-family:"Times New Roman",serif;padding:40px;max-width:600px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>'+c+'</body></html>');
+  w.document.write('<html><head><style>body{font-family:"Times New Roman",serif;padding:40px;max-width:600px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>'+c+'</body></html>');
   w.document.close(); w.print();
 }
 
