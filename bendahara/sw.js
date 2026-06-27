@@ -1,5 +1,5 @@
 // CACHE_NAME angka di belakang akan otomatis diupdate oleh deploy.yml setiap push
-const CACHE_NAME = 'bendahara-1782556566';
+const CACHE_NAME = 'bendahara-1782543457';
 const ASSETS = [
   '/bendahara/',
   '/bendahara/index.html',
@@ -48,7 +48,7 @@ self.addEventListener('fetch', function(event) {
   if (isHTML) {
     // Network-first untuk HTML
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, {cache: 'no-store'})
         .then(function(response) {
           if (response && response.status === 200) {
             const clone = response.clone();
