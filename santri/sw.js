@@ -1,16 +1,14 @@
 // CACHE_NAME angka di belakang akan otomatis diupdate oleh deploy.yml setiap push
-const CACHE_NAME = 'saku-santri-1782560613';
+const CACHE_NAME = 'saku-santri-1782543457';
 const ASSETS = [
-  '/santri/',
-  '/santri/index.html',
   '/santri/manifest.json',
   '/santri/icon-192.png',
   '/santri/icon-512.png'
 ];
 
-// Install: cache semua aset utama
+// Install: cache aset utama (tanpa HTML)
 self.addEventListener('install', function(event) {
-  self.skipWaiting(); // langsung aktif tanpa tunggu tab lama ditutup
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(ASSETS);
@@ -25,17 +23,17 @@ self.addEventListener('activate', function(event) {
       return Promise.all(
         keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
       );
-    }).then(() => self.clients.claim()) // ambil alih semua tab yang sudah terbuka
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch: network-first untuk HTML, cache-first untuk aset lain
+// Fetch
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
 
-  // Supabase API → selalu dari network, jangan cache (SW cache MAUPUN cache HTTP browser)
+  // Supabase API → selalu dari network
   if (url.hostname.includes('supabase.co') || url.hostname.includes('supabase.io')) {
     event.respondWith(fetch(event.request, {cache: 'no-store'}));
     return;
@@ -46,23 +44,18 @@ self.addEventListener('fetch', function(event) {
     || url.pathname.endsWith('/');
 
   if (isHTML) {
-    // Network-first untuk HTML: selalu ambil versi terbaru dari server
+    // HTML selalu dari network, tidak pernah di-cache
     event.respondWith(
       fetch(event.request, {cache: 'no-store'})
-        .then(function(response) {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-          }
-          return response;
-        })
         .catch(function() {
-          // Offline: fallback ke cache
-          return caches.match(event.request) || caches.match('/santri/');
+          return new Response('Offline - silakan cek koneksi internet Anda.', {
+            status: 503,
+            headers: {'Content-Type': 'text/plain'}
+          });
         })
     );
   } else {
-    // Cache-first untuk aset (CSS, JS, gambar, font, dll)
+    // Cache-first untuk aset (manifest, icon, font, dll)
     event.respondWith(
       caches.match(event.request).then(function(cached) {
         if (cached) return cached;
@@ -72,7 +65,7 @@ self.addEventListener('fetch', function(event) {
           caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
           return response;
         }).catch(function() {
-          return caches.match('/santri/');
+          return new Response('Offline', {status: 503});
         });
       })
     );
