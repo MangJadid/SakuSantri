@@ -9,13 +9,14 @@ jobs:
   update-sw:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Inject timestamp ke sw.js
         run: |
           TIMESTAMP=$(date +%s)
-          sed -i "s/{{BUILD_TIME}}/$TIMESTAMP/g" santri/sw.js
-          sed -i "s/{{BUILD_TIME}}/$TIMESTAMP/g" bendahara/sw.js
+          echo "TIMESTAMP=$TIMESTAMP" >> "$GITHUB_ENV"
+          sed -i -E "s/(saku-santri-)[0-9]+/\1$TIMESTAMP/" santri/sw.js
+          sed -i -E "s/(bendahara-)[0-9]+/\1$TIMESTAMP/" bendahara/sw.js
 
       - name: Commit & Push
         run: |
