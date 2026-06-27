@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Saku Santri</title>
@@ -11,6 +8,25 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Saku Santri">
+<style>
+#offline-screen{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#fff;
+  z-index:99999;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-family:sans-serif;
+  color:#333;
+  text-align:center;
+  padding:20px;
+}
+#offline-screen.show{ display:flex; }
+#offline-screen h2{ font-size:1.5rem; margin-bottom:8px; }
+#offline-screen p{ font-size:1rem; color:#666; }
+</style>
 <meta name="theme-color" content="#1a5c3a">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
@@ -690,6 +706,24 @@ body.is-offline .login{padding-top:70px}
 </style>
 </head>
 <body>
+<div id="offline-screen">
+  <h2>📵 Anda Sedang Offline</h2>
+  <p>Periksa koneksi internet Anda,<br>lalu coba lagi.</p>
+</div>
+<script>
+function _updateOfflineScreen(){
+  const el = document.getElementById('offline-screen');
+  if(!el) return;
+  if(!navigator.onLine){
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
+}
+window.addEventListener('offline', _updateOfflineScreen);
+window.addEventListener('online', _updateOfflineScreen);
+_updateOfflineScreen();
+</script>
 
 <div id="offline-banner">
   <div class="offl-dot"></div>
@@ -2184,37 +2218,10 @@ async function _loadAllDataCore(){
 }
 
 // ===== REALTIME SYNC (via Supabase Broadcast — TIDAK butuh setting Replication apapun) =====
-// Begitu satu device berhasil simpan/ubah/hapus data, dia broadcast pesan kecil
-// ke channel bersama. Device lain yang sedang online langsung dengar & refresh.
-let _rtChannel = null;
+// Sinkronisasi antar device via visibilitychange
 let _rtDebounceTimer = null;
-const RT_CHANNEL_NAME = 'pondok-data-sync'; // sama dengan nama channel di app Bendahara
 
 function setupRealtimeSync(){
-  if(_rtChannel) return; // sudah aktif, jangan dobel subscribe
-  _rtChannel = SB.channel(RT_CHANNEL_NAME)
-    // Broadcast: notif antar device saat simpan data (tetap dipertahankan)
-    .on('broadcast', {event:'data-changed'}, handleRealtimeChange)
-    // Realtime: dengarkan perubahan langsung dari database (semua tabel)
-    .on('postgres_changes', {event:'*', schema:'public', table:'santri'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'transaksi'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'kobong'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'asrama'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'tagihan_pondok'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'santri_tagihan'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'santri_deposit'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'permintaan_hapus_santri'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'pengurus'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'jenis_tagihan'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'piutang_alumni'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'settings'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'bendahara_users'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'bendahara_akses'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'activity_log'}, handleRealtimeChange)
-    .on('postgres_changes', {event:'*', schema:'public', table:'bendahara_activity'}, handleRealtimeChange)
-    .subscribe();
-
-  // Fallback: refresh saat app kembali ke foreground (misal HP dari background)
   document.addEventListener('visibilitychange', _onVisibilityChange);
 }
 
@@ -2223,13 +2230,12 @@ function _onVisibilityChange(){
 }
 
 function teardownRealtimeSync(){
-  if(_rtChannel){ SB.removeChannel(_rtChannel); _rtChannel=null; }
   clearTimeout(_rtDebounceTimer);
   document.removeEventListener('visibilitychange', _onVisibilityChange);
 }
 
 function broadcastDataChanged(){
-  if(_rtChannel) _rtChannel.send({type:'broadcast', event:'data-changed', payload:{ts:Date.now(), from:'santri'}});
+  // broadcast dimatikan
 }
 
 function handleRealtimeChange(payload){
