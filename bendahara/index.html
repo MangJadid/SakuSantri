@@ -2116,7 +2116,10 @@ async function enterApp(){
   buildDapurBar();
   adjustTabsStickyPos();
   buildTabs();
+  _suppressBroadcast = true;
   await loadAllData();
+  _suppressBroadcast = false;
+  setupRealtimeSync();
   fillSelects();
   showTab('dashboard');
   updateHeaderProfilAv(); // tampilkan tombol Profil di header
@@ -2131,7 +2134,14 @@ function isKangAdmin(){
 // ===== LOAD DATA =====
 let ALL_PIUTANG_ALUMNI = [];
 
+// loadAllData = ambil data + (opsional) kasih tahu device lain via broadcast
+let _suppressBroadcast = false;
 async function loadAllData(){
+  await _loadAllDataCore();
+  if(!_suppressBroadcast) broadcastDataChanged();
+}
+
+async function _loadAllDataCore(){
   const isAdmin = isKangAdmin();
   const queries = [
     (async()=>{ let all=[],from=0,step=1000; while(true){ const {data,error}=await SB.from('santri').select('id,nama,kelas,kobong_id,kobong(id,nama,asrama_id),no_wa,dapur_id,catatan,foto_url,pin,created_by').neq('is_arsip',true).order('nama').order('id').range(from,from+step-1); if(error||!data||!data.length) break; all=[...all,...data]; if(data.length<step) break; from+=step; } return {data:all}; })(),
@@ -2167,6 +2177,48 @@ async function loadAllData(){
   const santriIds = new Set(ALL_SANTRI.map(s=>String(s.id)));
   ALL_TAGIHAN = tagihan.filter(t=>santriIds.has(String(t.santri_id)));
 
+}
+
+// ===== REALTIME SYNC (via Supabase Broadcast — TIDAK butuh setting Replication apapun) =====
+// Begitu satu device berhasil simpan/ubah/hapus data, dia broadcast pesan kecil
+// ke channel bersama. Device lain yang sedang online langsung dengar & refresh.
+let _rtChannel = null;
+let _rtDebounceTimer = null;
+const RT_CHANNEL_NAME = 'pondok-data-sync'; // sama dengan nama channel di app Saku Santri
+
+function setupRealtimeSync(){
+  if(_rtChannel) return; // sudah aktif, jangan dobel subscribe
+  _rtChannel = SB.channel(RT_CHANNEL_NAME)
+    .on('broadcast', {event:'data-changed'}, handleRealtimeChange)
+    .subscribe();
+}
+
+function teardownRealtimeSync(){
+  if(_rtChannel){ SB.removeChannel(_rtChannel); _rtChannel=null; }
+  clearTimeout(_rtDebounceTimer);
+}
+
+function broadcastDataChanged(){
+  if(_rtChannel) _rtChannel.send({type:'broadcast', event:'data-changed', payload:{ts:Date.now(), from:'bendahara'}});
+}
+
+function handleRealtimeChange(payload){
+  // Debounce: kalau banyak event numpuk hampir bersamaan, refresh sekali saja
+  clearTimeout(_rtDebounceTimer);
+  _rtDebounceTimer = setTimeout(refreshFromRealtime, 600);
+}
+
+async function refreshFromRealtime(){
+  // Jangan ganggu kalau user sedang buka modal (sedang input/edit form)
+  if(document.querySelector('.mo.open')) return;
+  if(_isLoading) return; // sedang ada proses simpan/hapus berjalan
+
+  _suppressBroadcast = true; // jangan ikut broadcast balik, cegah loop
+  await loadAllData();
+  _suppressBroadcast = false;
+  fillSelects();
+  renderDashboard();
+  renderTagihanTable();
 }
 
 // ===== HELPERS =====
@@ -6130,6 +6182,7 @@ function updateHeaderProfilAv(){
 // ===== LOGOUT =====
 function doLogout(){
   if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
+  teardownRealtimeSync();
   clearSession(); SESSION=null;
   if(MONITOR_INTERVAL){ clearInterval(MONITOR_INTERVAL); MONITOR_INTERVAL=null; }
   if(monitorRefreshInterval){ clearInterval(monitorRefreshInterval); monitorRefreshInterval=null; }
