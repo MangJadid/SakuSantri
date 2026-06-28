@@ -3368,7 +3368,7 @@ async function openDetailModal(id){
   openMo('mo-detail');
 }
 
-function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;var hide=!el.classList.contains('dh-hidden');el.classList.toggle('dh-hidden');var mo=el.closest('.mb')||el.closest('.modal');if(mo)mo.querySelectorAll('.dh-nominal').forEach(function(n){hide?n.classList.add('dh-hidden'):n.classList.remove('dh-hidden')});btn.innerHTML=hide?'&#128584;':'&#128065;;'}
+function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;var hide=!el.classList.contains('dh-hidden');el.classList.toggle('dh-hidden');var mo=el.closest('.mb')||el.closest('.modal')||el.closest('.sec')||document;if(mo)mo.querySelectorAll('.dh-nominal').forEach(function(n){hide?n.classList.add('dh-hidden'):n.classList.remove('dh-hidden')});btn.innerHTML=hide?'&#128584;':'&#128065;;'}
 function switchDetailTab(tab){
   const txContent = document.getElementById('tab-tx-content');
   const tagihanContent = document.getElementById('tab-tagihan-content');
@@ -5311,9 +5311,9 @@ async function renderDetailOrtu(){
       txHtml+=`<tr>
         <td style="font-size:11.5px;color:var(--text-l);white-space:nowrap">${fmtTanggal(t.tanggal)}</td>
         <td style="font-weight:500">${t.keterangan||'—'}</td>
-        <td class="s-ok">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>
-        <td style="color:var(--red)">${t.jenis==='keluar'?rp(t.nominal):'—'}</td>
-        <td><strong class="${sc2}">${t.running<0?'−':''} ${rp(t.running)}</strong></td>
+        <td class="s-ok dh-nominal">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>
+        <td class="dh-nominal" style="color:var(--red)">${t.jenis==='keluar'?rp(t.nominal):'—'}</td>
+        <td><strong class="${sc2} dh-nominal">${t.running<0?'−':''} ${rp(t.running)}</strong></td>
       </tr>`;
     });
     txHtml+=`</tbody></table></div>`;
@@ -5348,12 +5348,12 @@ async function renderDetailOrtu(){
       <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
         <div style="width:38px;height:38px;background:#e8f5ee;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pemasukan</div>
-        <div style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasukO)}</div></div>
+        <div class="dh-nominal" style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasukO)}</div></div>
       </div>
       <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
         <div style="width:38px;height:38px;background:#fdecea;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📉</div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pengeluaran</div>
-        <div style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluarO)}</div></div>
+        <div class="dh-nominal" style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluarO)}</div></div>
       </div>
     </div>
     <div class="panel">
