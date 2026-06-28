@@ -497,6 +497,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .dh-saldo .lbl{color:rgba(255,255,255,.4);font-size:9.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:6px}
 .dh-saldo .amt{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1;transition:filter .25s}
 .dh-saldo .amt.dh-hidden{filter:blur(8px)}
+.dh-nominal.dh-hidden{filter:blur(8px);transition:filter .25s}
 .dh-eye{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:8px 12px;cursor:pointer;color:rgba(255,255,255,.6);font-size:14px;line-height:1}
 
 /* ── TIMELINE ────────────────────────────── */
@@ -3297,9 +3298,9 @@ async function openDetailModal(id){
       txHtml+=`<tr>
         <td style="font-size:11.5px;color:var(--text-l);white-space:nowrap">${fmtTanggal(t.tanggal)}</td>
         <td style="font-weight:500">${t.keterangan||'—'}</td>
-        <td class="s-ok">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>
-        <td style="color:var(--red)">${t.jenis==='keluar'?rp(t.nominal):'—'}</td>
-        <td><strong class="${sc2}">${t.running<0?'−':''} ${rp(t.running)}</strong></td>
+        <td class="s-ok dh-nominal">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>
+        <td class="dh-nominal" style="color:var(--red)">${t.jenis==='keluar'?rp(t.nominal):'—'}</td>
+        <td><strong class="${sc2} dh-nominal">${t.running<0?'−':''} ${rp(t.running)}</strong></td>
         <td>${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-d btn-sm" onclick="hapusTx(${t.id},${id})">🗑</button>`:''}</td>
       </tr>`;
     });
@@ -3336,12 +3337,12 @@ async function openDetailModal(id){
       <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
         <div style="width:38px;height:38px;background:#e8f5ee;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pemasukan</div>
-        <div style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasuk)}</div></div>
+        <div class="dh-nominal" style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasuk)}</div></div>
       </div>
       <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
         <div style="width:38px;height:38px;background:#fdecea;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📉</div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pengeluaran</div>
-        <div style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluar)}</div></div>
+        <div class="dh-nominal" style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluar)}</div></div>
       </div>
     </div>
       ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-p btn-sm" onclick="closeMo('mo-detail');openTxModal(${id})">➕ Tambah Transaksi</button>`:''}
@@ -3367,7 +3368,7 @@ async function openDetailModal(id){
   openMo('mo-detail');
 }
 
-function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;el.classList.toggle('dh-hidden');btn.innerHTML=el.classList.contains('dh-hidden')?'&#128584;':'&#128065;;'}
+function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;var hide=!el.classList.contains('dh-hidden');el.classList.toggle('dh-hidden');var mo=el.closest('.mb')||el.closest('.modal');if(mo)mo.querySelectorAll('.dh-nominal').forEach(function(n){hide?n.classList.add('dh-hidden'):n.classList.remove('dh-hidden')});btn.innerHTML=hide?'&#128584;':'&#128065;;'}
 function switchDetailTab(tab){
   const txContent = document.getElementById('tab-tx-content');
   const tagihanContent = document.getElementById('tab-tagihan-content');
