@@ -495,6 +495,16 @@ tbody td{padding:10px 14px;vertical-align:middle}
   display:flex;align-items:center;justify-content:space-between;
 }
 .dh-saldo .lbl{font-size:9.5px;color:rgba(255,255,255,.45);margin-bottom:5px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;font-family:'DM Sans',sans-serif}
+
+.saldo-toggle-btn{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  border-radius:8px;padding:8px 12px;cursor:pointer;
+  color:rgba(255,255,255,.6);font-size:15px;line-height:1;
+  transition:background .2s;flex-shrink:0;
+}
+.saldo-toggle-btn:hover{background:rgba(255,255,255,.14)}
+.saldo-blur{filter:blur(8px);transition:filter .25s}
+.saldo-show{filter:none;transition:filter .25s}
 .dh-saldo .amt{font-size:24px;font-weight:800;color:var(--gold-l);font-family:'DM Sans',sans-serif;letter-spacing:-.5px;white-space:nowrap;line-height:1}
 
 /* ── TIMELINE ────────────────────────────── */
@@ -3325,30 +3335,31 @@ async function openDetailModal(id){
       <div class="dh-saldo">
         <div>
           <div class="lbl">Saldo Akhir</div>
-          <div class="amt" style="${saldoReal<0?'color:#ff6b6b':saldoReal<kritis?'color:var(--gold-l)':''}">${saldoReal<0?'&minus; ':''} ${rp(saldoReal)}</div>
+          <div id="admin-saldo-amt" class="amt saldo-show" style="${saldoReal<0?'color:#ff6b6b':saldoReal<kritis?'color:var(--gold-l)':''}">${saldoReal<0?'&minus; ':''} ${rp(saldoReal)}</div>
         </div>
+        <button class="saldo-toggle-btn" onclick="toggleSaldoAdmin(this)" title="Sembunyikan/tampilkan saldo">👁️</button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;background:#e8f5ee;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pemasukan</div>
-        <div style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasuk)}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:#fff;border:1.5px solid var(--green-b);border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+        <div style="width:34px;height:34px;background:#ECFDF5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📈</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Pemasukan</div>
+        <div style="font-size:17px;font-weight:800;color:var(--green);letter-spacing:-.3px">${rp(totalMasuk)}</div>
       </div>
-      <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;background:#fdecea;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📉</div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pengeluaran</div>
-        <div style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluar)}</div></div>
+      <div style="background:#fff;border:1.5px solid #FECACA;border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+        <div style="width:34px;height:34px;background:#FEF2F2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📉</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Pengeluaran</div>
+        <div style="font-size:17px;font-weight:800;color:var(--red);letter-spacing:-.3px">${rp(totalKeluar)}</div>
       </div>
     </div>
-      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-p btn-sm" onclick="closeMo('mo-detail');openTxModal(${id})">➕ Tambah Transaksi</button>`:''}
-      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-o btn-sm" onclick="closeMo('mo-detail');editSantri(${id})">✏️ Edit Santri</button>`:''}
-
-      ${SESSION.role==='super'?'<button class="btn btn-d btn-sm" onclick="closeMo(\'mo-detail\');hapusSantri('+id+')">🗑 Hapus</button>':''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-p btn-sm" style="justify-content:center" onclick="closeMo('mo-detail');openTxModal(${id})">➕ Tambah Transaksi</button>`:''}
+      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-o btn-sm" style="justify-content:center" onclick="closeMo('mo-detail');editSantri(${id})">✏️ Edit Santri</button>`:''}
+      ${SESSION.role==='super'?`<button class="btn btn-d btn-sm" style="justify-content:center" onclick="closeMo('mo-detail');hapusSantri(${id})">🗑 Hapus</button>`:''}  
     </div>
-    <div style="display:flex;gap:6px;margin:18px 0 12px;background:var(--bg);border-radius:12px;padding:4px">
-      <button id="tab-tx-btn" onclick="switchDetailTab('tx')" style="flex:1;padding:10px 6px;border:none;border-radius:9px;background:var(--green);color:#fff;font-weight:700;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">📜 Riwayat Transaksi</button>
-      <button id="tab-tagihan-btn" onclick="switchDetailTab('tagihan')" style="flex:1;padding:10px 6px;border:none;border-radius:9px;background:none;color:var(--text-m);font-weight:600;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">🧾 Tagihan Pondok</button>
+    <div style="display:flex;gap:0;margin:14px 0 12px;background:#F1F5F9;border-radius:10px;padding:4px">
+      <button id="tab-tx-btn" onclick="switchDetailTab('tx')" style="flex:1;padding:9px 6px;border:none;border-radius:8px;background:var(--green);color:#fff;font-weight:700;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,0.1)">📜 Riwayat Transaksi</button>
+      <button id="tab-tagihan-btn" onclick="switchDetailTab('tagihan')" style="flex:1;padding:9px 6px;border:none;border-radius:8px;background:none;color:var(--text-m);font-weight:600;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">🧾 Tagihan Pondok</button>
     </div>
     <div id="tab-tx-content">
       <div style="background:#fafdfb;border:1.5px solid var(--green-b);border-radius:14px;overflow:hidden">
@@ -5334,20 +5345,21 @@ async function renderDetailOrtu(){
       <div class="dh-saldo">
         <div>
           <div class="lbl">Saldo Akhir</div>
-          <div class="amt" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':''}">${saldoRealO<0?'&minus; ':''} ${rp(saldoRealO)}</div>
+          <div id="ortu-saldo-amt" class="amt saldo-show" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':''}">${saldoRealO<0?'&minus; ':''} ${rp(saldoRealO)}</div>
         </div>
+        <button class="saldo-toggle-btn" onclick="toggleSaldoOrtu(this)" title="Sembunyikan/tampilkan saldo">👁️</button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
-      <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;background:#e8f5ee;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pemasukan</div>
-        <div style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasukO)}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:#fff;border:1.5px solid var(--green-b);border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+        <div style="width:34px;height:34px;background:#ECFDF5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📈</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Pemasukan</div>
+        <div style="font-size:17px;font-weight:800;color:var(--green);letter-spacing:-.3px">${rp(totalMasukO)}</div>
       </div>
-      <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;background:#fdecea;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📉</div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pengeluaran</div>
-        <div style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluarO)}</div></div>
+      <div style="background:#fff;border:1.5px solid #FECACA;border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+        <div style="width:34px;height:34px;background:#FEF2F2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📉</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Pengeluaran</div>
+        <div style="font-size:17px;font-weight:800;color:var(--red);letter-spacing:-.3px">${rp(totalKeluarO)}</div>
       </div>
     </div>
     <div class="panel">
@@ -7460,6 +7472,32 @@ if ('serviceWorker' in navigator) {
     }
   },true);
 })();
+
+function toggleSaldoAdmin(btn){
+  const el = document.getElementById('admin-saldo-amt');
+  if(!el) return;
+  const hiding = el.classList.contains('saldo-show');
+  el.classList.toggle('saldo-blur', hiding);
+  el.classList.toggle('saldo-show', !hiding);
+  // blur statistik juga
+  document.querySelectorAll('.admin-stat-amt').forEach(e => {
+    e.classList.toggle('saldo-blur', hiding);
+    e.classList.toggle('saldo-show', !hiding);
+  });
+  btn.textContent = hiding ? '🙈' : '👁️';
+}
+function toggleSaldoOrtu(btn){
+  const el = document.getElementById('ortu-saldo-amt');
+  if(!el) return;
+  const hiding = el.classList.contains('saldo-show');
+  el.classList.toggle('saldo-blur', hiding);
+  el.classList.toggle('saldo-show', !hiding);
+  document.querySelectorAll('.ortu-stat-amt').forEach(e => {
+    e.classList.toggle('saldo-blur', hiding);
+    e.classList.toggle('saldo-show', !hiding);
+  });
+  btn.textContent = hiding ? '🙈' : '👁️';
+}
 </script>
 </body>
 </html>
