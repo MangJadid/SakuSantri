@@ -3564,33 +3564,29 @@ function setFotoPreview(url){
 // ===== UPLOAD FOTO KE SUPABASE STORAGE =====
 async function uploadFotoStorage(santriId){
   if(!fotoFile) return null;
-  try {
-    // Upload ke Cloudinary
-    const CLOUD_NAME = 'dfj1eutgf';
-    const UPLOAD_PRESET = 'santri_foto';
-    const formData = new FormData();
-    formData.append('file', fotoFile);
-    formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('folder', 'santri');
-    formData.append('public_id', `santri_${santriId}_${Date.now()}`);
+  // Upload ke Cloudinary — tidak ada fallback, error langsung dilempar ke caller
+  const CLOUD_NAME = 'dfj1eutgf';
+  const UPLOAD_PRESET = 'santri_foto';
+  const formData = new FormData();
+  formData.append('file', fotoFile);
+  formData.append('upload_preset', UPLOAD_PRESET);
+  formData.append('folder', 'santri');
+  formData.append('public_id', `santri_${santriId}_${Date.now()}`);
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-      method: 'POST',
-      body: formData
-    });
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: formData
+  });
 
-    if(!res.ok) throw new Error('Cloudinary upload gagal');
-    const result = await res.json();
-
-    // Ambil URL dengan optimasi otomatis (kompres + resize)
-    // f_auto = format otomatis, q_auto = kualitas otomatis, w_400 = max width 400px
-    const optimizedUrl = result.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_400/');
-    return optimizedUrl;
-
-  } catch(e){
-    console.warn('Upload Cloudinary gagal, fallback ke base64:', e.message);
-    return fotoBase64;
+  if(!res.ok){
+    const errBody = await res.text().catch(()=>'');
+    throw new Error('Upload foto gagal (' + res.status + '): ' + errBody);
   }
+  const result = await res.json();
+  if(!result.secure_url) throw new Error('Upload foto gagal: URL tidak diterima dari Cloudinary');
+
+  // f_auto = format otomatis, q_auto = kualitas otomatis, w_400 = max width 400px
+  return result.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_400/');
 }
 
 // ===== TAMBAH/EDIT SANTRI =====
@@ -3733,10 +3729,15 @@ async function simpanSantri(){
     const saldoBenar = (semuaTx||[]).reduce((tot,t) => tot + (t.jenis==='masuk'?t.nominal:-t.nominal), 0);
 
     const upd={nama,kobong_id,saldo:saldoBenar,pin,kelas,catatan:kelas,dapur_id,no_wa:no_wa||null,kecamatan:kecamatan||null,kota:kota||null,jenis_kelamin};
-    // Upload foto baru ke Storage jika ada
+    // Upload foto baru ke Cloudinary jika ada
     if(fotoFile){
-      const url = await uploadFotoStorage(parseInt(id));
-      upd.foto_url = url;
+      try{
+        const url = await uploadFotoStorage(parseInt(id));
+        upd.foto_url = url;
+      } catch(e){
+        toast('❌ Gagal upload foto: ' + e.message, false);
+        return;
+      }
     } else if(fotoBase64 === null){
       upd.foto_url = null; // foto dihapus
     }
@@ -3813,7 +3814,14 @@ async function simpanSantri(){
         try {
           const {data:newSantri,error}=await SB.from('santri').insert({nama,kobong_id,saldo:0,pin,kelas,catatan:kelas,dapur_id,no_wa:no_wa||null,kecamatan:kecamatan||null,kota:kota||null,created_by,jenis_kelamin}).select().single();
           if(error){ toast('Gagal: '+error.message,false); return; }
-          if(fotoFile){ const url=await uploadFotoStorage(newSantri.id); await SB.from('santri').update({foto_url:url}).eq('id',newSantri.id); }
+          if(fotoFile){
+            try{
+              const url=await uploadFotoStorage(newSantri.id);
+              await SB.from('santri').update({foto_url:url}).eq('id',newSantri.id);
+            } catch(e){
+              toast('⚠️ Santri tersimpan tapi foto gagal diupload: '+e.message, false);
+            }
+          }
           toast('Santri berhasil ditambahkan!');
           closeMo('mo-santri'); hapusFoto(); fotoFile=null;
           await loadAllData(); await loadSantriNames();
@@ -3831,8 +3839,12 @@ async function simpanSantri(){
 
     // Upload foto jika ada
     if(fotoFile){
-      const url = await uploadFotoStorage(newSantri.id);
-      await SB.from('santri').update({foto_url:url}).eq('id',newSantri.id);
+      try{
+        const url = await uploadFotoStorage(newSantri.id);
+        await SB.from('santri').update({foto_url:url}).eq('id',newSantri.id);
+      } catch(e){
+        toast('⚠️ Santri tersimpan tapi foto gagal diupload: '+e.message, false);
+      }
     }
     toast('Santri berhasil ditambahkan!');
   }
@@ -4929,14 +4941,30 @@ function openProfilPengurus(){
 
 function profilPreviewFoto(input){
   if(!input.files[0]) return;
-  _profilFotoFile = input.files[0];
+  const file = input.files[0];
   _profilHapusFoto = false;
   const reader = new FileReader();
   reader.onload = e => {
-    document.getElementById('profil-foto-preview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
-    document.getElementById('profil-hapus-foto-btn').style.display='';
+    const img = new Image();
+    img.onload = () => {
+      // Kompres: max 400px, kualitas 72% — sama seperti foto santri
+      const MAX = 400;
+      let w = img.width, h = img.height;
+      if(w > h){ if(w > MAX){ h = Math.round(h*MAX/w); w = MAX; } }
+      else { if(h > MAX){ w = Math.round(w*MAX/h); h = MAX; } }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => {
+        _profilFotoFile = blob;
+        const prev = document.getElementById('profil-foto-preview');
+        prev.innerHTML = `<img src="${canvas.toDataURL('image/jpeg',0.72)}" style="width:100%;height:100%;object-fit:cover">`;
+        document.getElementById('profil-hapus-foto-btn').style.display='';
+      }, 'image/jpeg', 0.72);
+    };
+    img.src = e.target.result;
   };
-  reader.readAsDataURL(_profilFotoFile);
+  reader.readAsDataURL(file);
 }
 
 function profilHapusFoto(){
