@@ -5329,38 +5329,17 @@ async function renderDetailOrtu(){
   if(txs&&txs.length){
     let running=0;
     const ws=[...txs].reverse().map(t=>{ running+=t.jenis==='masuk'?t.nominal:-t.nominal; return {...t,running}; }).reverse();
-    txHtml=`<div class="tw" style="overflow-x:hidden"><table style="width:100%;table-layout:fixed;border-collapse:collapse">
-      <colgroup>
-        <col style="width:22%">
-        <col style="width:24%">
-        <col style="width:18%">
-        <col style="width:18%">
-        <col style="width:18%">
-      </colgroup>
-      <thead><tr>
-        <th style="font-size:9px;padding:9px 4px;text-align:left">TGL</th>
-        <th style="font-size:9px;padding:9px 4px;text-align:left">KET.</th>
-        <th style="font-size:9px;padding:9px 4px;text-align:right">MASUK</th>
-        <th style="font-size:9px;padding:9px 4px;text-align:right">KELUAR</th>
-        <th style="font-size:9px;padding:9px 4px;text-align:right">SALDO</th>
-      </tr></thead>
+    txHtml=`<div class="tw"><table>
+      <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead>
       <tbody>`;
     ws.forEach(t=>{
       const sc2=t.running<0?'s-minus':t.running===0?'s-nol':t.running<kritis?'s-warn':'s-ok';
-      const d=new Date(t.tanggal+'T00:00:00');
-      const hariStr=hariNames[d.getDay()]+',';
-      const tglStr=d.getDate()+' '+bNames[d.getMonth()]+' '+d.getFullYear();
-      const nom=t.nominal||0;
-      const nomLen=rp(nom).length;
-      const nomFs=nomLen>12?9:nomLen>10?10:11;
-      const salLen=rp(Math.abs(t.running)).length;
-      const salFs=salLen>12?9:salLen>10?10:11;
       txHtml+=`<tr>
-        <td style="font-size:9.5px;color:var(--text-l);padding:8px 4px;vertical-align:top;line-height:1.4">${hariStr}<br>${tglStr}</td>
-        <td style="font-size:10px;font-weight:500;padding:8px 4px;vertical-align:top;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.keterangan||'—'}</td>
-        <td class="s-ok dh-nominal" style="font-size:${nomFs}px;padding:8px 4px;text-align:right;vertical-align:top;white-space:nowrap">${t.jenis==='masuk'?rp(nom):'—'}</td>
-        <td class="dh-nominal" style="color:var(--red);font-size:${nomFs}px;padding:8px 4px;text-align:right;vertical-align:top;white-space:nowrap">${t.jenis==='keluar'?rp(nom):'—'}</td>
-        <td style="font-size:${salFs}px;padding:8px 4px;text-align:right;vertical-align:top;white-space:nowrap"><strong class="${sc2} dh-nominal">${t.running<0?'−':''} ${rp(Math.abs(t.running))}</strong></td>
+        <td style="font-size:11.5px;color:var(--text-l);white-space:nowrap">${fmtTanggal(t.tanggal)}</td>
+        <td style="font-weight:500">${t.keterangan||'—'}</td>
+        <td class="s-ok dh-nominal">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>
+        <td class="dh-nominal" style="color:var(--red)">${t.jenis==='keluar'?rp(t.nominal):'—'}</td>
+        <td><strong class="${sc2} dh-nominal">${t.running<0?'−':''} ${rp(t.running)}</strong></td>
       </tr>`;
     });
     txHtml+=`</tbody></table></div>`;
