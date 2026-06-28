@@ -3363,15 +3363,13 @@ async function openDetailModal(id){
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;background:#e8f5ee;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pemasukan</div>
-        <div class="dh-nominal" style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasuk)}</div></div>
+      <div style="background:#fff;border:1.5px solid var(--green-b);border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,0.09)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Total Pemasukan</div>
+        <div class="dh-nominal" style="font-size:16px;font-weight:800;color:var(--green);letter-spacing:-.2px">${rp(totalMasuk)}</div>
       </div>
-      <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;background:#fdecea;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📉</div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pengeluaran</div>
-        <div class="dh-nominal" style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluar)}</div></div>
+      <div style="background:#fff;border:1.5px solid #FECACA;border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,0.09)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Total Pengeluaran</div>
+        <div class="dh-nominal" style="font-size:16px;font-weight:800;color:var(--red);letter-spacing:-.2px">${rp(totalKeluar)}</div>
       </div>
     </div>
       ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-p btn-sm" onclick="closeMo('mo-detail');openTxModal(${id})">➕ Tambah Transaksi</button>`:''}
@@ -5373,15 +5371,13 @@ async function renderDetailOrtu(){
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
-      <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;background:#e8f5ee;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pemasukan</div>
-        <div class="dh-nominal" style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasukO)}</div></div>
+      <div style="background:#fff;border:1.5px solid var(--green-b);border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,0.09)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Total Pemasukan</div>
+        <div class="dh-nominal" style="font-size:16px;font-weight:800;color:var(--green);letter-spacing:-.2px">${rp(totalMasukO)}</div>
       </div>
-      <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;background:#fdecea;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📉</div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pengeluaran</div>
-        <div class="dh-nominal" style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluarO)}</div></div>
+      <div style="background:#fff;border:1.5px solid #FECACA;border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,0.09)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Total Pengeluaran</div>
+        <div class="dh-nominal" style="font-size:16px;font-weight:800;color:var(--red);letter-spacing:-.2px">${rp(totalKeluarO)}</div>
       </div>
     </div>
     <div class="panel">
