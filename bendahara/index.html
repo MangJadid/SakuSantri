@@ -4237,8 +4237,12 @@ async function simpanSantri(){
       const {data:newSantri, error} = await SB.from('santri').insert(payload).select().single();
       if(error){ toast('❌ Gagal: '+error.message); return; }
       if(fotoFile){
-        const url = await uploadFoto(newSantri.id);
-        if(url) await SB.from('santri').update({foto_url:url}).eq('id',newSantri.id);
+        try{
+          const url = await uploadFoto(newSantri.id);
+          if(url) await SB.from('santri').update({foto_url:url}).eq('id',newSantri.id);
+        } catch(e){
+          toast('⚠️ Santri tersimpan tapi foto gagal diupload: '+e.message, false);
+        }
       }
       toast('✅ Santri berhasil ditambahkan!');
       closeMo('mo-santri'); hapusFoto();
@@ -4319,16 +4323,19 @@ function hapusFoto(){
 }
 async function uploadFoto(santriId){
   if(!fotoFile) return null;
-  try {
-    const CLOUD='dfj1eutgf'; const PRESET='santri_foto';
-    const form=new FormData();
-    form.append('file',fotoFile); form.append('upload_preset',PRESET);
-    form.append('folder','santri'); form.append('public_id',`santri_${santriId}_${Date.now()}`);
-    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,{method:'POST',body:form});
-    if(!res.ok) throw new Error('Upload gagal');
-    const r=await res.json();
-    return r.secure_url.replace('/upload/','/upload/f_auto,q_auto,w_400/');
-  } catch(e){ return fotoBase64; }
+  // Upload ke Cloudinary — tidak ada fallback, error langsung dilempar ke caller
+  const CLOUD='dfj1eutgf'; const PRESET='santri_foto';
+  const form=new FormData();
+  form.append('file',fotoFile); form.append('upload_preset',PRESET);
+  form.append('folder','santri'); form.append('public_id',`santri_${santriId}_${Date.now()}`);
+  const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,{method:'POST',body:form});
+  if(!res.ok){
+    const errBody = await res.text().catch(()=>'');
+    throw new Error('Upload foto gagal (' + res.status + '): ' + errBody);
+  }
+  const r=await res.json();
+  if(!r.secure_url) throw new Error('Upload foto gagal: URL tidak diterima dari Cloudinary');
+  return r.secure_url.replace('/upload/','/upload/f_auto,q_auto,w_400/');
 }
 
 // ===== REKAP TUNGGAKAN =====
@@ -6133,18 +6140,21 @@ function profilHapusFoto(){
 
 async function uploadFotoPengurus(penggunaId){
   if(!_profilFotoFile) return null;
-  try {
-    const CLOUD = 'dfj1eutgf'; const PRESET = 'santri_foto';
-    const form = new FormData();
-    form.append('file', _profilFotoFile);
-    form.append('upload_preset', PRESET);
-    form.append('folder', 'pengurus');
-    form.append('public_id', `pengurus_${penggunaId}_${Date.now()}`);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method:'POST', body:form });
-    if(!res.ok) throw new Error('Upload gagal');
-    const r = await res.json();
-    return r.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_400/');
-  } catch(e){ return _profilFotoBase64; }
+  // Upload ke Cloudinary — tidak ada fallback, error langsung dilempar ke caller
+  const CLOUD = 'dfj1eutgf'; const PRESET = 'santri_foto';
+  const form = new FormData();
+  form.append('file', _profilFotoFile);
+  form.append('upload_preset', PRESET);
+  form.append('folder', 'pengurus');
+  form.append('public_id', `pengurus_${penggunaId}_${Date.now()}`);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method:'POST', body:form });
+  if(!res.ok){
+    const errBody = await res.text().catch(()=>'');
+    throw new Error('Upload foto gagal (' + res.status + '): ' + errBody);
+  }
+  const r = await res.json();
+  if(!r.secure_url) throw new Error('Upload foto gagal: URL tidak diterima dari Cloudinary');
+  return r.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_400/');
 }
 
 async function simpanProfilPengurus(){
