@@ -453,59 +453,51 @@ tbody td{padding:10px 14px;vertical-align:middle}
 
 /* ── DETAIL HEADER ───────────────────────── */
 .dh{
-  background:var(--green);
-  border-radius:var(--rad-lg);
+  background:linear-gradient(145deg,#0f5c35 0%,#0D4F2E 60%,#093d23 100%);
+  border-radius:var(--rad);padding:0;
   color:#fff;margin-bottom:18px;
   position:relative;overflow:hidden;
-  box-shadow:var(--sh-md);
+  box-shadow:0 4px 24px rgba(13,79,46,.35);
 }
-.dh-calligraphy,.dh-calligraphy-inner,.dh-calligraphy-inner div{display:none}
-.dh-inner{position:relative;z-index:1;padding:18px 18px 0}
-.dh-top{display:flex;align-items:center;gap:14px}
+.dh::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.045) 1px,transparent 1px);background-size:18px 18px}
+.dh::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(212,175,55,0) 0%,rgba(212,175,55,.7) 40%,rgba(212,175,55,.9) 70%,rgba(212,175,55,.2) 100%)}
+.dh-calligraphy{
+  position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;z-index:0;
+}
+.dh-calligraphy-inner{
+  position:absolute;left:-10px;bottom:-10px;right:-10px;top:-10px;
+  display:flex;flex-direction:column;gap:0;
+  transform:rotate(-15deg);transform-origin:center;opacity:.055;
+}
+.dh-calligraphy-inner div{
+  font-family:'Amiri',serif;font-size:28px;font-weight:700;color:#fff;
+  white-space:nowrap;letter-spacing:12px;line-height:2.1;
+}
+.dh-inner{position:relative;z-index:1}
+.dh-top{display:flex;align-items:center;gap:14px;padding:18px 18px 14px 22px;position:relative;z-index:1}
 .dh-av{
   width:52px;height:52px;
   background:rgba(255,255,255,.12);border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:18px;font-weight:800;flex-shrink:0;
-  overflow:hidden;position:relative;
+  font-size:18px;font-weight:800;flex-shrink:0;overflow:hidden;
+  box-shadow:0 0 0 2px rgba(212,175,55,.45);position:relative;
 }
-.dh-av::after{
-  content:'';position:absolute;bottom:1px;right:1px;
-  width:11px;height:11px;border-radius:50%;
-  background:#4ade80;border:2px solid var(--green);
-}
+.dh-av-dot{position:absolute;bottom:1px;right:1px;width:11px;height:11px;border-radius:50%;background:#4ADE80;border:2px solid var(--green)}
 .dh-name-wrap{flex:1;min-width:0}
-.dh-info h3{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;margin-bottom:0;line-height:1.3;word-break:break-word;overflow-wrap:anywhere;letter-spacing:.1px}
-.dh-sub{font-size:11px;color:rgba(255,255,255,.5);font-weight:500;margin-top:2px;letter-spacing:.2px}
-.dh-detail,.dh-grid,.dh-item,.dh-divider{display:none}
-.dh-meta{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;padding:12px 18px;margin:0}
-.dh-meta-row{
-  display:flex;align-items:center;gap:6px;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:8px;padding:5px 10px;
-  font-size:11px;color:rgba(255,255,255,.75);font-weight:500;
-  font-family:'DM Sans',sans-serif;
-}
+.dh-info h3{font-size:15px;font-weight:700;margin-bottom:0;line-height:1.3;word-break:break-word;overflow-wrap:anywhere;color:#fff}
+.dh-sub{color:rgba(255,255,255,.5);font-size:11px;font-weight:500;margin-top:2px}
+.dh-detail{display:none}.dh-grid{display:none}.dh-item{display:none}.dh-divider{display:none}
+.dh-divider-thin{height:1px;background:rgba(255,255,255,.08);margin:0 18px;position:relative;z-index:1}
+.dh-meta{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px 12px 22px;position:relative;z-index:1}
+.dh-meta-row{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:600;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.dh-meta-row.kantin{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.25);color:rgba(255,220,100,.9)}
+.dh-meta-row.kobong{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:rgba(134,239,172,.9)}
 .dh-meta-row .sep{display:none}
-.dh-saldo{
-  background:rgba(0,0,0,.22);
-  border-top:1px solid rgba(255,255,255,.07);
-  padding:14px 18px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.dh-saldo .lbl{font-size:9.5px;color:rgba(255,255,255,.45);margin-bottom:5px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;font-family:'DM Sans',sans-serif}
-
-.saldo-toggle-btn{
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
-  border-radius:8px;padding:8px 12px;cursor:pointer;
-  color:rgba(255,255,255,.6);font-size:15px;line-height:1;
-  transition:background .2s;flex-shrink:0;
-}
-.saldo-toggle-btn:hover{background:rgba(255,255,255,.14)}
-.saldo-blur{filter:blur(8px);transition:filter .25s}
-.saldo-show{filter:none;transition:filter .25s}
-.dh-saldo .amt{font-size:24px;font-weight:800;color:var(--gold-l);font-family:'DM Sans',sans-serif;letter-spacing:-.5px;white-space:nowrap;line-height:1}
+.dh-saldo{background:rgba(0,0,0,.28);border-top:1px solid rgba(255,255,255,.07);padding:14px 18px 14px 22px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.dh-saldo .lbl{color:rgba(255,255,255,.4);font-size:9.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:6px}
+.dh-saldo .amt{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1;transition:filter .25s}
+.dh-saldo .amt.dh-hidden{filter:blur(8px)}
+.dh-eye{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:8px 12px;cursor:pointer;color:rgba(255,255,255,.6);font-size:14px;line-height:1}
 
 /* ── TIMELINE ────────────────────────────── */
 .tl{list-style:none;position:relative;padding-left:16px}
@@ -3317,49 +3309,49 @@ async function openDetailModal(id){
   document.getElementById('mo-detail-nama').textContent = s.nama;
   document.getElementById('mo-detail-body').innerHTML=`
     <div class="dh">
+      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
       <div class="dh-inner">
         <div class="dh-top">
-          <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':''+avLetter(s.nama)}</div>
+          <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}<div class="dh-av-dot"></div></div>
           <div class="dh-name-wrap">
-            <div class="dh-info">
-              <h3>${s.nama}</h3>
-              <div class="dh-sub">${kelasVal} · ${asramaVal}</div>
-            </div>
+            <div class="dh-info"><h3>${s.nama}</h3><div class="dh-sub">${kelasVal} · ${asramaVal}</div></div>
           </div>
         </div>
-      </div>
-      <div class="dh-meta">
-        <div class="dh-meta-row">🍽️ ${dapurVal}</div>
-        <div class="dh-meta-row">🏠 ${k}</div>
-      </div>
-      <div class="dh-saldo">
-        <div>
-          <div class="lbl">Saldo Akhir</div>
-          <div id="admin-saldo-amt" class="amt saldo-show" style="${saldoReal<0?'color:#ff6b6b':saldoReal<kritis?'color:var(--gold-l)':''}">${saldoReal<0?'&minus; ':''} ${rp(saldoReal)}</div>
+        <div class="dh-divider-thin"></div>
+        <div class="dh-meta">
+          <span class="dh-meta-row kantin">🍽️ ${dapurVal}</span>
+          <span class="dh-meta-row kobong">🏠 ${k}</span>
         </div>
-        <button class="saldo-toggle-btn" onclick="toggleSaldoAdmin(this)" title="Sembunyikan/tampilkan saldo">👁️</button>
+        <div class="dh-saldo">
+          <div>
+            <div class="lbl">Saldo Akhir</div>
+            <div class="amt" id="dh-amt-1" style="${saldoReal<0?'color:#ff6b6b':saldoReal<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoReal<0?'− ':''} ${rp(saldoReal)}</div>
+          </div>
+          <button class="dh-eye" onclick="dhToggle('dh-amt-1',this)">&#128065;</button>
+        </div>
+      </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="background:#fff;border:1.5px solid var(--green-b);border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-        <div style="width:34px;height:34px;background:#ECFDF5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📈</div>
-        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Pemasukan</div>
-        <div style="font-size:17px;font-weight:800;color:var(--green);letter-spacing:-.3px">${rp(totalMasuk)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;background:#e8f5ee;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pemasukan</div>
+        <div style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasuk)}</div></div>
       </div>
-      <div style="background:#fff;border:1.5px solid #FECACA;border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-        <div style="width:34px;height:34px;background:#FEF2F2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📉</div>
-        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Pengeluaran</div>
-        <div style="font-size:17px;font-weight:800;color:var(--red);letter-spacing:-.3px">${rp(totalKeluar)}</div>
+      <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;background:#fdecea;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📉</div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pengeluaran</div>
+        <div style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluar)}</div></div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
-      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-p btn-sm" style="justify-content:center" onclick="closeMo('mo-detail');openTxModal(${id})">➕ Tambah Transaksi</button>`:''}
-      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-o btn-sm" style="justify-content:center" onclick="closeMo('mo-detail');editSantri(${id})">✏️ Edit Santri</button>`:''}
-      ${SESSION.role==='super'?`<button class="btn btn-d btn-sm" style="justify-content:center" onclick="closeMo('mo-detail');hapusSantri(${id})">🗑 Hapus</button>`:''}  
+      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-p btn-sm" onclick="closeMo('mo-detail');openTxModal(${id})">➕ Tambah Transaksi</button>`:''}
+      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-o btn-sm" onclick="closeMo('mo-detail');editSantri(${id})">✏️ Edit Santri</button>`:''}
+
+      ${SESSION.role==='super'?'<button class="btn btn-d btn-sm" onclick="closeMo(\'mo-detail\');hapusSantri('+id+')">🗑 Hapus</button>':''}
     </div>
-    <div style="display:flex;gap:0;margin:14px 0 12px;background:#F1F5F9;border-radius:10px;padding:4px">
-      <button id="tab-tx-btn" onclick="switchDetailTab('tx')" style="flex:1;padding:9px 6px;border:none;border-radius:8px;background:var(--green);color:#fff;font-weight:700;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,0.1)">📜 Riwayat Transaksi</button>
-      <button id="tab-tagihan-btn" onclick="switchDetailTab('tagihan')" style="flex:1;padding:9px 6px;border:none;border-radius:8px;background:none;color:var(--text-m);font-weight:600;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">🧾 Tagihan Pondok</button>
+    <div style="display:flex;gap:6px;margin:18px 0 12px;background:var(--bg);border-radius:12px;padding:4px">
+      <button id="tab-tx-btn" onclick="switchDetailTab('tx')" style="flex:1;padding:10px 6px;border:none;border-radius:9px;background:var(--green);color:#fff;font-weight:700;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">📜 Riwayat Transaksi</button>
+      <button id="tab-tagihan-btn" onclick="switchDetailTab('tagihan')" style="flex:1;padding:10px 6px;border:none;border-radius:9px;background:none;color:var(--text-m);font-weight:600;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">🧾 Tagihan Pondok</button>
     </div>
     <div id="tab-tx-content">
       <div style="background:#fafdfb;border:1.5px solid var(--green-b);border-radius:14px;overflow:hidden">
@@ -3375,6 +3367,7 @@ async function openDetailModal(id){
   openMo('mo-detail');
 }
 
+function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;el.classList.toggle('dh-hidden');btn.innerHTML=el.classList.contains('dh-hidden')?'&#128584;':'&#128065;;'}
 function switchDetailTab(tab){
   const txContent = document.getElementById('tab-tx-content');
   const tagihanContent = document.getElementById('tab-tagihan-content');
@@ -5327,39 +5320,39 @@ async function renderDetailOrtu(){
 
   document.getElementById('detail-content').innerHTML=`
     <div class="dh">
+      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
       <div class="dh-inner">
         <div class="dh-top">
-          <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':''+avLetter(s.nama)}</div>
+          <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}<div class="dh-av-dot"></div></div>
           <div class="dh-name-wrap">
-            <div class="dh-info">
-              <h3>${s.nama}</h3>
-              <div class="dh-sub">${kelasValO} · ${asramaValO}</div>
-            </div>
+            <div class="dh-info"><h3>${s.nama}</h3><div class="dh-sub">${kelasValO} · ${asramaValO}</div></div>
           </div>
         </div>
-      </div>
-      <div class="dh-meta">
-        <div class="dh-meta-row">🍽️ ${dapurValO}</div>
-        <div class="dh-meta-row">🏠 ${k}</div>
-      </div>
-      <div class="dh-saldo">
-        <div>
-          <div class="lbl">Saldo Akhir</div>
-          <div id="ortu-saldo-amt" class="amt saldo-show" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':''}">${saldoRealO<0?'&minus; ':''} ${rp(saldoRealO)}</div>
+        <div class="dh-divider-thin"></div>
+        <div class="dh-meta">
+          <span class="dh-meta-row kantin">🍽️ ${dapurValO}</span>
+          <span class="dh-meta-row kobong">🏠 ${k}</span>
         </div>
-        <button class="saldo-toggle-btn" onclick="toggleSaldoOrtu(this)" title="Sembunyikan/tampilkan saldo">👁️</button>
+        <div class="dh-saldo">
+          <div>
+            <div class="lbl">Saldo Akhir</div>
+            <div class="amt" id="dh-amt-2" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoRealO<0?'− ':''} ${rp(saldoRealO)}</div>
+          </div>
+          <button class="dh-eye" onclick="dhToggle('dh-amt-2',this)">&#128065;</button>
+        </div>
+      </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="background:#fff;border:1.5px solid var(--green-b);border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-        <div style="width:34px;height:34px;background:#ECFDF5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📈</div>
-        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Pemasukan</div>
-        <div style="font-size:17px;font-weight:800;color:var(--green);letter-spacing:-.3px">${rp(totalMasukO)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+      <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;background:#e8f5ee;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pemasukan</div>
+        <div style="font-size:16px;font-weight:700;color:var(--green)">${rp(totalMasukO)}</div></div>
       </div>
-      <div style="background:#fff;border:1.5px solid #FECACA;border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-        <div style="width:34px;height:34px;background:#FEF2F2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📉</div>
-        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Pengeluaran</div>
-        <div style="font-size:17px;font-weight:800;color:var(--red);letter-spacing:-.3px">${rp(totalKeluarO)}</div>
+      <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;background:#fdecea;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📉</div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Total Pengeluaran</div>
+        <div style="font-size:16px;font-weight:700;color:var(--red)">${rp(totalKeluarO)}</div></div>
       </div>
     </div>
     <div class="panel">
@@ -5402,20 +5395,18 @@ async function renderSyahriyahOrtu(){
 
   container.innerHTML = `
     <div class="dh" style="margin-bottom:20px">
+      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
       <div class="dh-inner">
         <div class="dh-top">
           <div class="dh-av" style="overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--green)">${avHtml}</div>
-          <div class="dh-name-wrap">
-            <div class="dh-info">
-              <h3>Uang Syahriyah</h3>
-              <div class="dh-sub">${santriNama} · ${CONFIG.pesantren_nama||'Pesantren'}</div>
-            </div>
-          </div>
+          <div class="dh-name-wrap"><div class="dh-info"><h3>Uang Syahriyah</h3>
+            <div style="font-size:11px;opacity:.72;margin-top:3px;word-break:break-word;overflow-wrap:anywhere">${santriNama} · ${CONFIG.pesantren_nama||'Pesantren'}</div>
+          </div></div>
         </div>
-      </div>
-      <div class="dh-meta">
-        <div class="dh-meta-row">🏠 ${kamarSy} · 🎓 Kelas ${kelasSy}</div>
-        <div class="dh-meta-row">🍽️ ${dapurSy} · 📍 ${asramaSy}</div>
+        <div class="dh-meta">
+          <div class="dh-meta-row"><span>🏠</span><span>${kamarSy}</span><span class="sep">·</span><span>🎓 Kelas ${kelasSy}</span></div>
+          <div class="dh-meta-row"><span>🍽️</span><span>${dapurSy}</span><span class="sep">·</span><span>📍</span><span>${asramaSy}</span></div>
+        </div>
       </div>
     </div>
     <div id="syahriyah-deposit-info" style="margin-bottom:14px"></div>
@@ -7472,32 +7463,6 @@ if ('serviceWorker' in navigator) {
     }
   },true);
 })();
-
-function toggleSaldoAdmin(btn){
-  const el = document.getElementById('admin-saldo-amt');
-  if(!el) return;
-  const hiding = el.classList.contains('saldo-show');
-  el.classList.toggle('saldo-blur', hiding);
-  el.classList.toggle('saldo-show', !hiding);
-  // blur statistik juga
-  document.querySelectorAll('.admin-stat-amt').forEach(e => {
-    e.classList.toggle('saldo-blur', hiding);
-    e.classList.toggle('saldo-show', !hiding);
-  });
-  btn.textContent = hiding ? '🙈' : '👁️';
-}
-function toggleSaldoOrtu(btn){
-  const el = document.getElementById('ortu-saldo-amt');
-  if(!el) return;
-  const hiding = el.classList.contains('saldo-show');
-  el.classList.toggle('saldo-blur', hiding);
-  el.classList.toggle('saldo-show', !hiding);
-  document.querySelectorAll('.ortu-stat-amt').forEach(e => {
-    e.classList.toggle('saldo-blur', hiding);
-    e.classList.toggle('saldo-show', !hiding);
-  });
-  btn.textContent = hiding ? '🙈' : '👁️';
-}
 </script>
 </body>
 </html>
