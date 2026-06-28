@@ -461,18 +461,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
 }
 .dh::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.045) 1px,transparent 1px);background-size:18px 18px}
 .dh::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(212,175,55,0) 0%,rgba(212,175,55,.7) 40%,rgba(212,175,55,.9) 70%,rgba(212,175,55,.2) 100%)}
-.dh-calligraphy{
-  position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;z-index:0;
-}
-.dh-calligraphy-inner{
-  position:absolute;left:-10px;bottom:-10px;right:-10px;top:-10px;
-  display:flex;flex-direction:column;gap:0;
-  transform:rotate(-15deg);transform-origin:center;opacity:.055;
-}
-.dh-calligraphy-inner div{
-  font-family:'Amiri',serif;font-size:28px;font-weight:700;color:#fff;
-  white-space:nowrap;letter-spacing:12px;line-height:2.1;
-}
+.dh-calligraphy,.dh-calligraphy-inner,.dh-calligraphy-inner div{display:none}
 .dh-inner{position:relative;z-index:1}
 .dh-top{display:flex;align-items:center;gap:14px;padding:18px 18px 14px 22px;position:relative;z-index:1}
 .dh-av{
@@ -3226,6 +3215,46 @@ async function openDetailModal(id){
   const s = ALL_SANTRI.find(x=>x.id===id);
   if(!s) return;
 
+  // Tampilkan skeleton dulu
+  document.getElementById('mo-detail-nama').textContent = s.nama;
+  document.getElementById('mo-detail-body').innerHTML = `
+    <div style="padding:4px 0">
+      <div style="background:linear-gradient(145deg,#0f5c35,#0D4F2E);border-radius:16px;overflow:hidden;margin-bottom:14px">
+        <div style="padding:18px 18px 14px 22px;display:flex;align-items:center;gap:14px">
+          <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="height:14px;background:rgba(255,255,255,.2);border-radius:6px;width:60%;margin-bottom:8px"></div>
+            <div style="height:10px;background:rgba(255,255,255,.12);border-radius:6px;width:40%"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;padding:10px 18px">
+          <div style="height:28px;background:rgba(255,255,255,.1);border-radius:8px;width:100px"></div>
+          <div style="height:28px;background:rgba(255,255,255,.1);border-radius:8px;width:110px"></div>
+        </div>
+        <div style="background:rgba(0,0,0,.22);border-top:1px solid rgba(255,255,255,.07);padding:14px 18px">
+          <div style="height:10px;background:rgba(255,255,255,.15);border-radius:4px;width:70px;margin-bottom:8px"></div>
+          <div style="height:26px;background:rgba(255,255,255,.2);border-radius:6px;width:130px"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:#fff;border:1.5px solid #D1FAE5;border-radius:12px;padding:14px 12px">
+          <div style="width:34px;height:34px;background:#f0f0f0;border-radius:8px;margin-bottom:10px"></div>
+          <div style="height:9px;background:#eee;border-radius:4px;width:80%;margin-bottom:6px"></div>
+          <div style="height:18px;background:#e0e0e0;border-radius:4px;width:70%"></div>
+        </div>
+        <div style="background:#fff;border:1.5px solid #FECACA;border-radius:12px;padding:14px 12px">
+          <div style="width:34px;height:34px;background:#f0f0f0;border-radius:8px;margin-bottom:10px"></div>
+          <div style="height:9px;background:#eee;border-radius:4px;width:80%;margin-bottom:6px"></div>
+          <div style="height:18px;background:#e0e0e0;border-radius:4px;width:70%"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;color:#9CA3AF;font-size:13px">
+        <div style="width:16px;height:16px;border:2px solid #D1FAE5;border-top-color:#0D4F2E;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+        Memuat data...
+      </div>
+    </div>`;
+  openMo('mo-detail');
+
   const {data:txs} = await SB.from('transaksi').select('*').eq('santri_id',id).order('tanggal',{ascending:false}).order('created_at',{ascending:false});
   const {data:tagihan} = await SB.from('tagihan_pondok').select('*').eq('santri_id',String(id)).order('created_at',{ascending:false});
   const kritis = parseInt(CONFIG.kritis_batas)||50000;
@@ -3310,12 +3339,12 @@ async function openDetailModal(id){
   document.getElementById('mo-detail-nama').textContent = s.nama;
   document.getElementById('mo-detail-body').innerHTML=`
     <div class="dh">
-      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
+      
       <div class="dh-inner">
         <div class="dh-top">
           <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}<div class="dh-av-dot"></div></div>
           <div class="dh-name-wrap">
-            <div class="dh-info"><h3>${s.nama}</h3><div class="dh-sub">${kelasVal} · ${asramaVal}</div></div>
+            <div class="dh-info"><h3>${s.nama}</h3><div class="dh-sub">Kelas ${kelasVal} · Asrama ${asramaVal}</div></div>
           </div>
         </div>
         <div class="dh-divider-thin"></div>
@@ -3365,10 +3394,9 @@ async function openDetailModal(id){
         ${tagihanHtml}
       </div>
     </div>`;
-  openMo('mo-detail');
 }
 
-function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;var hide=!el.classList.contains('dh-hidden');el.classList.toggle('dh-hidden');var mo=el.closest('.mb')||el.closest('.modal')||el.closest('.sec')||document;if(mo)mo.querySelectorAll('.dh-nominal').forEach(function(n){hide?n.classList.add('dh-hidden'):n.classList.remove('dh-hidden')});btn.innerHTML=hide?'&#128584;':'&#128065;;'}
+function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;var hide=!el.classList.contains('dh-hidden');el.classList.toggle('dh-hidden');var mo=el.closest('.mb')||el.closest('.modal')||el.closest('.sec')||document;if(mo)mo.querySelectorAll('.dh-nominal').forEach(function(n){hide?n.classList.add('dh-hidden'):n.classList.remove('dh-hidden')});btn.innerHTML=hide?'&#128584;':'&#128065;'}
 function switchDetailTab(tab){
   const txContent = document.getElementById('tab-tx-content');
   const tagihanContent = document.getElementById('tab-tagihan-content');
@@ -5321,12 +5349,12 @@ async function renderDetailOrtu(){
 
   document.getElementById('detail-content').innerHTML=`
     <div class="dh">
-      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
+      
       <div class="dh-inner">
         <div class="dh-top">
           <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}<div class="dh-av-dot"></div></div>
           <div class="dh-name-wrap">
-            <div class="dh-info"><h3>${s.nama}</h3><div class="dh-sub">${kelasValO} · ${asramaValO}</div></div>
+            <div class="dh-info"><h3>${s.nama}</h3><div class="dh-sub">Kelas ${kelasValO} · Asrama ${asramaValO}</div></div>
           </div>
         </div>
         <div class="dh-divider-thin"></div>
@@ -5396,7 +5424,7 @@ async function renderSyahriyahOrtu(){
 
   container.innerHTML = `
     <div class="dh" style="margin-bottom:20px">
-      <div class="dh-calligraphy"><div class="dh-calligraphy-inner"><div>النُّور  النُّور  النُّور  النُّور</div><div style="margin-left:60px">النُّور  النُّور  النُّور  النُّور</div><div>النُّور  النُّور  النُّور  النُّور</div></div></div>
+      
       <div class="dh-inner">
         <div class="dh-top">
           <div class="dh-av" style="overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--green)">${avHtml}</div>
