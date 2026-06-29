@@ -3273,14 +3273,33 @@ async function openDetailModal(id){
     const totalTagihan = tagihan.reduce((a,t)=>a+(t.nominal||0),0);
     const totalBelum = tagihan.filter(t=>t.status!=='lunas').reduce((a,t)=>a+(t.nominal||0),0);
     tagihanHtml = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;margin-bottom:4px">Total Tagihan</div>
-          <div style="font-size:15px;font-weight:700;color:var(--green)">${rp(totalTagihan)}</div>
+      <div style="margin-bottom:14px;border-radius:12px;overflow:hidden;border:1.5px solid #E5E7EB;box-shadow:0 4px 14px rgba(0,0,0,.08)">
+        <!-- Baris 1: Sisa Tagihan full width -->
+        <div style="background:${totalBelum>0?'linear-gradient(135deg,#7f1d1d,#991b1b)':'linear-gradient(135deg,#065f46,#047857)'};padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="color:rgba(255,255,255,.65);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">${totalBelum>0?'⚠️ Sisa Tagihan':'✅ Status'}</div>
+            <div style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-.5px">${totalBelum>0?rp(totalBelum):'Lunas'}</div>
+            <div style="color:rgba(255,255,255,.5);font-size:10px;margin-top:3px">${totalBelum>0?'Belum lunas':'Semua terbayar'}</div>
+          </div>
+          <div style="text-align:center;flex-shrink:0">
+            <div style="font-size:26px;font-weight:900;color:rgba(255,255,255,.9)">${Math.round((totalTagihan-totalBelum)/totalTagihan*100)||0}%</div>
+            <div style="font-size:9.5px;color:rgba(255,255,255,.5)">terbayar</div>
+          </div>
         </div>
-        <div style="background:var(--red-p);border:1px solid #f5c6c2;border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;margin-bottom:4px">Sisa Hutang</div>
-          <div style="font-size:15px;font-weight:700;color:var(--red)">${rp(totalBelum)}</div>
+        <!-- Progress bar -->
+        <div style="height:5px;background:rgba(0,0,0,.1)">
+          <div style="height:100%;width:${Math.round((totalTagihan-totalBelum)/totalTagihan*100)||0}%;background:linear-gradient(90deg,#4ADE80,#2BAE68)"></div>
+        </div>
+        <!-- Baris 2: Total | Sudah Bayar -->
+        <div style="display:grid;grid-template-columns:1fr 1fr">
+          <div style="background:#fff;padding:12px 14px;border-right:1px solid #E5E7EB">
+            <div style="font-size:9px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Tagihan</div>
+            <div style="font-size:14px;font-weight:800;color:#111827">${rp(totalTagihan)}</div>
+          </div>
+          <div style="background:#F0FDF4;padding:12px 14px">
+            <div style="font-size:9px;font-weight:700;color:#065F46;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Sudah Bayar</div>
+            <div style="font-size:14px;font-weight:800;color:#0D4F2E">${rp(totalTagihan-totalBelum)}</div>
+          </div>
         </div>
       </div>
       ${tagihan.map(t => {
@@ -5485,14 +5504,33 @@ async function renderSyahriyahOrtu(){
     };
 
     listEl.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-        <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:12px">
-          <div style="font-size:11px;color:var(--text-m);margin-bottom:4px">TOTAL TAGIHAN</div>
-          <div style="font-size:18px;font-weight:800;color:var(--green)">${fmtRp(totalTagihan)}</div>
+      <div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:1.5px solid #E5E7EB;box-shadow:0 4px 14px rgba(0,0,0,.08)">
+        <!-- Baris 1: Sisa Tagihan full width -->
+        <div style="background:${sisaHutang>0?'linear-gradient(135deg,#7f1d1d,#991b1b)':'linear-gradient(135deg,#065f46,#047857)'};padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="color:rgba(255,255,255,.65);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">${sisaHutang>0?'⚠️ Sisa Tagihan':'✅ Status'}</div>
+            <div style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-.5px">${sisaHutang>0?fmtRp(sisaHutang):'Lunas'}</div>
+            <div style="color:rgba(255,255,255,.5);font-size:10px;margin-top:3px">${sisaHutang>0?'Belum lunas':'Semua terbayar'}</div>
+          </div>
+          <div style="text-align:center;flex-shrink:0">
+            <div style="font-size:26px;font-weight:900;color:rgba(255,255,255,.9)">${totalTagihan>0?Math.round(totalBayar/totalTagihan*100):100}%</div>
+            <div style="font-size:9.5px;color:rgba(255,255,255,.5)">terbayar</div>
+          </div>
         </div>
-        <div style="background:${sisaHutang>0?'#fee2e2':'#d1fae5'};border:1px solid ${sisaHutang>0?'#fca5a5':'#6ee7b7'};border-radius:10px;padding:12px">
-          <div style="font-size:11px;color:var(--text-m);margin-bottom:4px">SISA HUTANG</div>
-          <div style="font-size:18px;font-weight:800;color:${sisaHutang>0?'#dc2626':'#065f46'}">${sisaHutang>0?fmtRp(sisaHutang):'Lunas ✅'}</div>
+        <!-- Progress bar -->
+        <div style="height:5px;background:rgba(0,0,0,.1)">
+          <div style="height:100%;width:${totalTagihan>0?Math.round(totalBayar/totalTagihan*100):100}%;background:linear-gradient(90deg,#4ADE80,#2BAE68)"></div>
+        </div>
+        <!-- Baris 2: Total | Sudah Bayar -->
+        <div style="display:grid;grid-template-columns:1fr 1fr">
+          <div style="background:#fff;padding:12px 14px;border-right:1px solid #E5E7EB">
+            <div style="font-size:9px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Total Tagihan</div>
+            <div style="font-size:14px;font-weight:800;color:#111827">${fmtRp(totalTagihan)}</div>
+          </div>
+          <div style="background:#F0FDF4;padding:12px 14px">
+            <div style="font-size:9px;font-weight:700;color:#065F46;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Sudah Bayar</div>
+            <div style="font-size:14px;font-weight:800;color:#0D4F2E">${fmtRp(totalBayar)}</div>
+          </div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px">
