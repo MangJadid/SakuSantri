@@ -3237,15 +3237,9 @@ async function openDetailModal(santriId){
   const asramaNama=getAsramaNama(s.kobong?.asrama_id||'');
 
   // Load deposit
-  let saldoDeposit=0;
-  try {
-    const {data:dep}=await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle();
-    saldoDeposit=dep?Number(dep.saldo||0):0;
-  } catch(e){ saldoDeposit=0; }
-
   document.getElementById('mo-detail-nama').textContent=s.nama;
 
-  // Skeleton loading
+  // Skeleton loading — tampil dulu sebelum fetch
   document.getElementById('mo-detail-body').innerHTML=`
     <div style="padding:4px 0">
       <div style="background:linear-gradient(135deg,#064e29,#0a6b38,#0d5c30);border-radius:16px;overflow:hidden;margin-bottom:14px;padding:24px 20px 0">
@@ -3286,6 +3280,13 @@ async function openDetailModal(santriId){
       </div>
     </div>`;
   openMo('mo-detail');
+
+  // Fetch deposit setelah skeleton tampil
+  let saldoDeposit=0;
+  try {
+    const {data:dep}=await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle();
+    saldoDeposit=dep?Number(dep.saldo||0):0;
+  } catch(e){ saldoDeposit=0; }
 
   // Build riwayat tagihan
   let riwayatHtml='';
