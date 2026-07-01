@@ -2665,7 +2665,7 @@ create policy "public delete fotos" on storage.objects
             <strong>⚠️ Urutan wajib:</strong><br>1️⃣ Backup dulu → 2️⃣ Baru Tutup Bulan<br><span style="font-size:12px;opacity:.8">Tombol Tutup Bulan baru aktif setelah backup dilakukan.</span>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <button class="btn btn-p" onclick="exportLengkap()" id="btn-backup">📦 1. Backup Lengkap</button>
+            <button class="btn btn-p" onclick="backupSemuaData()" id="btn-backup">📦 1. Backup Lengkap</button>
             <button class="btn btn-d" onclick="konfirmasiTutupBulan()" id="btn-tutup-bulan" disabled style="opacity:.4;cursor:not-allowed">🔒 2. Tutup Bulan</button>
           </div>
           <div id="tutup-status" style="margin-top:12px;font-size:13px"></div>
