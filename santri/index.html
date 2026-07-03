@@ -3110,7 +3110,7 @@ async function simpanBulkEdit(){
 
   const upd = {};
   if(kobongVal)            upd.kobong_id  = parseInt(kobongVal);
-  if(kelasVal)             upd.kelas      = kelasVal;
+  if(kelasVal)             { upd.kelas = kelasVal; upd.catatan = kelasVal; }
   if(waliVal === '__null__') upd.created_by = null;
   else if(waliVal)         upd.created_by = waliVal;
 
@@ -6645,7 +6645,7 @@ async function nkTerapkanNaikKelas(){
 
   konfirm(`Ubah kelas <strong>${cnt} santri</strong> menjadi <strong>Kelas ${tujuan}</strong>?`, async()=>{
     const ids = [...nkKelasSelectedIds];
-    const {error} = await SB.from('santri').update({kelas:tujuan}).in('id',ids);
+    const {error} = await SB.from('santri').update({kelas:tujuan, catatan:tujuan}).in('id',ids);
     if(error){ toast('Gagal: '+error.message,false); return; }
     toast(`✅ ${ids.length} santri berhasil naik ke Kelas ${tujuan}!`);
     nkKelasSelectedIds.clear();
