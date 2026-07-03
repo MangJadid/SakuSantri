@@ -3055,12 +3055,21 @@ function santriToggleOne(id, checked){
 
 function santriToggleAll(checked){
   const q=(document.getElementById('santri-cari')?.value||'').toLowerCase();
+  const af=document.getElementById('santri-asrama')?.value||'';
   const kf=document.getElementById('santri-kobong')?.value||'';
   const wf=document.getElementById('santri-wali')?.value||'';
+  const klf=document.getElementById('santri-kelas')?.value||'';
+  const gf=document.getElementById('santri-gender')?.value||'';
   ALL_SANTRI.filter(s=>{
     if(q && !s.nama.toLowerCase().includes(q)) return false;
+    if(af){
+      const kobong = ALL_KOBONG.find(k=>k.id===s.kobong_id);
+      if(!kobong || String(kobong.asrama_id)!==String(af)) return false;
+    }
     if(kf && String(s.kobong_id)!==kf) return false;
     if(wf && s.created_by!==wf) return false;
+    if(klf && s.kelas!==klf) return false;
+    if(gf && s.jenis_kelamin!==gf) return false;
     return true;
   }).forEach(s=>{ if(checked) _bulkSelected.add(s.id); else _bulkSelected.delete(s.id); });
   renderTabelSantri();
