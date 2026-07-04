@@ -3111,26 +3111,26 @@ function renderTagihanTable(){
   const tunggakListrik = totalListrik - bayarListrik;
   const summEl = document.getElementById('tagihan-summary');
   if(summEl) summEl.innerHTML = filtered.length===0 ? '' : `
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-      <div style="flex:1;min-width:140px;background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px">
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Total Tagihan</div>
-        <div style="font-size:15px;font-weight:800;color:var(--text)">${fmtRp(totalNom)}</div>
-        <div style="font-size:10px;color:var(--text-l);margin-top:4px;display:flex;gap:8px">
+        <div style="font-size:17px;font-weight:800;color:var(--text)">${fmtRp(totalNom)}</div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
           <span>🍽️ ${fmtRp(totalMakan)}</span><span>⚡ ${fmtRp(totalListrik)}</span>
         </div>
         <div style="font-size:10px;color:var(--text-l);margin-top:2px">${filtered.length} tagihan · ✅${jmlLunas} ⏳${jmlCicil} ❌${jmlBelum}</div>
       </div>
-      <div style="flex:1;min-width:120px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 14px">
+      <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 16px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Terbayar</div>
-        <div style="font-size:15px;font-weight:800;color:var(--green)">${fmtRp(totalBayar)}</div>
-        <div style="font-size:10px;color:var(--text-l);margin-top:4px;display:flex;gap:8px">
+        <div style="font-size:17px;font-weight:800;color:var(--green)">${fmtRp(totalBayar)}</div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
           <span>🍽️ ${fmtRp(Math.round(bayarMakan))}</span><span>⚡ ${fmtRp(Math.round(bayarListrik))}</span>
         </div>
       </div>
-      <div style="flex:1;min-width:120px;background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:10px 14px">
+      <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:12px 16px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Tunggakan</div>
-        <div style="font-size:15px;font-weight:800;color:var(--red)">${fmtRp(totalTunggak)}</div>
-        <div style="font-size:10px;color:var(--text-l);margin-top:4px;display:flex;gap:8px">
+        <div style="font-size:17px;font-weight:800;color:var(--red)">${fmtRp(totalTunggak)}</div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
           <span>🍽️ ${fmtRp(Math.round(tunggakMakan))}</span><span>⚡ ${fmtRp(Math.round(tunggakListrik))}</span>
         </div>
       </div>
@@ -4569,33 +4569,29 @@ function updateRekapSummary(tagihanF){
   const tunggakMakan = makan - bayarMakan;
   const tunggakListrik = listrik - bayarListrik;
   el.innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-        <div style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px">
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+        <div style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px">
           <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Total Tagihan</div>
-          <div style="font-size:14px;font-weight:800;color:var(--text)">${fmtRp(total)}</div>
-          <div style="font-size:10px;color:var(--text-l)">${tagihanF.length} tagihan</div>
-          <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--green-b);display:flex;gap:8px">
-            <div style="font-size:10px;color:var(--text-l)">🍽️ Makan: <strong>${fmtRp(makan)}</strong></div>
-            <div style="font-size:10px;color:var(--text-l)">⚡ Listrik: <strong>${fmtRp(listrik)}</strong></div>
+          <div style="font-size:17px;font-weight:800;color:var(--text)">${fmtRp(total)}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
+            <span>🍽️ ${fmtRp(makan)}</span><span>⚡ ${fmtRp(listrik)}</span>
           </div>
+          <div style="font-size:10px;color:var(--text-l);margin-top:2px">${tagihanF.length} tagihan</div>
         </div>
-        <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 12px">
+        <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 16px">
           <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Terbayar</div>
-          <div style="font-size:14px;font-weight:800;color:var(--green)">${fmtRp(lunas)}</div>
-          <div style="margin-top:6px;padding-top:6px;border-top:1px solid #bbf7d0;display:flex;gap:8px">
-            <div style="font-size:10px;color:var(--text-l)">🍽️ Makan: <strong>${fmtRp(Math.round(bayarMakan))}</strong></div>
-            <div style="font-size:10px;color:var(--text-l)">⚡ Listrik: <strong>${fmtRp(Math.round(bayarListrik))}</strong></div>
+          <div style="font-size:17px;font-weight:800;color:var(--green)">${fmtRp(lunas)}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
+            <span>🍽️ ${fmtRp(Math.round(bayarMakan))}</span><span>⚡ ${fmtRp(Math.round(bayarListrik))}</span>
           </div>
         </div>
-      </div>
-      <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:10px 12px">
-        <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Tunggakan</div>
-        <div style="font-size:16px;font-weight:800;color:var(--red)">${fmtRp(tunggak)}</div>
-        <div style="margin-top:6px;padding-top:6px;border-top:1px solid #fecaca;display:flex;gap:8px">
-          <div style="font-size:10px;color:var(--text-l)">🍽️ Makan: <strong>${fmtRp(Math.round(tunggakMakan))}</strong></div>
-          <div style="font-size:10px;color:var(--text-l)">⚡ Listrik: <strong>${fmtRp(Math.round(tunggakListrik))}</strong></div>
+        <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:12px 16px">
+          <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Tunggakan</div>
+          <div style="font-size:17px;font-weight:800;color:var(--red)">${fmtRp(tunggak)}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
+            <span>🍽️ ${fmtRp(Math.round(tunggakMakan))}</span><span>⚡ ${fmtRp(Math.round(tunggakListrik))}</span>
+          </div>
         </div>
-      </div>
     </div>
   `;
 }
