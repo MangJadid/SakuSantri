@@ -1504,19 +1504,20 @@ _updateOfflineScreen();
     <div class="mo-h"><h3>⚡ Generate Tagihan</h3><button class="mo-cls" onclick="closeMo('mo-gen-santri')">✕</button></div>
     <div class="mo-b">
       <div id="mo-gen-santri-info" style="background:var(--green-p);border:1px solid var(--green-b);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px">
         <div class="fg">
           <label>Tahun *</label>
           <select id="gen-santri-tahun" onchange="onGenSantriTahunChange()" style="width:100%">
             <option value="">-- Pilih Tahun --</option>
           </select>
         </div>
-        <div class="fg">
-          <label>Bulan *</label>
-          <select id="gen-santri-bulan" style="width:100%">
-            <option value="">-- Pilih Tahun Dulu --</option>
-          </select>
+      </div>
+      <div class="fg" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <label style="margin:0">Pilih Bulan *</label>
+          <button type="button" class="btn btn-o btn-sm" onclick="togglePilihSemuaBulanSantri()" id="btn-pilih-semua-bulan-santri">☐ Pilih Semua</button>
         </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg)" id="gen-santri-bulan-list"></div>
       </div>
       <div class="fg" style="margin-bottom:16px">
         <label>Nominal Uang Makan</label>
@@ -3021,6 +3022,25 @@ function updateTagihanBulanInfo(){
   `;
 }
 
+// Pecah nominal terbayar per tagihan menjadi porsi makan & listrik:
+// uang makan diprioritaskan dulu sampai terpenuhi, sisanya baru masuk ke listrik.
+// Contoh: nominal makan 380rb, listrik 40rb. Cicilan 300rb -> semua ke makan.
+// Cicilan 400rb -> makan lunas 380rb, sisa 20rb masuk ke listrik.
+function _pecahBayar(list){
+  let bayarMakan=0, bayarListrik=0;
+  list.forEach(t=>{
+    const nomMakan = Number(t.nominal_makan||0);
+    const nomListrik = Number(t.nominal_listrik||0);
+    const bayar = t.status==='lunas' ? Number(t.nominal||(nomMakan+nomListrik)) : Number(t.nominal_bayar||0);
+    if(bayar<=0) return;
+    const bm = Math.min(bayar, nomMakan);
+    const bl = Math.min(bayar-bm, nomListrik);
+    bayarMakan += bm;
+    bayarListrik += bl;
+  });
+  return {bayarMakan, bayarListrik};
+}
+
 function renderTagihanTable(){
   const q=document.getElementById('cari-tagihan')?.value.toLowerCase()||'';
   const asramaF=document.getElementById('filter-asrama-tagihan')?.value||'';
@@ -3086,6 +3106,9 @@ function renderTagihanTable(){
   const jmlLunas  = filtered.filter(t=>t.status==='lunas').length;
   const jmlBelum  = filtered.filter(t=>t.status==='belum').length;
   const jmlCicil  = filtered.filter(t=>t.status==='cicil').length;
+  const {bayarMakan, bayarListrik} = _pecahBayar(filtered);
+  const tunggakMakan = totalMakan - bayarMakan;
+  const tunggakListrik = totalListrik - bayarListrik;
   const summEl = document.getElementById('tagihan-summary');
   if(summEl) summEl.innerHTML = filtered.length===0 ? '' : `
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
@@ -3100,10 +3123,16 @@ function renderTagihanTable(){
       <div style="flex:1;min-width:120px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 14px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Terbayar</div>
         <div style="font-size:15px;font-weight:800;color:var(--green)">${fmtRp(totalBayar)}</div>
+        <div style="font-size:10px;color:var(--text-l);margin-top:4px;display:flex;gap:8px">
+          <span>🍽️ ${fmtRp(Math.round(bayarMakan))}</span><span>⚡ ${fmtRp(Math.round(bayarListrik))}</span>
+        </div>
       </div>
       <div style="flex:1;min-width:120px;background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:10px 14px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Tunggakan</div>
         <div style="font-size:15px;font-weight:800;color:var(--red)">${fmtRp(totalTunggak)}</div>
+        <div style="font-size:10px;color:var(--text-l);margin-top:4px;display:flex;gap:8px">
+          <span>🍽️ ${fmtRp(Math.round(tunggakMakan))}</span><span>⚡ ${fmtRp(Math.round(tunggakListrik))}</span>
+        </div>
       </div>
     </div>`;
 
@@ -3435,76 +3464,98 @@ function bukaModalGeneratePerSantri(santriId){
 function onGenSantriTahunChange(){
   const URUTAN_BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   const tahun = document.getElementById('gen-santri-tahun')?.value||'';
-  const bulanEl = document.getElementById('gen-santri-bulan');
-  if(!bulanEl||!tahun) return;
-  bulanEl.innerHTML = URUTAN_BULAN.map(b=>`<option value="${b} ${tahun}">${b} ${tahun}</option>`).join('');
-  // Default ke bulan aktif
+  const listEl = document.getElementById('gen-santri-bulan-list');
+  if(!listEl||!tahun) return;
   const now = new Date();
-  const bulanAktifStr = URUTAN_BULAN[now.getMonth()]+' '+now.getFullYear();
-  if(bulanEl.querySelector(`option[value="${bulanAktifStr}"]`)) bulanEl.value = bulanAktifStr;
+  const bulanAktif = URUTAN_BULAN[now.getMonth()];
+  listEl.innerHTML = URUTAN_BULAN.map(b=>`
+    <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-weight:400">
+      <input type="checkbox" name="gen-santri-bulan" value="${b} ${tahun}" style="accent-color:var(--green);width:15px;height:15px" onchange="_syncBtnPilihSemuaBulanSantri()" ${(b===bulanAktif && String(tahun)===String(now.getFullYear()))?'checked':''}> ${b}
+    </label>`).join('');
+  _syncBtnPilihSemuaBulanSantri();
+}
+
+function togglePilihSemuaBulanSantri(){
+  const boxes = document.querySelectorAll('#gen-santri-bulan-list input[name="gen-santri-bulan"]');
+  const semuaCentang = [...boxes].every(b=>b.checked);
+  boxes.forEach(b=>b.checked = !semuaCentang);
+  _syncBtnPilihSemuaBulanSantri();
+}
+
+function _syncBtnPilihSemuaBulanSantri(){
+  const boxes = document.querySelectorAll('#gen-santri-bulan-list input[name="gen-santri-bulan"]');
+  const btn = document.getElementById('btn-pilih-semua-bulan-santri');
+  if(!btn||!boxes.length) return;
+  const semuaCentang = [...boxes].every(b=>b.checked);
+  btn.textContent = semuaCentang ? '☑️ Batal Semua' : '☐ Pilih Semua';
 }
 
 async function prosesGeneratePerSantri(){
   if(_isLoading) return;
   const santriId = _genSantriId;
-  const bulan = document.getElementById('gen-santri-bulan')?.value||'';
+  const bulanChecked = [...document.querySelectorAll('#gen-santri-bulan-list input[name="gen-santri-bulan"]:checked')].map(b=>b.value);
   const nomMakan = parseInt(document.getElementById('gen-santri-makan')?.value)||0;
   const nomListrik = parseInt(document.getElementById('gen-santri-listrik')?.value)||0;
-  if(!bulan){ toast('Pilih bulan dulu!',false); return; }
+  if(!bulanChecked.length){ toast('Pilih minimal satu bulan!',false); return; }
   if(!nomMakan&&!nomListrik){ toast('Isi minimal satu nominal!',false); return; }
 
   const s = getSantriById(santriId);
   if(!s){ toast('Santri tidak ditemukan!',false); return; }
 
-  // Cek sudah ada tagihan bulan ini
-  const sudah = ALL_TAGIHAN.find(t=>String(t.santri_id)===String(santriId)&&(t.bulan||'').toLowerCase()===bulan.toLowerCase());
   const warn = document.getElementById('gen-santri-warn');
-  if(sudah){
-    warn.innerHTML = `⚠️ Tagihan <strong>${bulan}</strong> sudah ada (${sudah.status}). Generate akan dilewati.`;
-    warn.style.display='block';
-    return;
-  }
+  warn.style.display='none';
 
   const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
   setLoading(true,_lBtn);
   try {
     const nom = nomMakan + nomListrik;
-    // Cek deposit
     const {data:dep} = await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle();
-    const saldoDep = dep?Number(dep.saldo||0):0;
-    const status = saldoDep >= nom ? 'lunas' : 'belum';
-    const sudahBayar = status==='lunas' ? nom : 0;
+    let saldoDep = dep ? Number(dep.saldo||0) : 0;
+    let berhasil = 0;
+    const dilewati = [];
 
-    const {error} = await SB.from('tagihan_pondok').insert({
-      santri_id: santriId,
-      bulan,
-      nominal: nom,
-      nominal_makan: nomMakan,
-      nominal_listrik: nomListrik,
-      status,
-      nominal_bayar: sudahBayar,
-      tgl_bayar: status==='lunas' ? new Date().toISOString().split('T')[0] : null,
-      dicatat_oleh: SESSION.nama||SESSION.username,
-    });
-    if(error){
-      if(error.message && error.message.includes('uq_santri_bulan')){
-        toast(`⚠️ Tagihan ${bulan} untuk ${s.nama} sudah ada sebelumnya!`,false);
-      } else {
-        toast('❌ Gagal: '+error.message,false);
+    for(const bulan of bulanChecked){
+      const sudah = ALL_TAGIHAN.find(t=>String(t.santri_id)===String(santriId)&&(t.bulan||'').toLowerCase()===bulan.toLowerCase());
+      if(sudah){ dilewati.push(bulan); continue; }
+
+      const status = saldoDep >= nom ? 'lunas' : 'belum';
+      const sudahBayar = status==='lunas' ? nom : 0;
+
+      const {error} = await SB.from('tagihan_pondok').insert({
+        santri_id: santriId,
+        bulan,
+        nominal: nom,
+        nominal_makan: nomMakan,
+        nominal_listrik: nomListrik,
+        status,
+        nominal_bayar: sudahBayar,
+        tgl_bayar: status==='lunas' ? new Date().toISOString().split('T')[0] : null,
+        dicatat_oleh: SESSION.nama||SESSION.username,
+      });
+      if(error){
+        if(!(error.message && error.message.includes('uq_santri_bulan'))){
+          toast('❌ Gagal '+bulan+': '+error.message,false);
+        }
+        dilewati.push(bulan);
+        continue;
       }
-      return;
+
+      if(status==='lunas'){
+        saldoDep -= nom;
+        if(dep) await SB.from('santri_deposit').update({saldo:Math.max(0,saldoDep)}).eq('id',dep.id);
+      }
+      berhasil++;
     }
 
-    // Update deposit kalau kepotong
-    if(status==='lunas' && dep){
-      const sisaDep = saldoDep - nom;
-      await SB.from('santri_deposit').update({saldo:Math.max(0,sisaDep)}).eq('id',dep.id);
+    if(berhasil) toast(`✅ ${berhasil} tagihan untuk ${s.nama} berhasil dibuat!`);
+    if(dilewati.length){
+      warn.innerHTML = `⚠️ ${dilewati.length} bulan dilewati (tagihan sudah ada): ${dilewati.join(', ')}`;
+      warn.style.display='block';
     }
-
-    toast(`✅ Tagihan ${bulan} untuk ${s.nama} berhasil dibuat!`);
-    closeMo('mo-gen-santri');
-    await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
-    // Buka kembali detail santri
+    if(berhasil){
+      await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
+    }
+    if(!dilewati.length) closeMo('mo-gen-santri');
     bukaDetail(santriId);
   } finally { setLoading(false,_lBtn); }
 }
@@ -4514,6 +4565,9 @@ function updateRekapSummary(tagihanF){
   const listrik = tagihanF.reduce((a,t)=>a+Number(t.nominal_listrik||0),0);
   const lunas = tagihanF.filter(t=>t.status==='lunas').reduce((a,t)=>a+Number(t.nominal_bayar||t.nominal),0);
   const tunggak = tagihanF.filter(t=>t.status!=='lunas').reduce((a,t)=>a+(Number(t.nominal)-Number(t.nominal_bayar||0)),0);
+  const {bayarMakan, bayarListrik} = _pecahBayar(tagihanF);
+  const tunggakMakan = makan - bayarMakan;
+  const tunggakListrik = listrik - bayarListrik;
   el.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
         <div style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px">
@@ -4528,11 +4582,19 @@ function updateRekapSummary(tagihanF){
         <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 12px">
           <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Terbayar</div>
           <div style="font-size:14px;font-weight:800;color:var(--green)">${fmtRp(lunas)}</div>
+          <div style="margin-top:6px;padding-top:6px;border-top:1px solid #bbf7d0;display:flex;gap:8px">
+            <div style="font-size:10px;color:var(--text-l)">🍽️ Makan: <strong>${fmtRp(Math.round(bayarMakan))}</strong></div>
+            <div style="font-size:10px;color:var(--text-l)">⚡ Listrik: <strong>${fmtRp(Math.round(bayarListrik))}</strong></div>
+          </div>
         </div>
       </div>
       <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:10px 12px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Tunggakan</div>
         <div style="font-size:16px;font-weight:800;color:var(--red)">${fmtRp(tunggak)}</div>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid #fecaca;display:flex;gap:8px">
+          <div style="font-size:10px;color:var(--text-l)">🍽️ Makan: <strong>${fmtRp(Math.round(tunggakMakan))}</strong></div>
+          <div style="font-size:10px;color:var(--text-l)">⚡ Listrik: <strong>${fmtRp(Math.round(tunggakListrik))}</strong></div>
+        </div>
       </div>
     </div>
   `;
