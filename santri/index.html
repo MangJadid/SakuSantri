@@ -1478,9 +1478,9 @@ _updateOfflineScreen();
       </div>
       <!-- Kobong (untuk pengurus biasa) -->
       <div id="pg-wrap-kobong" class="fg" style="margin-bottom:16px">
-        <label>Asrama <span style="font-size:10px;color:var(--text-l);font-weight:400">(filter, opsional)</span></label>
-        <select id="pg-filter-asrama" onchange="renderPengurusKobongList()" style="margin-bottom:10px"><option value="">Semua Asrama</option></select>
-        <label>Kobong yang Dikelola</label>
+        <label>Asrama *</label>
+        <select id="pg-filter-asrama" onchange="renderPengurusKobongList()" style="margin-bottom:10px"><option value="">-- Pilih Asrama --</option></select>
+        <label>Kobong yang Dikelola <span style="font-size:10px;color:var(--text-l);font-weight:400">(opsional)</span></label>
         <select id="pg-kobong" multiple style="height:160px"><option value="">Loading...</option></select>
         <small style="font-size:11px;color:var(--text-l);margin-top:3px">Tahan Ctrl/Cmd untuk pilih lebih dari satu</small>
       </div>
@@ -3247,6 +3247,23 @@ function bulkBatalPilih(){
   renderTabelSantri();
 }
 
+// Daftar pengurus yang relevan buat dipilih jadi Wali — Kang Admin lihat semua,
+// sekretaris/sekretariat cuma lihat pengurus yang kobong/asrama-nya ada di dalam scope asramanya sendiri.
+function getPengurusRelevanUntukWali(){
+  let list = ALL_PENGURUS.filter(p=>(p.role==='pengurus'||!p.role));
+  if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
+    const myAsrama = JSON.parse(SESSION.user?.asrama_ids||'[]').map(String);
+    list = list.filter(p=>{
+      const pAsrama = JSON.parse(p.asrama_ids||'[]').map(String);
+      const cocokAsrama = pAsrama.some(a=>myAsrama.includes(a));
+      const kIds = JSON.parse(p.kobong_ids||'[]').map(Number);
+      const cocokKobong = kIds.some(kid=>{ const k=ALL_KOBONG.find(x=>x.id===kid); return k && myAsrama.includes(String(k.asrama_id)); });
+      return cocokAsrama || cocokKobong;
+    });
+  }
+  return list;
+}
+
 function bulkEditSantri(){
   const cnt = _bulkSelected.size;
   if(!cnt){ toast('Pilih santri dulu!', false); return; }
@@ -3258,8 +3275,9 @@ function bulkEditSantri(){
     getKobongAccessible().map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
   // Populate wali
   const selW = document.getElementById('bulk-edit-wali');
-  selW.innerHTML = '<option value="">— Tidak diubah —</option><option value="__null__">— Tidak Ada / Superadmin —</option>' +
-    ALL_PENGURUS.map(p=>`<option value="${p.username}">👨‍💼 ${p.nama}</option>`).join('');
+  const diriSendiri = (SESSION.role==='sekretaris'||SESSION.role==='sekretariat') ? `<option value="${SESSION.user.username}">⭐ ${SESSION.user.nama} (Anda)</option>` : '';
+  selW.innerHTML = '<option value="">— Tidak diubah —</option><option value="__null__">— Tidak Ada / Superadmin —</option>' + diriSendiri +
+    getPengurusRelevanUntukWali().map(p=>`<option value="${p.username}">👨‍💼 ${p.nama}</option>`).join('');
   openMo('mo-bulk-edit');
 }
 
@@ -4868,7 +4886,10 @@ function refreshWaliKobongDropdown(){
   if(asramaId){
     relevan = relevan.filter(p=>{
       const ids = JSON.parse(p.kobong_ids||'[]').map(Number);
-      return ids.some(kid=>{ const k=ALL_KOBONG.find(x=>x.id===kid); return k && String(k.asrama_id)===String(asramaId); });
+      const cocokKobong = ids.some(kid=>{ const k=ALL_KOBONG.find(x=>x.id===kid); return k && String(k.asrama_id)===String(asramaId); });
+      const asramaIds = JSON.parse(p.asrama_ids||'[]').map(String);
+      const cocokAsrama = asramaIds.includes(String(asramaId));
+      return cocokKobong || cocokAsrama;
     });
   }
 
@@ -5362,6 +5383,15 @@ function editPengurus(id){
   document.getElementById('pg-role').value = p.role||'pengurus';
   // Populate dulu kobong & asrama options
   populatePengurusModal();
+  // Untuk role pengurus: restore Asrama yang tersimpan lalu filter ulang list kobong
+  if((p.role||'pengurus')==='pengurus'){
+    const savedAsramaIds = JSON.parse(p.asrama_ids||'[]');
+    const filterSel = document.getElementById('pg-filter-asrama');
+    if(filterSel && savedAsramaIds.length){
+      filterSel.value = String(savedAsramaIds[0]);
+      renderPengurusKobongList();
+    }
+  }
   // Baru set seleksi kobong
   const ids=JSON.parse(p.kobong_ids||'[]');
   const sel=document.getElementById('pg-kobong');
@@ -5409,7 +5439,7 @@ function populatePengurusModal(){
   // Populate filter asrama
   const filterSel = document.getElementById('pg-filter-asrama');
   if(filterSel){
-    filterSel.innerHTML = '<option value="">Semua Asrama</option>' + ALL_ASRAMA.map(a=>`<option value="${a.id}">${a.nama}</option>`).join('');
+    filterSel.innerHTML = '<option value="">-- Pilih Asrama --</option>' + ALL_ASRAMA.map(a=>`<option value="${a.id}">${a.nama}</option>`).join('');
     filterSel.value = '';
   }
   renderPengurusKobongList();
@@ -5443,9 +5473,13 @@ async function simpanPengurus(){
   const sel=document.getElementById('pg-kobong');
   const kobong_ids=JSON.stringify([...sel.selectedOptions].map(o=>parseInt(o.value)));
   const checksDiv2=document.getElementById('pg-asrama-checks');
-  const asrama_ids=JSON.stringify([...checksDiv2.querySelectorAll('input[type=checkbox]:checked')].map(c=>parseInt(c.value)));
+  const filterAsramaVal = document.getElementById('pg-filter-asrama')?.value||'';
+  const asrama_ids = role==='pengurus'
+    ? JSON.stringify(filterAsramaVal ? [parseInt(filterAsramaVal)] : [])
+    : JSON.stringify([...checksDiv2.querySelectorAll('input[type=checkbox]:checked')].map(c=>parseInt(c.value)));
 
   if(!nama||!username){ toast('Nama dan username wajib!',false); return; }
+  if(role==='pengurus' && !filterAsramaVal){ toast('Pilih Asrama dulu untuk pengurus ini!',false); return; }
 
   if(id){
     const upd={nama,username,kobong_ids,role,asrama_ids};
@@ -7374,11 +7408,12 @@ function nkInitWaliSelects(){
       filterSel.innerHTML+=`<option value="kangadmin">👑 Kang Admin</option>`;
     }
   }
-  // Populate wali tujuan (semua pengurus)
+  // Populate wali tujuan (pengurus sesuai scope sekretaris, atau semua kalau Kang Admin)
   const keSel = document.getElementById('wali-ke');
   if(keSel){
-    keSel.innerHTML='<option value="">— Pilih Pengurus Tujuan —</option>';
-    ALL_PENGURUS.filter(p=>p.role==='pengurus'||!p.role).forEach(p=>{
+    const diriSendiri = (SESSION.role==='sekretaris'||SESSION.role==='sekretariat') ? `<option value="${SESSION.user.username}">⭐ ${SESSION.user.nama} (Anda)</option>` : '';
+    keSel.innerHTML='<option value="">— Pilih Pengurus Tujuan —</option>' + diriSendiri;
+    getPengurusRelevanUntukWali().forEach(p=>{
       keSel.innerHTML+=`<option value="${p.username}">👨‍💼 ${p.nama} (@${p.username})</option>`;
     });
   }
@@ -7824,7 +7859,8 @@ async function massalKobongKelas(){
 async function massalKobongWali(){
   const ids = getSelectedKobongIds();
   if(!ids.length) return;
-  const opts = ALL_PENGURUS.map(p=>`<option value="${p.username}">${p.nama}</option>`).join('');
+  const diriSendiri = (SESSION.role==='sekretaris'||SESSION.role==='sekretariat') ? `<option value="${SESSION.user.username}">⭐ ${SESSION.user.nama} (Anda)</option>` : '';
+  const opts = diriSendiri + getPengurusRelevanUntukWali().map(p=>`<option value="${p.username}">${p.nama}</option>`).join('');
   konfirm(`<div>Edit wali <strong>${ids.length} santri</strong>:<br><br><select id="massal-wali-val" class="inp" style="width:100%"><option value="">-- Pilih Wali --</option>${opts}</select></div>`,
     async()=>{
       const waliUsername = document.getElementById('massal-wali-val').value;
