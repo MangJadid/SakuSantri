@@ -1192,7 +1192,7 @@ _updateOfflineScreen();
         <div class="fg"><label>Asrama *</label><select id="s-asrama" onchange="onAsramaChange()"><option value="">-- Pilih Asrama --</option></select></div>
       </div>
       <div class="fgrid" style="margin-bottom:12px">
-        <div class="fg"><label>Kobong</label><select id="s-kobong"><option value="">-- Pilih Kobong (opsional) --</option></select></div>
+        <div class="fg"><label>Kobong</label><select id="s-kobong" onchange="refreshWaliKobongDropdown()"><option value="">-- Pilih Kobong (opsional) --</option></select></div>
         <div class="fg">
           <label>Jenis Kelamin</label>
           <div id="jk-display" style="padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;color:var(--text-l);background:#f8f8f8;min-height:40px;display:flex;align-items:center;gap:8px">
@@ -1219,10 +1219,11 @@ _updateOfflineScreen();
         <div class="fg"><label>Kota/Kabupaten <span style="font-size:10px;color:var(--text-l);font-weight:400">(opsional)</span></label><input type="text" id="s-kota" placeholder="Mis: Kab. Ciamis"></div>
       </div>
       <div class="fg" id="fg-wali-kobong" style="margin-bottom:12px;display:none">
-        <label>Wali Kobong (Pengurus) <span style="font-size:10px;color:var(--text-l)">— hanya superadmin</span></label>
-        <select id="s-created-by">
-          <option value="">— Tidak ada / Superadmin —</option>
+        <label>Wali Santri / Pengurus <span style="font-size:10px;color:var(--text-l);font-weight:400">(opsional — kosongkan = Kang Admin)</span></label>
+        <select id="s-created-by" onchange="_waliManualDipilih=true">
+          <option value="">— Kang Admin / Superadmin —</option>
         </select>
+        <small id="s-wali-hint" style="font-size:11px;color:var(--text-l);margin-top:3px;display:block"></small>
       </div>
       <div class="fg" style="margin-bottom:16px">
         <label>Foto Santri (opsional)</label>
@@ -1477,6 +1478,8 @@ _updateOfflineScreen();
       </div>
       <!-- Kobong (untuk pengurus biasa) -->
       <div id="pg-wrap-kobong" class="fg" style="margin-bottom:16px">
+        <label>Asrama <span style="font-size:10px;color:var(--text-l);font-weight:400">(filter, opsional)</span></label>
+        <select id="pg-filter-asrama" onchange="renderPengurusKobongList()" style="margin-bottom:10px"><option value="">Semua Asrama</option></select>
         <label>Kobong yang Dikelola</label>
         <select id="pg-kobong" multiple style="height:160px"><option value="">Loading...</option></select>
         <small style="font-size:11px;color:var(--text-l);margin-top:3px">Tahan Ctrl/Cmd untuk pilih lebih dari satu</small>
@@ -3843,6 +3846,7 @@ function populateAsramaSantri(){
 
 function openModalTambahSantri(){
   document.getElementById('mo-santri-title').textContent='Tambah Santri Baru';
+  _waliManualDipilih = false;
   const infoPersetujuan = document.getElementById('s-info-persetujuan');
   if(infoPersetujuan) infoPersetujuan.style.display = 'none';
   document.getElementById('edit-santri-id').value='';
@@ -3858,7 +3862,7 @@ function openModalTambahSantri(){
   document.getElementById('jk-display-text').style.color='var(--text-l)';
   document.getElementById('jk-display-text').style.fontStyle='italic';
   hapusFoto();
-  document.getElementById('fg-wali-kobong').style.display='none';
+  refreshWaliKobongDropdown();
   populateAsramaSantri();
   // Reset asrama ke kosong — pastikan tidak ada sisa pilihan sebelumnya
   document.getElementById('s-asrama').value='';
@@ -3905,19 +3909,17 @@ function editSantri(id){
   // Set dapur after asrama change populates the dropdown
   if(s.dapur_id) document.getElementById('s-dapur').value=s.dapur_id||'';
 
-  // Tampilkan field Wali Kobong hanya untuk superadmin
-  const fgWali = document.getElementById('fg-wali-kobong');
-  if(SESSION.role==='super'){
-    fgWali.style.display='block';
-    // Isi dropdown pengurus
-    const sel = document.getElementById('s-created-by');
-    sel.innerHTML='<option value="">— Tidak ada / Superadmin —</option>';
-    ALL_PENGURUS.forEach(p=>{
-      sel.innerHTML+=`<option value="${p.username}" ${s.created_by===p.username?'selected':''}>${p.nama} (@${p.username})</option>`;
-    });
-    sel.value = s.created_by||'';
-  } else {
-    fgWali.style.display='none';
+  // Tampilkan & isi field Wali Santri/Pengurus (super + sekretaris/sekretariat)
+  _waliManualDipilih = true; // di mode edit, jangan auto-override — tampilkan wali yang sudah ada
+  refreshWaliKobongDropdown();
+  const selWali = document.getElementById('s-created-by');
+  if(selWali){
+    // Pastikan wali existing tetap muncul di list meski di luar filter asrama kobong saat ini
+    if(s.created_by && !selWali.querySelector(`option[value="${s.created_by}"]`)){
+      const p = ALL_PENGURUS.find(x=>x.username===s.created_by);
+      selWali.innerHTML += `<option value="${s.created_by}">${p?.nama||s.created_by} (@${s.created_by})</option>`;
+    }
+    selWali.value = s.created_by||'';
   }
   openMo('mo-santri');
 }
@@ -4012,8 +4014,8 @@ async function simpanSantri(){
     } else {
       const upd={nama,kobong_id,saldo:saldoBenar,pin,kelas,catatan:kelas,dapur_id,no_wa:no_wa||null,kecamatan:kecamatan||null,kota:kota||null,jenis_kelamin};
       if(fotoUrlBaru!==undefined) upd.foto_url = fotoUrlBaru;
-      // Superadmin bisa ubah wali kobong (created_by)
-      if(SESSION.role==='super'){
+      // Super/sekretaris/sekretariat bisa ubah wali kobong (created_by)
+      if(SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
         const cb = document.getElementById('s-created-by')?.value||'';
         upd.created_by = cb || 'kangadmin';
       }
@@ -4026,8 +4028,9 @@ async function simpanSantri(){
       }
     }
   } else {
-    // wali selalu kangadmin (bukan dari pengurus yg input)
-    const created_by = 'kangadmin';
+    // Wali: kalau super/sekretaris/sekretariat pilih dari dropdown, kalau pengurus selalu kangadmin
+    const bisaPilihWali = SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat';
+    const created_by = bisaPilihWali ? (document.getElementById('s-created-by')?.value || 'kangadmin') : 'kangadmin';
 
     // ===== CEK DUPLIKAT NAMA (SEMUA DATABASE) =====
     function normalize(s){ return (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim(); }
@@ -4842,6 +4845,58 @@ function renderRiwayat(){
 }
 
 // ===== ASRAMA-KOBONG CASCADE =====
+let _waliManualDipilih = false;
+
+// Refresh dropdown Wali Santri/Pengurus sesuai Asrama & Kobong yang dipilih di form Tambah/Edit Santri.
+// - Cuma pengurus yang mengelola kobong di asrama tsb yang ditampilkan
+// - Kalau kobong yang dipilih belum ada wali-nya, otomatis default ke user yang sedang input (sekretaris/admin)
+function refreshWaliKobongDropdown(){
+  const fgWali = document.getElementById('fg-wali-kobong');
+  if(!fgWali) return;
+  const bisaLihat = SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat';
+  if(!bisaLihat){ fgWali.style.display='none'; return; }
+  fgWali.style.display='block';
+
+  const asramaId = document.getElementById('s-asrama')?.value||'';
+  const kobongId = document.getElementById('s-kobong')?.value||'';
+  const sel = document.getElementById('s-created-by');
+  const hint = document.getElementById('s-wali-hint');
+  if(!sel) return;
+
+  // Pengurus yang mengelola kobong di asrama terpilih (kosong = semua pengurus)
+  let relevan = ALL_PENGURUS.filter(p=>(p.role==='pengurus'||!p.role));
+  if(asramaId){
+    relevan = relevan.filter(p=>{
+      const ids = JSON.parse(p.kobong_ids||'[]').map(Number);
+      return ids.some(kid=>{ const k=ALL_KOBONG.find(x=>x.id===kid); return k && String(k.asrama_id)===String(asramaId); });
+    });
+  }
+
+  let html = `<option value="">— Kang Admin / Superadmin —</option>`;
+  if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
+    html += `<option value="${SESSION.user.username}">⭐ ${SESSION.user.nama} (Anda)</option>`;
+  }
+  html += relevan.map(p=>`<option value="${p.username}">${p.nama} (@${p.username})</option>`).join('');
+  sel.innerHTML = html;
+
+  if(!_waliManualDipilih){
+    let defaultVal = '';
+    let hintText = '';
+    if(kobongId && kobongId!=='__belum__'){
+      const adaWali = ALL_PENGURUS.find(p=>(p.role==='pengurus'||!p.role) && JSON.parse(p.kobong_ids||'[]').map(Number).includes(parseInt(kobongId)));
+      if(adaWali){
+        defaultVal = adaWali.username;
+        hintText = `📌 Kobong ini sudah punya wali: ${adaWali.nama}`;
+      } else if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
+        defaultVal = SESSION.user.username;
+        hintText = `ℹ️ Kobong ini belum punya wali, otomatis diisi atas nama Anda`;
+      }
+    }
+    sel.value = defaultVal;
+    if(hint){ hint.textContent = hintText; hint.style.display = hintText?'block':'none'; }
+  } else if(hint){ hint.style.display='none'; }
+}
+
 function onAsramaChange(){
   const asramaId = document.getElementById('s-asrama')?.value;
   const kobSel = document.getElementById('s-kobong');
@@ -4910,6 +4965,8 @@ function onAsramaChange(){
   }
   dapurOptions.forEach(d=>{ dapurSel.innerHTML += `<option value="${d.value}">${d.label}</option>`; });
   if(dapurOptions.length === 1) dapurSel.value = dapurOptions[0].value;
+
+  refreshWaliKobongDropdown();
 }
 
 function onAsramaJKChange(){
@@ -5327,12 +5384,15 @@ function onPengurusRoleChange(){
   if(wrapAsrama) wrapAsrama.style.display = isAsramaBased ? 'flex' : 'none';
 }
 
-function populatePengurusModal(){
-  // Populate kobong grouped by asrama
-  const sel=document.getElementById('pg-kobong');
+function renderPengurusKobongList(){
+  const sel = document.getElementById('pg-kobong');
+  if(!sel) return;
+  const filterAsrama = document.getElementById('pg-filter-asrama')?.value||'';
+  const prevSelected = new Set([...sel.selectedOptions].map(o=>o.value));
   sel.innerHTML='';
   const byAsrama = {};
   ALL_KOBONG.forEach(k=>{
+    if(filterAsrama && String(k.asrama_id)!==filterAsrama) return;
     const aId=k.asrama_id||'__none__';
     const aNama=k.asrama?.nama||ALL_ASRAMA.find(a=>a.id===k.asrama_id)?.nama||'Tanpa Asrama';
     if(!byAsrama[aId]) byAsrama[aId]={nama:aNama,list:[]};
@@ -5340,9 +5400,19 @@ function populatePengurusModal(){
   });
   Object.values(byAsrama).forEach(group=>{
     sel.innerHTML+=`<optgroup label="🏛️ ${group.nama}">`;
-    group.list.forEach(k=>{ sel.innerHTML+=`<option value="${k.id}">${k.nama}</option>`; });
+    group.list.forEach(k=>{ sel.innerHTML+=`<option value="${k.id}" ${prevSelected.has(String(k.id))?'selected':''}>${k.nama}</option>`; });
     sel.innerHTML+=`</optgroup>`;
   });
+}
+
+function populatePengurusModal(){
+  // Populate filter asrama
+  const filterSel = document.getElementById('pg-filter-asrama');
+  if(filterSel){
+    filterSel.innerHTML = '<option value="">Semua Asrama</option>' + ALL_ASRAMA.map(a=>`<option value="${a.id}">${a.nama}</option>`).join('');
+    filterSel.value = '';
+  }
+  renderPengurusKobongList();
   // Populate asrama sebagai checkbox
   const checksDiv = document.getElementById('pg-asrama-checks');
   const selectedBefore = [...checksDiv.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.value);
