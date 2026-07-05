@@ -1047,8 +1047,10 @@ _updateOfflineScreen();
           <div id="prs-view-riwayat" style="display:none">
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
               <input type="text" id="prs-riwayat-cari" placeholder="🔍 Cari nama santri..." oninput="renderRiwayatPersetujuan()" style="flex:1;min-width:180px;padding:8px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+              <select id="prs-riwayat-asrama" onchange="renderRiwayatPersetujuan()" style="display:none;padding:8px 10px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px"><option value="">Semua Asrama</option></select>
               <select id="prs-riwayat-jenis" onchange="renderRiwayatPersetujuan()" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px">
                 <option value="">Semua Jenis</option>
+                <option value="tambah">➕ Tambah Santri</option>
                 <option value="edit">✏️ Edit Data</option>
                 <option value="hapus">🗑️ Hapus Santri</option>
               </select>
@@ -1126,6 +1128,7 @@ _updateOfflineScreen();
             </button>
           </div>
           <div class="fpanel" id="fpanel-riw">
+            <select id="riw-asrama" onchange="onRiwAsramaChange()" class="super-only fbar-full"><option value="">Semua Asrama</option></select>
             <select id="riw-kobong" onchange="updateFBadge('riw',RIW_FILTER_IDS);renderRiwayat()" class="super-only fbar-full"><option value="">Semua Kobong</option></select>
             <select id="riw-bulan" onchange="updateFBadge('riw',RIW_FILTER_IDS);renderRiwayat()" class="super-only fbar-full"></select>
             <select id="riw-jenis" onchange="updateFBadge('riw',RIW_FILTER_IDS);renderRiwayat()">
@@ -2436,6 +2439,14 @@ function populateKobongSelects(){
     visibleAsrama.forEach(a => { dashAsramaSel.innerHTML += `<option value="${a.id}" ${cur==a.id?'selected':''}>${a.nama}</option>`; });
   }
 
+  // Populate riw-asrama filter dropdown (Riwayat Transaksi)
+  const riwAsramaSel = document.getElementById('riw-asrama');
+  if(riwAsramaSel){
+    const cur = riwAsramaSel.value;
+    riwAsramaSel.innerHTML = '<option value="">Semua Asrama</option>';
+    visibleAsrama.forEach(a => { riwAsramaSel.innerHTML += `<option value="${a.id}" ${cur==a.id?'selected':''}>${a.nama}</option>`; });
+  }
+
   const sels = ['dash-kobong','santri-kobong','massal-kobong','riw-kobong','pg-kobong'];
   sels.forEach(id=>{
     const el = document.getElementById(id);
@@ -2859,7 +2870,7 @@ async function hapusGreeting(idx){
 // ===== COLLAPSIBLE FILTER PANEL (generic, dipakai di semua tab) =====
 const DASH_FILTER_IDS = ['dash-asrama','dash-kobong','dash-wali','dash-status'];
 const SANTRI_FILTER_IDS = ['santri-asrama','santri-kobong','santri-kelas','santri-gender','santri-wali'];
-const RIW_FILTER_IDS = ['riw-kobong','riw-bulan','riw-jenis'];
+const RIW_FILTER_IDS = ['riw-asrama','riw-kobong','riw-bulan','riw-jenis'];
 
 // Reset semua filter di semua tab sekaligus
 function resetAllFilters(){
@@ -3107,6 +3118,17 @@ function onDashAsramaChange(){
   }
   updateFBadge('dash',DASH_FILTER_IDS);
   renderDashboard();
+}
+
+function onRiwAsramaChange(){
+  const asramaId = document.getElementById('riw-asrama').value;
+  const kobongSel = document.getElementById('riw-kobong');
+  if(kobongSel){
+    kobongSel.innerHTML = '<option value="">Semua Kobong</option>';
+    getKobongAccessible(asramaId).forEach(k=>{ kobongSel.innerHTML+=`<option value="${k.id}">${k.nama}</option>`; });
+  }
+  updateFBadge('riw',RIW_FILTER_IDS);
+  renderRiwayat();
 }
 
 function renderTabelSantri(){
@@ -4068,6 +4090,7 @@ async function simpanSantri(){
         try {
           const {data:newSantri,error}=await SB.from('santri').insert({nama,kobong_id,saldo:0,pin,kelas,catatan:kelas,dapur_id,no_wa:no_wa||null,kecamatan:kecamatan||null,kota:kota||null,created_by,jenis_kelamin}).select().single();
           if(error){ toast('Gagal: '+error.message,false); return; }
+          await _catatRiwayatTambah(newSantri);
           if(fotoFile){
             try{
               const url=await uploadFotoStorage(newSantri.id);
@@ -4090,6 +4113,7 @@ async function simpanSantri(){
     // Saldo selalu mulai dari 0, diisi lewat transaksi
     const {data:newSantri, error}=await SB.from('santri').insert({nama,kobong_id,saldo:0,pin,kelas,catatan:kelas,dapur_id,no_wa:no_wa||null,kecamatan:kecamatan||null,kota:kota||null,created_by,jenis_kelamin}).select().single();
     if(error){ toast('Gagal: '+error.message,false); return; }
+    await _catatRiwayatTambah(newSantri);
 
     // Upload foto jika ada
     if(fotoFile){
@@ -4212,6 +4236,18 @@ function prsShowSub(mode){
   else renderRiwayatPersetujuan();
 }
 
+// Catat riwayat saat santri baru ditambahkan
+async function _catatRiwayatTambah(s){
+  if(!s) return;
+  const diffObj = {
+    nama:      { label:'Nama',        lama:null, baru:s.nama||'—' },
+    kelas:     { label:'Kelas',       lama:null, baru:s.kelas||'—' },
+    kobong_id: { label:'Kobong/Asrama', lama:null, baru:_labelKobongAsrama(s.kobong_id) },
+    dapur_id:  { label:'Dapur',       lama:null, baru:_labelDapur(s.dapur_id) },
+  };
+  await catatRiwayatSantri({santri_id:s.id, santri_nama:s.nama, asrama_id:getAsramaIdBySantri(s), jenis:'tambah', diffObj, sumber:'langsung'});
+}
+
 function _rowDiffHtml(dataLama, dataBaru){
   if(!dataLama && !dataBaru) return '';
   const keys = new Set([...Object.keys(dataLama||{}), ...Object.keys(dataBaru||{})]);
@@ -4285,18 +4321,36 @@ async function renderRiwayatPersetujuan(){
   sec.innerHTML = '<div class="empty"><span class="ei">⏳</span><p>Memuat data...</p></div>';
   const btnBersih = document.getElementById('btn-bersih-riwayat');
   if(btnBersih) btnBersih.style.display = SESSION.role==='super' ? 'inline-block' : 'none';
+
+  // Dropdown filter asrama hanya untuk Kang Admin (sekretaris sudah otomatis dibatasi ke asramanya sendiri)
+  const asramaSel = document.getElementById('prs-riwayat-asrama');
+  if(asramaSel){
+    if(SESSION.role==='super'){
+      if(!asramaSel.dataset.filled){
+        asramaSel.innerHTML = '<option value="">Semua Asrama</option>' + ALL_ASRAMA.map(a=>`<option value="${a.id}">${a.nama}</option>`).join('');
+        asramaSel.dataset.filled = '1';
+      }
+      asramaSel.style.display = '';
+    } else {
+      asramaSel.style.display = 'none';
+    }
+  }
+
   const q_cari = (document.getElementById('prs-riwayat-cari')?.value||'').toLowerCase();
   const q_jenis = document.getElementById('prs-riwayat-jenis')?.value||'';
+  const q_asramaAdmin = SESSION.role==='super' ? (document.getElementById('prs-riwayat-asrama')?.value||'') : '';
   const allowed = getAllowedAsramaIdsApproval();
 
   try{
-    // 1) Perubahan yang benar-benar terjadi (langsung maupun disetujui)
+    // 1) Perubahan yang benar-benar terjadi (langsung, disetujui, maupun santri baru ditambahkan)
     let q1 = SB.from('riwayat_perubahan_santri').select('*').order('created_at',{ascending:false}).limit(300);
     if(allowed) q1 = q1.in('asrama_id', allowed.length?allowed:[-1]);
+    if(q_asramaAdmin) q1 = q1.eq('asrama_id', q_asramaAdmin);
     if(q_jenis) q1 = q1.eq('jenis', q_jenis);
     // 2) Permintaan yang ditolak (tidak pernah benar-benar mengubah data, tapi tetap perlu terlihat di riwayat)
     let q2 = SB.from('permintaan_perubahan_santri').select('*').eq('status','rejected').order('updated_at',{ascending:false}).limit(200);
     if(allowed) q2 = q2.in('asrama_id', allowed.length?allowed:[-1]);
+    if(q_asramaAdmin) q2 = q2.eq('asrama_id', q_asramaAdmin);
     if(q_jenis) q2 = q2.eq('jenis', q_jenis);
 
     const [r1, r2] = await Promise.all([q1, q2]);
@@ -4318,7 +4372,7 @@ async function renderRiwayatPersetujuan(){
     let html = '';
     gabungan.forEach(r=>{
       const tgl = new Date(r._tgl).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      const jenisLabel = r.jenis==='hapus' ? '🗑️ Hapus Santri' : '✏️ Edit Data';
+      const jenisLabel = r.jenis==='hapus' ? '🗑️ Hapus Santri' : r.jenis==='tambah' ? '➕ Tambah Santri Baru' : '✏️ Edit Data';
       let sumberBadge, aktorHtml;
       if(r._tipe==='ditolak'){
         sumberBadge = `<span style="background:var(--red-p);color:var(--red);border:1.5px solid #fca5a5;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">❌ Ditolak</span>`;
@@ -4347,7 +4401,7 @@ async function renderRiwayatPersetujuan(){
           ${sumberBadge}
         </div>
         <div style="font-size:12.5px;color:var(--text-m);line-height:1.6">
-          ${r.jenis==='edit'?_rowDiffHtml(r.data_lama,r.data_baru):''}
+          ${(r.jenis==='edit'||r.jenis==='tambah')?_rowDiffHtml(r.data_lama,r.data_baru):''}
           ${aktorHtml}
         </div>
         ${SESSION.role==='super'?`<div style="margin-top:10px"><button class="btn btn-d btn-sm" onclick="hapusRiwayatEntry(${parseInt(r.id,10)},'${r._tipe}')">🗑️ Hapus Entri</button></div>`:''}
@@ -4676,7 +4730,7 @@ async function prossMassal(){
   const kid=document.getElementById('massal-kobong').value;
   const jenis=document.getElementById('massal-jenis').value;
   const tgl=document.getElementById('massal-tgl').value||today();
-  const ket=document.getElementById('massal-ket').value.trim()||'Transaksi massal';
+  const ket=document.getElementById('massal-ket').value.trim()||(jenis==='masuk'?'Pemasukan':'Pengeluaran');
   const sumber=document.querySelector('input[name="massal-sumber"]:checked')?.value||'cash';
 
   if(SESSION.role!=='pengurus' && !kid){ toast('Pilih kobong dulu!',false); return; }
@@ -4743,12 +4797,18 @@ async function prossMassal(){
 // ===== RIWAYAT =====
 function renderRiwayat(){
   const q=document.getElementById('riw-cari')?.value.toLowerCase()||'';
+  const af=document.getElementById('riw-asrama')?.value||'';
   const kf=document.getElementById('riw-kobong')?.value||'';
   const bf=document.getElementById('riw-bulan')?.value||'';
   const jf=document.getElementById('riw-jenis')?.value||'';
 
   let filtered=ALL_TX.filter(t=>{
     if(q && !(t.santri?.nama||'').toLowerCase().includes(q) && !(t.keterangan||'').toLowerCase().includes(q)) return false;
+    if(af){
+      const kId = t.santri?.kobong?.id;
+      const aId = kId!=null ? ALL_KOBONG.find(k=>k.id===kId)?.asrama_id : null;
+      if(String(aId)!==af) return false;
+    }
     if(kf && String(t.santri?.kobong?.id||t.santri?.kobong_id)!==kf) return false;
     if(bf && !(t.tanggal||'').startsWith(bf)) return false;
     if(jf && t.jenis!==jf) return false;
