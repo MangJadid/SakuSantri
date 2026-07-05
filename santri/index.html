@@ -949,6 +949,7 @@ _updateOfflineScreen();
             </button>
           </div>
           <div class="fpanel" id="fpanel-dash">
+            <select id="dash-asrama" onchange="onDashAsramaChange()" class="super-only fbar-full"><option value="">Semua Asrama</option></select>
             <select id="dash-kobong" onchange="updateFBadge('dash',DASH_FILTER_IDS);renderDashboard()" class="super-only fbar-full"><option value="">Semua Kobong</option></select>
             <select id="dash-wali" onchange="updateFBadge('dash',DASH_FILTER_IDS);renderDashboard()" style="display:none"><option value="">Semua Wali</option></select>
             <select id="dash-status" onchange="updateFBadge('dash',DASH_FILTER_IDS);renderDashboard()">
@@ -2427,6 +2428,14 @@ function populateKobongSelects(){
     visibleAsrama.forEach(a => { santriAsramaSel.innerHTML += `<option value="${a.id}" ${cur==a.id?'selected':''}>${a.nama}</option>`; });
   }
 
+  // Populate dash-asrama filter dropdown (Dashboard)
+  const dashAsramaSel = document.getElementById('dash-asrama');
+  if(dashAsramaSel){
+    const cur = dashAsramaSel.value;
+    dashAsramaSel.innerHTML = '<option value="">Semua Asrama</option>';
+    visibleAsrama.forEach(a => { dashAsramaSel.innerHTML += `<option value="${a.id}" ${cur==a.id?'selected':''}>${a.nama}</option>`; });
+  }
+
   const sels = ['dash-kobong','santri-kobong','massal-kobong','riw-kobong','pg-kobong'];
   sels.forEach(id=>{
     const el = document.getElementById(id);
@@ -2848,7 +2857,7 @@ async function hapusGreeting(idx){
 }
 
 // ===== COLLAPSIBLE FILTER PANEL (generic, dipakai di semua tab) =====
-const DASH_FILTER_IDS = ['dash-kobong','dash-wali','dash-status'];
+const DASH_FILTER_IDS = ['dash-asrama','dash-kobong','dash-wali','dash-status'];
 const SANTRI_FILTER_IDS = ['santri-asrama','santri-kobong','santri-kelas','santri-gender','santri-wali'];
 const RIW_FILTER_IDS = ['riw-kobong','riw-bulan','riw-jenis'];
 
@@ -2897,12 +2906,17 @@ function resetFPanel(ctx, selectIds, callback){
 function renderDashboard(){
   renderGreeting();
   const q = document.getElementById('dash-cari')?.value.toLowerCase()||'';
+  const af = document.getElementById('dash-asrama')?.value||'';
   const kf = document.getElementById('dash-kobong')?.value||'';
   const wf = document.getElementById('dash-wali')?.value||'';
   const sf = document.getElementById('dash-status')?.value||'';
   const kritis = parseInt(CONFIG.kritis_batas)||50000;
 
-  let filtered = ALL_SANTRI.filter(s=>{
+  // Cakupan data sesuai asrama yang dipilih (kosong = semua asrama)
+  const scopeSantri = af ? ALL_SANTRI.filter(s=>String(getAsramaIdBySantri(s))===af) : ALL_SANTRI;
+  const scopeKobong = af ? ALL_KOBONG.filter(k=>String(k.asrama_id)===af) : ALL_KOBONG;
+
+  let filtered = scopeSantri.filter(s=>{
     if(q && !s.nama.toLowerCase().includes(q)) return false;
     if(kf && String(s.kobong_id)!==kf) return false;
     if(wf && s.created_by!==wf) return false;
@@ -2911,11 +2925,11 @@ function renderDashboard(){
     return true;
   });
 
-  // Stats
-  const total = ALL_SANTRI.length;
-  const totalSaldo = ALL_SANTRI.reduce((a,s)=>a+s.saldo,0);
-  const kritis_count = ALL_SANTRI.filter(s=>s.saldo>=0&&s.saldo<kritis).length;
-  const minus_count = ALL_SANTRI.filter(s=>s.saldo<0).length;
+  // Stats (mengikuti cakupan asrama yang dipilih)
+  const total = scopeSantri.length;
+  const totalSaldo = scopeSantri.reduce((a,s)=>a+s.saldo,0);
+  const kritis_count = scopeSantri.filter(s=>s.saldo>=0&&s.saldo<kritis).length;
+  const minus_count = scopeSantri.filter(s=>s.saldo<0).length;
 
   if(SESSION.role==='pengurus'){
     // Pengurus: tanpa kotak Kobong & Saldo Minus, tambah Rekening & Cash
@@ -2939,11 +2953,11 @@ function renderDashboard(){
   } else {
     // Super admin: tampil semua termasuk kobong & saldo minus
     document.getElementById('dash-stats').innerHTML=`
-      <div class="sc"><div class="sci g">👥</div><div class="sil"><label>Total Santri</label><strong>${total}</strong><small>${ALL_KOBONG.length} kobong</small></div></div>
+      <div class="sc"><div class="sci g">👥</div><div class="sil"><label>Total Santri</label><strong>${total}</strong><small>${scopeKobong.length} kobong</small></div></div>
       <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Saldo</label><strong style="font-size:15px;${totalSaldo<0?'color:var(--red)':''}">${totalSaldo<0?'− ':''} ${rp(totalSaldo)}</strong><small>seluruh santri</small></div></div>
       <div class="sc"><div class="sci r">⚠️</div><div class="sil"><label>Saldo Kritis</label><strong class="s-warn">${kritis_count}</strong><small>di bawah ${rp(kritis)}</small></div></div>
       <div class="sc"><div class="sci r">🔴</div><div class="sil"><label>Saldo Minus</label><strong class="s-minus">${minus_count}</strong><small>santri</small></div></div>
-      <div class="sc" style="cursor:pointer" onclick="showTab('kobong')" title="Klik untuk kelola kobong"><div class="sci b">🏠</div><div class="sil"><label>Kobong</label><strong>${ALL_KOBONG.length}</strong><small>aktif</small></div></div>
+      <div class="sc" style="cursor:pointer" onclick="showTab('kobong')" title="Klik untuk kelola kobong"><div class="sci b">🏠</div><div class="sil"><label>Kobong</label><strong>${scopeKobong.length}</strong><small>aktif</small></div></div>
     `;
   }
 
@@ -2971,7 +2985,7 @@ function renderDashboard(){
   document.getElementById('dash-tbl').innerHTML = html||`<tr><td colspan="7"><div class="empty"><span class="ei">🔍</span><p>Tidak ada data</p></div></td></tr>`;
 
   // Tampilkan/sembunyikan tombol WA Semua Kritis
-  const kritisAdaWA = ALL_SANTRI.filter(s=>(s.saldo<kritis)&&s.no_wa).length;
+  const kritisAdaWA = scopeSantri.filter(s=>(s.saldo<kritis)&&s.no_wa).length;
   const btnWaSemua = document.getElementById('btn-wa-semua');
   if(btnWaSemua) btnWaSemua.style.display = kritisAdaWA>0 ? 'inline-flex' : 'none';
 
@@ -3082,6 +3096,17 @@ function onSantriAsramaChange(){
   kobongSel.innerHTML = '<option value="">Semua Kobong</option>';
   getKobongAccessible(asramaId).forEach(k=>{ kobongSel.innerHTML+=`<option value="${k.id}">${k.nama}</option>`; });
   renderTabelSantri();
+}
+
+function onDashAsramaChange(){
+  const asramaId = document.getElementById('dash-asrama').value;
+  const kobongSel = document.getElementById('dash-kobong');
+  if(kobongSel){
+    kobongSel.innerHTML = '<option value="">Semua Kobong</option>';
+    getKobongAccessible(asramaId).forEach(k=>{ kobongSel.innerHTML+=`<option value="${k.id}">${k.nama}</option>`; });
+  }
+  updateFBadge('dash',DASH_FILTER_IDS);
+  renderDashboard();
 }
 
 function renderTabelSantri(){
@@ -4384,13 +4409,14 @@ function bukaModalBersihkanRiwayat(){
           const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-hari);
           cutoffISO = cutoff.toISOString();
         }
-        let q1 = SB.from('riwayat_perubahan_santri').delete();
-        let q2 = SB.from('permintaan_perubahan_santri').delete().eq('status','rejected');
+        let q1 = SB.from('riwayat_perubahan_santri').delete().select('id');
+        let q2 = SB.from('permintaan_perubahan_santri').delete().eq('status','rejected').select('id');
         if(cutoffISO){ q1 = q1.lt('created_at', cutoffISO); q2 = q2.lt('updated_at', cutoffISO); }
         else { q1 = q1.neq('id', 0); q2 = q2.neq('id', 0); }
         const [r1, r2] = await Promise.all([q1, q2]);
         if(r1.error || r2.error){ toast('Gagal bersihkan: '+(r1.error?.message||r2.error?.message), false); return; }
-        toast('✅ Riwayat berhasil dibersihkan!');
+        const jumlahHapus = (r1.data?.length||0) + (r2.data?.length||0);
+        toast(jumlahHapus>0 ? `✅ ${jumlahHapus} riwayat berhasil dibersihkan!` : 'ℹ️ Tidak ada riwayat yang cocok untuk dihapus pada periode ini.');
         renderRiwayatPersetujuan();
       } catch(e){ toast('Error: '+e.message, false); }
       finally { hideLoadingOverlay(); }
@@ -6418,8 +6444,10 @@ let _waIndex = 0;
 
 function kirimWASemuaKritis(){
   const kritis = parseInt(CONFIG.kritis_batas)||50000;
-  const kritisAdaWA = ALL_SANTRI.filter(s=>s.saldo<kritis && s.no_wa);
-  const tanpaWA = ALL_SANTRI.filter(s=>s.saldo<kritis && !s.no_wa).length;
+  const af = document.getElementById('dash-asrama')?.value||'';
+  const scope = af ? ALL_SANTRI.filter(s=>String(getAsramaIdBySantri(s))===af) : ALL_SANTRI;
+  const kritisAdaWA = scope.filter(s=>s.saldo<kritis && s.no_wa);
+  const tanpaWA = scope.filter(s=>s.saldo<kritis && !s.no_wa).length;
 
   if(!kritisAdaWA.length){
     toast('Tidak ada santri kritis yang punya no WA!', false);
