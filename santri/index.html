@@ -141,7 +141,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   cursor:pointer;background:none;color:var(--text-l);
   transition:var(--transition);white-space:nowrap;
 }
-.rtab.act{background:var(--surface);color:var(--green);box-shadow:var(--sh)}
+.rtab.act{background:var(--green);color:#fff;box-shadow:var(--sh)}
 .login-err{
   background:var(--red-p);color:var(--red);
   padding:10px 14px;border-radius:var(--rad-sm);
@@ -230,7 +230,7 @@ main{max-width:1200px;margin:0 auto;padding:22px 18px}
   background:var(--surface);border:1.5px solid var(--green-b);
   color:var(--green-m);position:relative;
 }
-.tabs.tabs-ortu .tb.act{border-color:var(--green)}
+.tabs.tabs-ortu .tb.act{background:var(--green);color:#fff;border-color:var(--green)}
 .tabs.tabs-ortu .tb .badge-tab{
   position:absolute;top:-6px;right:2px;
   background:var(--red);color:#fff;
@@ -2530,7 +2530,7 @@ function buildTabs(){
   let t = '';
   if(SESSION.role==='ortu'){
     tabs.classList.add('tabs-ortu');
-    t += tab('detail','📊 Saldo Saya');
+    t += tab('detail','📊 Saldo Santri');
     t += tab('syahriyah','🧾 Uang Syahriyah<span id="badge-syahriyah" class="badge-tab" style="display:none">0</span>');
   } else {
     tabs.classList.remove('tabs-ortu');
@@ -2702,6 +2702,33 @@ CREATE TABLE IF NOT EXISTS riwayat_perubahan_santri (
 alter table riwayat_perubahan_santri enable row level security;
 create policy "allow_all" on riwayat_perubahan_santri for all using (true) with check (true);</textarea>
             <div style="margin-top:8px"><button class="btn btn-b btn-sm" onclick="navigator.clipboard.writeText(this.closest('div').previousElementSibling.value);toast('SQL migrasi disalin!')">📋 Salin SQL</button></div>
+          </div>
+          <div style="background:var(--gold-p);border:1px solid var(--gold-l);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:13px;font-weight:600;color:#7a5c00;margin-bottom:6px">📱 Migrasi: Riwayat Login & Monitor Device (per perangkat)</div>
+            <div style="font-size:12px;color:var(--text-m);margin-bottom:10px;line-height:1.7">Jalankan SQL ini agar tab Monitor bisa menampilkan detail model HP/PC (mis. "POCO X5"), riwayat login tiap perangkat, dan tombol logout per-device (mirip riwayat login IG). Jika tabel <code>activity_log</code> lama masih ada, tidak apa-apa dibiarkan — tidak dipakai lagi.</div>
+            <textarea readonly style="width:100%;height:220px;font-family:'DM Mono',monospace;font-size:11px;border:1.5px solid var(--border);border-radius:8px;padding:10px;resize:none;outline:none;background:var(--bg)">-- Tabel riwayat login per perangkat/browser (1 baris = 1 sesi/device)
+CREATE TABLE IF NOT EXISTS login_sessions (
+  id bigint generated always as identity primary key,
+  session_id text not null unique,
+  pengurus_id text,
+  pengurus_username text,
+  pengurus_nama text,
+  pengurus_role text,
+  device_name text,
+  user_agent text,
+  is_online boolean default true,
+  revoked boolean default false,
+  created_at timestamptz default now(),
+  last_seen timestamptz default now()
+);
+alter table login_sessions enable row level security;
+create policy "allow_all" on login_sessions for all using (true) with check (true);
+create index if not exists idx_login_sessions_pengurus on login_sessions(pengurus_id);
+
+-- Pastikan kolom force_logout & is_blocked ada di tabel pengurus (untuk logout/blokir semua device)
+alter table pengurus add column if not exists force_logout boolean default false;
+alter table pengurus add column if not exists is_blocked boolean default false;</textarea>
+            <div style="margin-top:8px"><button class="btn btn-b btn-sm" onclick="navigator.clipboard.writeText(this.closest('div').previousElementSibling.value);toast('SQL migrasi disalin!')">📋 Salin SQL Migrasi</button></div>
           </div>
           <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px">⚠️ Reset Konfigurasi</div>
           <div style="font-size:12px;color:var(--text-m);margin-bottom:12px;line-height:1.7">Hanya gunakan jika ingin ganti database Supabase. Semua pengguna akan logout dan perlu setup ulang.<br>Ketik <strong>RESET</strong> untuk mengaktifkan tombol.</div>
@@ -3552,7 +3579,7 @@ async function openDetailModal(id){
 
   let txHtml='';
   if(!txs||!txs.length){
-    txHtml='<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p><p style="font-size:12px;color:var(--text-l);margin-top:6px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6">Catatan: saldo & transaksi hanya tercatat untuk uang jajan yang dititipkan melalui pengurus kobong.</p></div>';
+    txHtml='<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p><p style="font-size:12px;color:var(--text-l);margin-top:6px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6">Data uang jajan santri akan muncul jika uang jajan santri dititipkan kepada pengurus kobong.</p></div>';
   } else {
     let running = 0;
     const withSaldo = [...txs].reverse().map(t=>{
@@ -5963,7 +5990,7 @@ async function renderDetailOrtu(){
   const saldoRealO   = totalMasukO - totalKeluarO;
   const sc=saldoRealO<0?'s-minus':saldoRealO===0?'s-nol':saldoRealO<kritis?'s-warn':'s-ok';
 
-  let txHtml=`<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p><p style="font-size:12px;color:var(--text-l);margin-top:6px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6">Riwayat transaksi akan muncul di sini setelah uang jajan santri dititipkan kepada pengurus asrama untuk dikelola.</p></div>`;
+  let txHtml=`<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p><p style="font-size:12px;color:var(--text-l);margin-top:6px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6">Data uang jajan santri akan muncul jika uang jajan santri dititipkan kepada pengurus kobong.</p></div>`;
   if(txs&&txs.length){
     let running=0;
     const ws=[...txs].reverse().map(t=>{ running+=t.jenis==='masuk'?t.nominal:-t.nominal; return {...t,running}; }).reverse();
@@ -6795,6 +6822,10 @@ function doLogout(){
   cancelSessionTimer();
   stopActivityTracking();
   teardownRealtimeSync();
+  if(SESSION && SESSION.role!=='ortu' && SESSION.user?.id){
+    SB.from('login_sessions').update({is_online:false, last_seen:new Date().toISOString()}).eq('session_id', getDeviceSessionId()).then(()=>{}).catch(()=>{});
+  }
+  clearDeviceSessionId();
   clearPersistentSession();
   if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
   sessionStorage.removeItem('greeting_idx');
@@ -6856,6 +6887,57 @@ document.getElementById('mo-pengurus').addEventListener('click',function(e){
     });
   }
 });
+// ===== DETEKSI DEVICE (nama model, bukan cuma "HP"/"PC") =====
+const DEVICE_SID_KEY = 'siujang_device_sid';
+
+function clearDeviceSessionId(){
+  try{ localStorage.removeItem(DEVICE_SID_KEY); }catch(e){}
+}
+
+function getDeviceSessionId(){
+  let sid = null;
+  try{ sid = localStorage.getItem(DEVICE_SID_KEY); }catch(e){}
+  if(!sid){
+    sid = (window.crypto?.randomUUID) ? crypto.randomUUID() : ('sid-'+Date.now()+'-'+Math.random().toString(36).slice(2));
+    try{ localStorage.setItem(DEVICE_SID_KEY, sid); }catch(e){}
+  }
+  return sid;
+}
+
+function parseDeviceName(ua){
+  ua = ua || navigator.userAgent || '';
+  // Android: model biasanya ada di antara "Android X;" dan "Build/" atau ")"
+  let m = ua.match(/Android[^;]*;\s*([^)]+?)\s*Build\//i) || ua.match(/Android[^;]*;\s*wv;\s*([^)]+)\)/i) || ua.match(/Android[^;]*;\s*([^)]+)\)/i);
+  if(m && m[1]){
+    let model = m[1].replace(/\bwv\b/gi,'').trim();
+    if(model && model.length>1 && !/^K$/i.test(model)) return '📱 '+model;
+  }
+  if(/iPhone/i.test(ua)) return '📱 iPhone';
+  if(/iPad/i.test(ua)) return '📱 iPad';
+  if(/Macintosh/i.test(ua)) return '💻 Mac';
+  if(/Windows/i.test(ua)) return '💻 Windows PC';
+  if(/Android/i.test(ua)) return '📱 Android';
+  if(/Linux/i.test(ua)) return '💻 Linux PC';
+  return '🖥️ Perangkat Lain';
+}
+
+function parseBrowserName(ua){
+  ua = ua || navigator.userAgent || '';
+  if(/Edg\//.test(ua)) return 'Edge';
+  if(/OPR\//.test(ua) || /Opera/i.test(ua)) return 'Opera';
+  if(/Chrome\//.test(ua) && !/Chromium/i.test(ua)) return 'Chrome';
+  if(/Firefox\//.test(ua)) return 'Firefox';
+  if(/Safari\//.test(ua) && !/Chrome/i.test(ua)) return 'Safari';
+  return '';
+}
+
+function getDeviceLabel(){
+  const ua = navigator.userAgent || '';
+  const dev = parseDeviceName(ua);
+  const br = parseBrowserName(ua);
+  return br ? `${dev} · ${br}` : dev;
+}
+
 // ===== PERSISTENT LOGIN =====
 const PERSIST_KEY = 'siujang_session';
 
@@ -6895,22 +6977,37 @@ let isPageVisible = true;
 async function updateActivity(isOnline){
   if(!SESSION || SESSION.role==='ortu' || !SESSION.user?.id) return;
   try{
-    await SB.from('activity_log').upsert({
-      pengurus_id: SESSION.user.id,
+    const sid = getDeviceSessionId();
+    await SB.from('login_sessions').upsert({
+      session_id: sid,
+      pengurus_id: String(SESSION.user.id),
+      pengurus_username: SESSION.user.username||'',
+      pengurus_nama: SESSION.user.nama||'',
+      pengurus_role: SESSION.role,
+      device_name: getDeviceLabel(),
+      user_agent: navigator.userAgent||'',
       last_seen: new Date().toISOString(),
-      is_online: isOnline,
-      device: /Mobi|Android/i.test(navigator.userAgent)?'📱 HP':'💻 PC'
-    },{onConflict:'pengurus_id'});
+      is_online: isOnline
+    },{onConflict:'session_id'});
   } catch(e){}
 }
 
-// Cek force_logout/blokir dari admin
+// Cek force_logout/blokir dari admin (semua device) & cek logout khusus device ini
 async function checkForceLogout(){
   if(!SESSION?.user?.id) return;
   try{
-    const {data} = await SB.from('pengurus').select('force_logout,is_blocked').eq('id',SESSION.user.id).single();
-    if(data?.force_logout || data?.is_blocked){
-      toast('⚠️ Anda telah di-logout paksa oleh Admin', false);
+    if(SESSION.role!=='super'){
+      const {data} = await SB.from('pengurus').select('force_logout,is_blocked').eq('id',SESSION.user.id).single();
+      if(data?.force_logout || data?.is_blocked){
+        toast('⚠️ Anda telah di-logout paksa oleh Admin', false);
+        setTimeout(()=>doLogout(), 2000);
+        return;
+      }
+    }
+    const sid = getDeviceSessionId();
+    const {data:ses} = await SB.from('login_sessions').select('revoked').eq('session_id', sid).maybeSingle();
+    if(ses?.revoked){
+      toast('⚠️ Sesi di perangkat ini telah di-logout oleh Admin', false);
       setTimeout(()=>doLogout(), 2000);
     }
   }catch(e){}
@@ -7692,7 +7789,7 @@ async function renderMonitor(){
   sec.innerHTML = `
   <div class="panel" style="margin-bottom:16px">
     <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <h2>👁️ Monitor Aktivitas Pengurus</h2>
+      <h2>👁️ Monitor Aktivitas & Device Pengurus</h2>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="font-size:12px;color:var(--text-l)">Update: ${updateTime}</span>
         <button class="btn btn-b btn-sm" onclick="renderMonitor()">🔄 Refresh</button>
@@ -7701,7 +7798,7 @@ async function renderMonitor(){
     <div class="pb">
       <div id="monitor-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"></div>
       <div id="monitor-content" style="text-align:center;padding:20px;color:var(--text-m)">Memuat...</div>
-      <div style="margin-top:10px;text-align:center;font-size:12px;color:var(--text-l)">🔄 Auto refresh setiap 30 detik</div>
+      <div style="margin-top:10px;text-align:center;font-size:12px;color:var(--text-l)">🔄 Auto refresh setiap 30 detik &nbsp;•&nbsp; Setiap perangkat/browser dihitung sebagai 1 sesi login terpisah</div>
     </div>
   </div>`;
 
@@ -7710,9 +7807,10 @@ async function renderMonitor(){
   window._monitorTimer = setInterval(()=>{ if(document.getElementById('sec-monitor')?.style.display!=='none') renderMonitor(); }, 30000);
 
   try{
-    const {data:logs} = await SB.from('activity_log')
-      .select('*, pengurus(nama, role)')
+    const {data:logs, error:logsErr} = await SB.from('login_sessions')
+      .select('*')
       .order('last_seen', {ascending:false});
+    if(logsErr) throw logsErr;
 
     const entries = (logs||[]).map(log=>{
       const lastSeen = new Date(log.last_seen);
@@ -7720,22 +7818,26 @@ async function renderMonitor(){
       const diffMin = Math.floor(diffMs/60000);
       const diffJam = Math.floor(diffMin/60);
       let statusKey;
-      if(log.is_online && diffMin < 2) statusKey='online';
+      if(log.revoked) statusKey='offline';
+      else if(log.is_online && diffMin < 2) statusKey='online';
       else if(diffMin < 10) statusKey='idle';
       else statusKey='offline';
       const waktu = diffMin < 1 ? 'Baru saja' :
                     diffMin < 60 ? diffMin+' mnt lalu' :
                     diffJam < 24 ? diffJam+' jam lalu' :
                     lastSeen.toLocaleDateString('id-ID',{day:'numeric',month:'short'})+', '+lastSeen.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-      const loginFirst = log.created_at ? new Date(log.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'})+', '+new Date(log.created_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : '—';
-      return {...log, statusKey, waktu, loginFirst, diffMin};
+      const createdAt = log.created_at ? new Date(log.created_at) : null;
+      const loginFirst = createdAt ? createdAt.toLocaleDateString('id-ID',{day:'numeric',month:'short'})+', '+createdAt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : '—';
+      const isBaru = createdAt ? (now - createdAt.getTime()) < 60*60*1000 : false; // login < 1 jam lalu
+      return {...log, statusKey, waktu, loginFirst, diffMin, isBaru};
     });
 
-    // Stats cards
+    // Stats cards (dihitung per device/sesi)
     const onlineCount = entries.filter(e=>e.statusKey==='online').length;
     const idleCount = entries.filter(e=>e.statusKey==='idle').length;
     const offlineCount = entries.filter(e=>e.statusKey==='offline').length;
     const totalCount = entries.length;
+    const totalPengurus = new Set(entries.map(e=>e.pengurus_id)).size;
 
     document.getElementById('monitor-stats').innerHTML = `
       <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px">
@@ -7757,75 +7859,94 @@ async function renderMonitor(){
         <div style="font-size:11px;color:#dc2626">> 10 menit</div></div>
       </div>
       <div style="background:var(--green-p);border:1.5px solid var(--green-b);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;background:#d1fae5;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px">👥</div>
-        <div><div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px">Total</div>
+        <div style="width:42px;height:42px;background:#d1fae5;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px">📱</div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px">Total Device</div>
         <div style="font-size:26px;font-weight:800;color:var(--green);line-height:1.1">${totalCount}</div>
-        <div style="font-size:11px;color:var(--green)">akun tercatat</div></div>
+        <div style="font-size:11px;color:var(--green)">dari ${totalPengurus} pengurus</div></div>
       </div>`;
 
-    // Table rows
-    const rows = entries.map(log=>{
-      const statusDot = log.statusKey==='online'?'🟢':log.statusKey==='idle'?'🟡':'⚫';
-      const statusColor = log.statusKey==='online'?'#15803d':log.statusKey==='idle'?'#a16207':'#6b7280';
-      const deviceIcon = log.device?.toLowerCase().includes('mobile')?'📱':'🖥️';
-      const roleBadge = log.pengurus?.role==='sekretariat'?
-        '<span style="background:#ede9fe;color:#7c3aed;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Sekretariat</span>':
-        '<span style="background:var(--green-p);color:var(--green);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Pengurus</span>';
+    // Kelompokkan sesi per pengurus (biar seperti riwayat login IG: 1 akun bisa banyak device)
+    const groups = [];
+    const groupIndex = {};
+    entries.forEach(e=>{
+      const key = e.pengurus_id||e.pengurus_username||'—';
+      if(!(key in groupIndex)){
+        groupIndex[key] = groups.length;
+        groups.push({ pengurus_id:e.pengurus_id, nama:e.pengurus_nama||e.pengurus_username||'—', role:e.pengurus_role, sesi:[] });
+      }
+      groups[groupIndex[key]].sesi.push(e);
+    });
 
-      return `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:10px 8px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:34px;height:34px;border-radius:50%;background:var(--green-p);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green);font-size:14px;flex-shrink:0">${(log.pengurus?.nama||'?')[0].toUpperCase()}</div>
-            <div>
-              <div style="font-weight:600;font-size:13px">${log.pengurus?.nama||'—'}</div>
-              <div>${roleBadge}</div>
+    const cards = groups.map(g=>{
+      const roleBadge = (g.role==='sekretariat'||g.role==='sekretaris')?
+        '<span style="background:#ede9fe;color:#7c3aed;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Sekretariat</span>':
+        g.role==='super'?'<span style="background:#fef3c7;color:#92400e;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Admin</span>':
+        '<span style="background:var(--green-p);color:var(--green);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Pengurus</span>';
+      const anyAktif = g.sesi.some(s=>s.statusKey!=='offline');
+
+      const sesiRows = g.sesi.map(s=>{
+        const statusDot = s.statusKey==='online'?'🟢':s.statusKey==='idle'?'🟡':'⚫';
+        const statusColor = s.statusKey==='online'?'#15803d':s.statusKey==='idle'?'#a16207':'#6b7280';
+        const namaEsc = (g.nama||'').replace(/'/g,"\\'");
+        const deviceEsc = (s.device_name||'Perangkat').replace(/'/g,"\\'");
+        return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-top:1px dashed var(--border)">
+          <div style="min-width:0;flex:1">
+            <div style="font-size:13px;font-weight:600">${s.device_name||'—'} ${s.isBaru?'<span style="background:#fee2e2;color:#b91c1c;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px">🆕 Baru login</span>':''}</div>
+            <div style="font-size:12px;color:${statusColor};font-weight:600;margin-top:2px">${statusDot} ${s.revoked?'Di-logout admin':s.waktu}</div>
+            <div style="font-size:11px;color:var(--text-l);margin-top:2px">Login pertama: ${s.loginFirst}</div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0">
+            ${(!s.revoked && s.statusKey!=='offline')?`<button class="btn btn-d btn-xs" onclick="monitorLogoutDevice('${s.session_id}','${namaEsc}','${deviceEsc}')">⬅️ Logout</button>`:''}
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<div class="panel" style="margin-bottom:12px">
+        <div class="pb" style="padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:34px;height:34px;border-radius:50%;background:var(--green-p);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green);font-size:14px;flex-shrink:0">${(g.nama||'?')[0].toUpperCase()}</div>
+              <div>
+                <div style="font-weight:600;font-size:13px">${g.nama||'—'}</div>
+                <div>${roleBadge} <span style="font-size:11px;color:var(--text-l)">${g.sesi.length} device</span></div>
+              </div>
             </div>
+            ${g.role!=='super'?`<div style="display:flex;gap:5px;flex-wrap:wrap">
+              ${anyAktif?`<button class="btn btn-d btn-xs" onclick="monitorLogout('${g.pengurus_id}','${(g.nama||'').replace(/'/g,"\\'")}')">⬅️ Logout Semua Device</button>`:''}
+              <button class="btn btn-d btn-xs" style="background:#dc2626;border-color:#dc2626" onclick="monitorBlokir('${g.pengurus_id}','${(g.nama||'').replace(/'/g,"\\'")}')">🚫 Blokir</button>
+            </div>`:''}
           </div>
-        </td>
-        <td style="padding:10px 8px">
-          <div style="font-size:13px">${deviceIcon} ${log.device||'—'}</div>
-        </td>
-        <td style="padding:10px 8px">
-          <div style="font-size:13px;color:${statusColor};font-weight:600">${statusDot} ${log.waktu}</div>
-        </td>
-        <td style="padding:10px 8px">
-          <div style="font-size:12px;color:var(--text-l)">${log.loginFirst}</div>
-        </td>
-        <td style="padding:10px 8px">
-          <div style="display:flex;gap:5px;flex-wrap:wrap">
-            ${log.statusKey!=='offline'?`<button class="btn btn-d btn-xs" onclick="monitorLogout(${log.pengurus_id},'${(log.pengurus?.nama||'').replace(/'/g,"\'")}')">⬅️ Logout</button>`:''}
-            <button class="btn btn-d btn-xs" style="background:#dc2626;border-color:#dc2626" onclick="monitorBlokir(${log.pengurus_id},'${(log.pengurus?.nama||'').replace(/'/g,"\'")}')">🚫 Blokir</button>
-          </div>
-        </td>
-      </tr>`;
+          ${sesiRows}
+        </div>
+      </div>`;
     }).join('');
 
-    document.getElementById('monitor-content').innerHTML = logs?.length ? `
-      <div style="overflow-x:auto;border-radius:10px;border:1.5px solid var(--border)">
-        <table style="width:100%;border-collapse:collapse;min-width:500px">
-          <thead><tr style="background:var(--green);color:#fff">
-            <th style="padding:10px 8px;text-align:left;font-size:12px">Pengurus</th>
-            <th style="padding:10px 8px;text-align:left;font-size:12px">Device</th>
-            <th style="padding:10px 8px;text-align:left;font-size:12px">Terakhir Aktif</th>
-            <th style="padding:10px 8px;text-align:left;font-size:12px">Login Pertama</th>
-            <th style="padding:10px 8px;text-align:left;font-size:12px">Aksi</th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    ` : `<div style="padding:30px;text-align:center;color:var(--text-l)">Belum ada data aktivitas pengurus.</div>`;
+    document.getElementById('monitor-content').innerHTML = logs?.length ? cards :
+      `<div style="padding:30px;text-align:center;color:var(--text-l)">Belum ada data aktivitas pengurus.</div>`;
 
   } catch(e){
-    document.getElementById('monitor-content').innerHTML = `<div style="color:var(--red);padding:16px">Gagal memuat data: ${e.message}</div>`;
+    const hint = /login_sessions/i.test(e.message||'') || e.code==='42P01' ?
+      '<br><br><span style="font-size:12px">Sepertinya tabel <strong>login_sessions</strong> belum ada. Buka <strong>Pengaturan → Koneksi Supabase</strong> lalu jalankan SQL migrasi "Riwayat Login & Monitor Device".</span>' : '';
+    document.getElementById('monitor-content').innerHTML = `<div style="color:var(--red);padding:16px">Gagal memuat data: ${e.message}${hint}</div>`;
   }
 }
 
+// Logout SATU device/sesi saja — device lain milik pengurus yang sama tetap login
+async function monitorLogoutDevice(sessionId, nama, deviceNama){
+  konfirm(`Logout <strong>${nama}</strong> dari perangkat <strong>${deviceNama}</strong>? Device lain milik ${nama} tidak terpengaruh.`, async()=>{
+    await SB.from('login_sessions').update({revoked:true, is_online:false}).eq('session_id', sessionId);
+    toast(`✅ Perangkat "${deviceNama}" berhasil di-logout`);
+    renderMonitor();
+  });
+}
+
+// Logout SEMUA device milik satu pengurus
 async function monitorLogout(pengurusId, nama){
   konfirm(`Logout paksa <strong>${nama}</strong>? Mereka akan keluar dari semua device.`, async()=>{
-    await SB.from('activity_log').update({is_online:false, last_seen: new Date().toISOString()}).eq('pengurus_id', pengurusId);
+    await SB.from('login_sessions').update({revoked:true, is_online:false}).eq('pengurus_id', String(pengurusId));
     // Tandai force_logout agar client otomatis logout
     await SB.from('pengurus').update({force_logout: true}).eq('id', pengurusId);
-    toast(`✅ ${nama} berhasil di-logout`);
+    toast(`✅ ${nama} berhasil di-logout dari semua device`);
     renderMonitor();
   });
 }
@@ -7833,7 +7954,7 @@ async function monitorLogout(pengurusId, nama){
 async function monitorBlokir(pengurusId, nama){
   konfirm(`🚫 Blokir <strong>${nama}</strong>? Mereka tidak bisa login sampai dibuka blokirnya.`, async()=>{
     await SB.from('pengurus').update({is_blocked: true, force_logout: true}).eq('id', pengurusId);
-    await SB.from('activity_log').update({is_online:false}).eq('pengurus_id', pengurusId);
+    await SB.from('login_sessions').update({revoked:true, is_online:false}).eq('pengurus_id', String(pengurusId));
     toast(`🚫 ${nama} berhasil diblokir`);
     renderMonitor();
   }, 'hapus');
