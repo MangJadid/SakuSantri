@@ -1168,7 +1168,10 @@ _updateOfflineScreen();
         <div class="panel">
           <div class="ph">
             <h2>📋 Piutang Alumni</h2>
-            <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--green)" id="piutang-total-badge">Total: Rp 0</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--green)" id="piutang-total-badge">Total: Rp 0</div>
+              <button class="btn btn-d btn-sm" id="btn-hapus-massal-piutang" style="display:none" onclick="hapusMassalPiutang()">🗑️ Hapus Terpilih (<span id="piutang-selected-count">0</span>)</button>
+            </div>
           </div>
           <div class="pb">
             <div class="search-row">
@@ -4972,7 +4975,7 @@ function renderPiutangAlumni(){
 
   const el = document.getElementById('piutang-list');
   const emptyEl = document.getElementById('piutang-empty');
-  if(!data.length){ el.innerHTML=''; if(emptyEl) emptyEl.style.display='block'; return; }
+  if(!data.length){ el.innerHTML=''; if(emptyEl) emptyEl.style.display='block'; _updatePiutangHapusMassal(); return; }
   if(emptyEl) emptyEl.style.display='none';
 
   el.innerHTML = data.map(p=>{
@@ -4981,6 +4984,9 @@ function renderPiutangAlumni(){
     const tglLunas = p.tgl_lunas ? new Date(p.tgl_lunas).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : null;
     return `<div style="border:1.5px solid ${isLunas?'var(--green-b)':'var(--border)'};border-radius:12px;padding:14px 16px;margin-bottom:10px;background:${isLunas?'var(--green-p)':'#fff'}">
       <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;padding-top:2px">
+          <input type="checkbox" class="piutang-cb" data-id="${p.id}" onchange="_updatePiutangHapusMassal()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--red)">
+        </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
             <strong style="font-size:14px;cursor:pointer;color:var(--green);text-decoration:underline" onclick="bukaMoRincianPiutang(${p.id})">${p.nama_santri}</strong>
@@ -4992,14 +4998,51 @@ function renderPiutangAlumni(){
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:20px;font-weight:700;color:${isLunas?'var(--green)':'var(--red)'}">${fmtRp(p.total_piutang)}</div>
-          ${!isLunas?`<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end">
-            <button class="btn btn-p btn-xs" onclick="bukaPiutangLunas('${p.id}')">✅ Tandai Lunas</button>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end">
+            ${!isLunas?`<button class="btn btn-p btn-xs" onclick="bukaPiutangLunas('${p.id}')">✅ Tandai Lunas</button>`:''}
             ${p.no_wa?`<button class="btn btn-wa btn-xs" onclick="kirimWAPiutang('${p.id}')">📱 WA</button>`:''}
-          </div>`:''}
+            <button class="btn btn-d btn-xs" onclick="hapusPiutang('${p.id}','${(p.nama_santri||'').replace(/'/g,'')}')">🗑️</button>
+          </div>
         </div>
       </div>
     </div>`;
   }).join('');
+  _updatePiutangHapusMassal();
+}
+
+function _updatePiutangHapusMassal(){
+  const cbs = document.querySelectorAll('.piutang-cb:checked');
+  const btn = document.getElementById('btn-hapus-massal-piutang');
+  const count = document.getElementById('piutang-selected-count');
+  if(btn) btn.style.display = cbs.length>0 ? '' : 'none';
+  if(count) count.textContent = cbs.length;
+}
+
+async function hapusPiutang(id, nama){
+  konfirm(`Hapus piutang alumni "${nama}"? Data akan dihapus permanen!`, async ()=>{
+    try{
+      const {error} = await SB.from('piutang_alumni').delete().eq('id', id);
+      if(error){ toast('Gagal hapus: '+error.message, false); return; }
+      toast('🗑️ Piutang berhasil dihapus!');
+      await loadAllData();
+      renderPiutangAlumni();
+    } catch(e){ toast('Error: '+e.message, false); }
+  }, 'hapus');
+}
+
+async function hapusMassalPiutang(){
+  const cbs = document.querySelectorAll('.piutang-cb:checked');
+  const ids = [...cbs].map(cb=>cb.dataset.id);
+  if(!ids.length) return;
+  konfirm(`Hapus ${ids.length} piutang alumni? Data akan dihapus permanen!`, async ()=>{
+    try{
+      const {error} = await SB.from('piutang_alumni').delete().in('id', ids);
+      if(error){ toast('Gagal hapus: '+error.message, false); return; }
+      toast(`🗑️ ${ids.length} piutang berhasil dihapus!`);
+      await loadAllData();
+      renderPiutangAlumni();
+    } catch(e){ toast('Error: '+e.message, false); }
+  }, 'hapus');
 }
 
 function bukaPiutangLunas(id){
