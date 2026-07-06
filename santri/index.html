@@ -220,6 +220,26 @@ main{max-width:1200px;margin:0 auto;padding:22px 18px}
 .tb.act{background:var(--green);color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(15,76,42,.25)}
 .sec{display:none}.sec.act{display:block;animation:fadeIn .2s ease}
 
+/* Segmented control khusus tab Orang Tua (Saldo Saya / Uang Syahriyah) */
+.tabs.tabs-ortu{
+  width:100%;gap:6px;padding:4px;background:var(--bg);
+}
+.tabs.tabs-ortu .tb{
+  flex:1;justify-content:center;padding:11px 10px;
+  font-size:13.5px;font-weight:700;
+  background:var(--surface);border:1.5px solid var(--green-b);
+  color:var(--green-m);position:relative;
+}
+.tabs.tabs-ortu .tb.act{border-color:var(--green)}
+.tabs.tabs-ortu .tb .badge-tab{
+  position:absolute;top:-6px;right:2px;
+  background:var(--red);color:#fff;
+  font-size:9.5px;font-weight:800;
+  min-width:16px;height:16px;border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 4px;border:2px solid var(--bg);
+}
+
 /* ── STATS CARDS ─────────────────────────── */
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
 .sc{
@@ -2197,7 +2217,7 @@ async function enterApp(){
   }
 
   resetSessionTimer();
-  if(SESSION.role==='ortu') renderDetailOrtu();
+  if(SESSION.role==='ortu'){ renderDetailOrtu(); updateBadgeSyahriyah(); }
   if(SESSION.role==='pengurus'||SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') startActivityTracking();
   hideLoginOverlay();
 }
@@ -2509,9 +2529,11 @@ function buildTabs(){
   const tabs = document.getElementById('main-tabs');
   let t = '';
   if(SESSION.role==='ortu'){
+    tabs.classList.add('tabs-ortu');
     t += tab('detail','📊 Saldo Saya');
-    t += tab('syahriyah','🧾 Uang Syahriyah');
+    t += tab('syahriyah','🧾 Uang Syahriyah<span id="badge-syahriyah" class="badge-tab" style="display:none">0</span>');
   } else {
+    tabs.classList.remove('tabs-ortu');
     t += tab('dashboard','📊 Dashboard');
     t += tab('santri','👥 Santri');
     if(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat'){
@@ -3530,7 +3552,7 @@ async function openDetailModal(id){
 
   let txHtml='';
   if(!txs||!txs.length){
-    txHtml='<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p></div>';
+    txHtml='<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p><p style="font-size:12px;color:var(--text-l);margin-top:6px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6">Catatan: saldo & transaksi hanya tercatat untuk uang jajan yang dititipkan melalui pengurus kobong.</p></div>';
   } else {
     let running = 0;
     const withSaldo = [...txs].reverse().map(t=>{
@@ -5905,6 +5927,21 @@ function populateFilterKelas(){
 }
 
 // ===== DETAIL ORTU =====
+async function updateBadgeSyahriyah(){
+  if(SESSION.role!=='ortu') return;
+  const santriId = SESSION.santri?.id;
+  if(!santriId) return;
+  try{
+    const {data} = await SB.from('tagihan_pondok').select('id').eq('santri_id',String(santriId)).neq('status','lunas');
+    const cnt = data?.length||0;
+    const badge = document.getElementById('badge-syahriyah');
+    if(badge){
+      badge.style.display = cnt>0 ? 'flex' : 'none';
+      badge.textContent = cnt;
+    }
+  } catch(e){}
+}
+
 async function renderDetailOrtu(){
   const s=SESSION.santri;
   const kritis=parseInt(CONFIG.kritis_batas)||50000;
@@ -5926,7 +5963,7 @@ async function renderDetailOrtu(){
   const saldoRealO   = totalMasukO - totalKeluarO;
   const sc=saldoRealO<0?'s-minus':saldoRealO===0?'s-nol':saldoRealO<kritis?'s-warn':'s-ok';
 
-  let txHtml='<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p></div>';
+  let txHtml=`<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p><p style="font-size:12px;color:var(--text-l);margin-top:6px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6">Riwayat transaksi akan muncul di sini setelah uang jajan santri dititipkan kepada pengurus asrama untuk dikelola.</p></div>`;
   if(txs&&txs.length){
     let running=0;
     const ws=[...txs].reverse().map(t=>{ running+=t.jenis==='masuk'?t.nominal:-t.nominal; return {...t,running}; }).reverse();
@@ -5989,6 +6026,7 @@ async function renderDetailOrtu(){
 
 // ===== UANG SYAHRIYAH ORTU =====
 async function renderSyahriyahOrtu(){
+  updateBadgeSyahriyah();
   const container = document.getElementById('syahriyah-content');
   if(!container) return;
 
