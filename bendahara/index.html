@@ -801,8 +801,10 @@ _updateOfflineScreen();
   var box = document.getElementById('debug-error-box');
   var timer;
   function showErr(msg){
-    // Abaikan error Service Worker — hanya masalah koneksi, bukan bug
+    // Abaikan error Service Worker dan popup blocker
     if(msg && (msg.indexOf('ServiceWorker')!==-1 || msg.indexOf('sw.js')!==-1 || msg.indexOf('fetching the script')!==-1)) return;
+    if(msg && (msg.indexOf('popup')!==-1 || msg.indexOf('Popup')!==-1 || msg.indexOf('blocked')!==-1 || msg.indexOf('window.open')!==-1)) return;
+    if(!msg || msg.trim()==='') return;
     box.style.display = 'flex';
     clearTimeout(timer);
     timer = setTimeout(function(){ box.style.display='none'; }, 6000);
@@ -988,7 +990,7 @@ _updateOfflineScreen();
         <div class="ph">
           <h2 id="dash-tagihan-title">📋 Tagihan Bulan Ini</h2>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-wa btn-sm" id="btn-wa-massal" onclick="bukaWAMassal()" style="display:none">📱 WA Massal</button>
+            <button class="btn btn-wa btn-sm" id="btn-wa-massal" onclick="bukaWAMassal('tagihan')" style="display:none">📱 WA Massal</button>
             <button class="btn btn-b btn-sm" onclick="backupLengkap()">📥 Backup</button>
             
           </div>
@@ -1053,7 +1055,6 @@ _updateOfflineScreen();
       <div class="panel">
         <div class="ph">
           <h2>👥 Data Santri</h2>
-          <button class="btn btn-p btn-sm" onclick="bukaModalTambahSantri()">➕ Tambah Santri</button>
         </div>
         <div class="pb">
           <div class="filter-toggle-row">
@@ -1087,7 +1088,7 @@ _updateOfflineScreen();
               <option value="kelas">Per Kelas</option>
             </select>
             <button class="btn btn-b btn-sm" onclick="exportRekapExcel()">📊 Export Excel</button>
-            <button class="btn btn-g btn-sm" onclick="kirimWAMassal()" id="btn-wa-massal">📲 WA Massal</button>
+            <button class="btn btn-g btn-sm" onclick="bukaWAMassal('rekap')" id="btn-wa-massal">📲 WA Massal</button>
           </div>
         </div>
         <div class="pb">
@@ -1824,7 +1825,7 @@ _updateOfflineScreen();
     <div class="mo-b">
       <div class="info-box" style="margin-bottom:14px">Kirim pesan WA ke orang tua santri yang belum bayar.</div>
       <div class="fg"><label>Bulan</label>
-        <select id="wa-bulan" onchange="bukaWAMassal()"><option value="">Bulan aktif</option></select>
+        <select id="wa-bulan" onchange="bukaWAMassal(document.getElementById('mo-wa-massal').dataset.source||'tagihan')"><option value="">Bulan aktif</option></select>
       </div>
       <div id="wa-list" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
       <div style="margin-top:14px">
@@ -3206,7 +3207,6 @@ function renderSantri(){
         <div style="display:flex;gap:5px">
           <button class="btn btn-b btn-xs" onclick="openDetailModal('${s.id}')">📋 Detail</button>
           ${hasTunggak?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${s.id}')">💰</button>`:''}
-          ${s.no_wa&&hasTunggak?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${s.id}','${bulanAktif()}')">📱</button>`:''}
         </div>
       </td>
     </tr>`;
@@ -4471,6 +4471,7 @@ function renderRekap(){
       if(!perSantri[t.santri_id]) perSantri[t.santri_id]={
         id:t.santri_id,
         nama:s.nama||t.santri_nama||'—',
+        no_wa:s.no_wa||'',
         dapur_id:s.dapur_id||t.dapur_id,
         kobong:s.kobong?.nama||getKobongNama(s.kobong_id)||'—',
         kelas:s.kelas||'—',
@@ -4503,7 +4504,7 @@ function renderRekap(){
         <td style="color:var(--green)">${fmtRp(d.lunas)}</td>
         <td style="color:${d.tunggak>0?'var(--red)':'var(--green)'};font-weight:700">${fmtRp(d.tunggak)}</td>
         <td style="min-width:100px"><div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text-l);margin-top:2px">${pct}%</div></td>
-        <td><div style="display:flex;gap:4px">${d.tunggak>0?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${d.id}')">💰</button>`:''}<button class="btn btn-b btn-xs" onclick="openDetailModal('${d.id}')">📋</button>${d.tunggak>0?`<button class="btn btn-g btn-xs" onclick="kirimWASantriRekap('${d.id}','${d.nama.replace(/'/g,'')}',${d.tunggak},${JSON.stringify(d.tagihan.filter(t=>t.status!=='lunas').map(t=>t.bulan))})">📲</button>`:''}</div></td>
+        <td><div style="display:flex;gap:4px">${d.tunggak>0?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${d.id}')">💰</button>`:''}<button class="btn btn-b btn-xs" onclick="openDetailModal('${d.id}')">📋</button>${d.tunggak>0?(d.no_wa?`<button class="btn btn-wa btn-xs" onclick="kirimWASantriRekap('${d.id}','${d.nama.replace(/'/g,'')}',${d.tunggak},${JSON.stringify(d.tagihan.filter(t=>t.status!=='lunas').map(t=>t.bulan))})">📱</button>`:'<span style="font-size:16px;cursor:default;opacity:.5" title="No WA belum diinput">📵</span>'):''}</div></td>
       </tr>`;
     }).join('');
     content.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Santri</th><th>Kobong</th><th>Kelas</th><th>Dapur</th><th>Uang Makan</th><th>Uang Listrik</th><th>Total Tagihan</th><th>Sudah Bayar</th><th>Tunggakan</th><th>Progres</th><th>Aksi</th></tr></thead><tbody>${rows||'<tr><td colspan="12"><div class="empty"><span class="ei">✅</span><p>Tidak ada tunggakan!</p></div></td></tr>'}</tbody></table></div>`;
@@ -4620,7 +4621,7 @@ _${pesantren}_`;
 function kirimWASantriRekap(santriId, namaSantri, tunggakan, bulanTunggak){
   const s = getSantriById(santriId);
   const noWa = s?.no_wa || '';
-  const pesan = buildPesanWA(namaSantri, tunggakan, bulanTunggak);
+  const pesan = buildWAPesan(santriId, bulanTunggak);
   const pesanEnc = encodeURIComponent(pesan);
 
   konfirm(
@@ -4687,7 +4688,7 @@ function kirimWAMassal(){
       for(const d of data){
         if(!d.no_wa) continue;
         const noBersih = d.no_wa.replace(/[^0-9]/g,'').replace(/^0/,'62');
-        const pesan = buildPesanWA(d.nama, d.tunggak, d.bulanTunggak);
+        const pesan = buildWAPesan(d.id, d.bulanTunggak);
         window.open(`https://wa.me/${noBersih}?text=${encodeURIComponent(pesan)}`,'_blank');
         sent++;
         await new Promise(r=>setTimeout(r,600)); // jeda antar tab
@@ -5111,17 +5112,29 @@ function renderRiwayat(){
 // ===== WA =====
 function buildWAPesan(santriId, bulan){
   const s=getSantriById(santriId)||{};
-  const tagihan=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(santriId)&&(t.bulan||'')===(bulan||'')&&t.status!=='lunas');
-  const total=tagihan.reduce((a,t)=>a+Number(t.nominal)-(Number(t.nominal_bayar||0)),0);
-  const rincian=tagihan.map(t=>{
-    const sisa=Number(t.nominal)-Number(t.nominal_bayar||0);
-    return `• Tagihan ${t.bulan}: ${fmtRp(sisa)}`;
-  }).join('\n');
+  // Support multi-bulan (array) atau single bulan (string)
+  const bulanArr = Array.isArray(bulan) ? bulan : [bulan||bulanAktif()];
+  const tagihan = ALL_TAGIHAN.filter(t=>
+    String(t.santri_id)===String(santriId) &&
+    bulanArr.includes(t.bulan||'') &&
+    t.status!=='lunas'
+  );
+  const total = tagihan.reduce((a,t)=>a+Number(t.nominal)-(Number(t.nominal_bayar||0)),0);
+  const rincian = tagihan.length
+    ? tagihan.map(t=>{ const sisa=Number(t.nominal)-Number(t.nominal_bayar||0); return `• Tagihan ${t.bulan}: ${fmtRp(sisa)}`; }).join('\n')
+    : bulanArr.map(b=>`• Tunggakan ${b}`).join('\n');
+  const bulanStr = bulanArr.join(', ');
   const tmpl=CONFIG.wa_template_bend||getDefaultWATemplate();
-  return tmpl.replace(/{{nama}}/g,s.nama||santriId).replace(/{{bulan}}/g,bulan||bulanAktif()).replace(/{{total}}/g,fmtRp(total)).replace(/{{rincian}}/g,rincian).replace(/{{pondok}}/g,'Pondok Pesantren An-Nur');
+  return tmpl
+    .replace(/{{nama}}/g, s.nama||santriId)
+    .replace(/{{bulan}}/g, bulanStr)
+    .replace(/{{total}}/g, fmtRp(total))
+    .replace(/{{rincian}}/g, rincian)
+    .replace(/{{link}}/g, CONFIG.link_saku_santri||'https://mangjadid.my.id/santri')
+    .replace(/{{pondok}}/g, CONFIG.pesantren_nama||'Pondok Pesantren An-Nur');
 }
 function getDefaultWATemplate(){
-  return `Assalamu'alaikum Wr. Wb. 🌿\n\nKepada Yth.\nOrang Tua / Wali Santri *{{nama}}*\n\nBerikut informasi tagihan bulan *{{bulan}}*:\n\n{{rincian}}\n\n*Total: {{total}}*\n\nMohon segera dilunasi.\n\nJazakumullahu Khairan 🙏\n*{{pondok}}*`;
+  return `Assalamu'alaikum Wr. Wb. 🌿\n\nKepada Yth.\nOrang Tua / Wali Santri *{{nama}}*\n\nBerikut informasi tagihan bulan *{{bulan}}*:\n\n{{rincian}}\n\n*Total: {{total}}*\n\nMohon segera dilunasi.\n\nCek tagihan/tunggakan secara langsung di:\n🔗 {{link}}\n\nJazakumullahu Khairan 🙏\n*{{pondok}}*`;
 }
 function kirimWASantri(santriId, bulan){
   const s=getSantriById(santriId)||{};
@@ -5131,19 +5144,67 @@ function kirimWASantri(santriId, bulan){
   window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`,'_blank');
 }
 function kirimWABelumBayar(){
-  bukaWAMassal();
+  bukaWAMassal('tagihan');
 }
-function bukaWAMassal(){
+function getTagihanForWAMassal(source){
+  // Baca filter dari tab yang aktif (tagihan atau rekap)
+  let asramaF='', tahunF='', bulanF='', kobongF='', kelasF='', waliF='';
+  if(source==='tagihan'){
+    asramaF=document.getElementById('filter-asrama-tagihan')?.value||'';
+    tahunF=document.getElementById('filter-tahun-tagihan')?.value||'';
+    bulanF=document.getElementById('filter-bulan-tagihan')?.value||'';
+    kobongF=document.getElementById('filter-kobong-tagihan')?.value||'';
+    kelasF=document.getElementById('filter-kelas-tagihan')?.value||'';
+    waliF=document.getElementById('filter-wali-tagihan')?.value||'';
+  } else if(source==='rekap'){
+    asramaF=document.getElementById('filter-asrama-rekap')?.value||'';
+    tahunF=document.getElementById('filter-tahun-rekap')?.value||'';
+    bulanF=document.getElementById('filter-bulan-rekap')?.value||'';
+    kobongF=document.getElementById('filter-kobong-rekap')?.value||'';
+    kelasF=document.getElementById('filter-kelas-rekap')?.value||'';
+    waliF=document.getElementById('filter-wali-rekap')?.value||'';
+  }
+  return getTagihanFiltered().filter(t=>{
+    const s=getSantriById(t.santri_id)||{};
+    if(t.status==='lunas') return false;
+    if(asramaF && String(s.kobong?.asrama_id||'')!==asramaF) return false;
+    if(tahunF && !(t.bulan||'').endsWith(tahunF)) return false;
+    if(bulanF && (t.bulan||'')!==bulanF) return false;
+    if(kobongF && String(s.kobong_id||'')!==kobongF) return false;
+    if(kelasF && (s.kelas||'')!==kelasF) return false;
+    if(waliF && (s.created_by||'')!==waliF) return false;
+    return true;
+  });
+}
+
+function bukaWAMassal(source){
+  source = source || 'tagihan';
   const bulanPilih = document.getElementById('wa-bulan')?.value || '';
   const bulan = bulanPilih || bulanAktif();
-  const belum=getTagihanFiltered().filter(t=>t.status!=='lunas'&&(t.bulan||'')==bulan);
+  const belum = getTagihanForWAMassal(source);
+  // Jika tidak ada filter bulan aktif, filter by bulan aktif
+  const filtered = belum.filter(t=> bulanPilih ? true : (t.bulan||'')==bulan);
   const santriMap={};
-  belum.forEach(t=>{ if(!santriMap[t.santri_id]) santriMap[t.santri_id]=[]; santriMap[t.santri_id].push(t); });
-  let html='';
+  filtered.forEach(t=>{ if(!santriMap[t.santri_id]) santriMap[t.santri_id]=[]; santriMap[t.santri_id].push(t); });
+
+  // Info filter aktif
+  const filterInfo = [];
+  const src = source==='rekap' ? 'rekap' : 'tagihan';
+  const kb = document.getElementById(`filter-kobong-${src}`)?.selectedOptions[0]?.text;
+  const as = document.getElementById(`filter-asrama-${src}`)?.selectedOptions[0]?.text;
+  const kl = document.getElementById(`filter-kelas-${src}`)?.value;
+  const bl = document.getElementById(`filter-bulan-${src}`)?.value || bulan;
+  if(kb && kb!=='Semua Kobong') filterInfo.push(`Kobong: ${kb}`);
+  if(as && as!=='Semua Asrama') filterInfo.push(`Asrama: ${as}`);
+  if(kl) filterInfo.push(`Kelas: ${kl}`);
+  if(bl) filterInfo.push(`Bulan: ${bl}`);
+
+  let html = filterInfo.length ? `<div style="font-size:11px;color:var(--text-l);margin-bottom:10px;padding:6px 10px;background:var(--bg2);border-radius:8px">🔧 Filter aktif: ${filterInfo.join(' · ')}</div>` : '';
   Object.entries(santriMap).forEach(([sid,tags])=>{
     const s=getSantriById(sid)||{};
     const total=tags.reduce((a,t)=>a+Number(t.nominal)-Number(t.nominal_bayar||0),0);
     const hasWA=!!(s.no_wa);
+    const bulanTag = tags.map(t=>t.bulan).filter(Boolean).join(', ') || bulan;
     html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);${hasWA?'':'opacity:.5'}">
       <div>
         <div style="font-weight:600;font-size:13px">${s.nama||sid}</div>
@@ -5151,11 +5212,13 @@ function bukaWAMassal(){
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:13px;font-weight:700;color:var(--red)">${fmtRp(total)}</span>
-        ${hasWA?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${sid}','${bulan}')">📱 Kirim</button>`:'<span style="font-size:11px;color:var(--text-l)">No WA N/A</span>'}
+        ${hasWA?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${sid}','${bulanTag.split(',')[0].trim()}')">📱 Kirim</button>`:'<span style="font-size:11px;color:var(--text-l)">📵</span>'}
       </div>
     </div>`;
   });
-  document.getElementById('wa-list').innerHTML=html||`<div class="empty"><span class="ei">✅</span><p>Semua sudah bayar untuk bulan ${bulan}!</p></div>`;
+  document.getElementById('wa-list').innerHTML=html||`<div class="empty"><span class="ei">✅</span><p>Tidak ada tunggakan untuk filter yang dipilih!</p></div>`;
+  // Simpan source untuk kirimWASemua
+  document.getElementById('mo-wa-massal').dataset.source = source;
   openMo('mo-wa-massal');
 }
 // State WA antrian
@@ -5164,10 +5227,12 @@ let _waMassalIdx = 0;
 let _waMassalBulan = '';
 
 function kirimWASemua(){
+  const source = document.getElementById('mo-wa-massal')?.dataset.source || 'tagihan';
   const bulanPilih = document.getElementById('wa-bulan')?.value || '';
   const bulan = bulanPilih || bulanAktif();
-  const belum = getTagihanFiltered().filter(t=>t.status!=='lunas'&&(t.bulan||'')==bulan);
-  const santriIds = [...new Set(belum.map(t=>t.santri_id))];
+  const belum = getTagihanForWAMassal(source);
+  const filtered = belum.filter(t=> bulanPilih ? true : (t.bulan||'')==bulan);
+  const santriIds = [...new Set(filtered.map(t=>t.santri_id))];
   const adaWA = santriIds.filter(sid=>{ const s=getSantriById(sid)||{}; return !!(s.no_wa); });
   const tanpaWA = santriIds.length - adaWA.length;
 
