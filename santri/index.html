@@ -6938,6 +6938,27 @@ function getDeviceLabel(){
   return br ? `${dev} · ${br}` : dev;
 }
 
+// Chrome/Edge (Android) sejak versi 110 menyembunyikan model HP asli dari navigator.userAgent
+// (selalu jadi "Android 10; K") demi privasi. Model asli cuma bisa didapat lewat
+// User-Agent Client Hints API (getHighEntropyValues), yang sifatnya async & cuma ada di Chromium.
+let _cachedDeviceLabel = null;
+async function getDeviceLabelAsync(){
+  if(_cachedDeviceLabel) return _cachedDeviceLabel;
+  const br = parseBrowserName(navigator.userAgent||'');
+  try{
+    if(navigator.userAgentData?.getHighEntropyValues){
+      const uaCh = await navigator.userAgentData.getHighEntropyValues(['model']);
+      if(uaCh?.model){
+        _cachedDeviceLabel = br ? `📱 ${uaCh.model} · ${br}` : `📱 ${uaCh.model}`;
+        return _cachedDeviceLabel;
+      }
+    }
+  }catch(e){}
+  // Fallback: browser lama / Safari / Firefox yang tidak dukung Client Hints
+  _cachedDeviceLabel = getDeviceLabel();
+  return _cachedDeviceLabel;
+}
+
 // ===== PERSISTENT LOGIN =====
 const PERSIST_KEY = 'siujang_session';
 
@@ -6984,7 +7005,7 @@ async function updateActivity(isOnline){
       pengurus_username: SESSION.user.username||'',
       pengurus_nama: SESSION.user.nama||'',
       pengurus_role: SESSION.role,
-      device_name: getDeviceLabel(),
+      device_name: await getDeviceLabelAsync(),
       user_agent: navigator.userAgent||'',
       last_seen: new Date().toISOString(),
       is_online: isOnline
