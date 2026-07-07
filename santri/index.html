@@ -7439,8 +7439,13 @@ async function nkTerapkanNaikKelas(){
   const tujuan = (document.getElementById('nk-kelas-tujuan')?.value||'').trim();
   const cnt = nkKelasSelectedIds.size;
   if(!tujuan||!cnt){ toast('Pilih santri dan isi kelas tujuan!',false); return; }
+  if(_isLoading) return;
 
   konfirm(`Ubah kelas <strong>${cnt} santri</strong> menjadi <strong>Kelas ${tujuan}</strong>?`, async()=>{
+    const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
+    showLoadingOverlay('Menerapkan naik kelas...', `Memproses <strong>${cnt} santri</strong>.<br>Harap tunggu, jangan klik tombol lain.`);
+    setLoading(true, _lBtn);
+    try {
     const ids = [...nkKelasSelectedIds];
     const targetSantri = ids.map(id=>ALL_SANTRI.find(s=>s.id===id)).filter(Boolean);
     const {error} = await SB.from('santri').update({kelas:tujuan, catatan:tujuan}).in('id',ids);
@@ -7456,6 +7461,8 @@ async function nkTerapkanNaikKelas(){
     resetAllFilters();
     nkInitKelasFilter();
     nkRenderKelasList();
+    } catch(e){ toast('Gagal: '+e.message,false); }
+    finally { setLoading(false, _lBtn); }
   }, 'lainnya');
 }
 
@@ -7569,6 +7576,7 @@ async function nkTerapkanPindahKobong(){
   const tujuanId = parseInt(document.getElementById('nk-kobong-tujuan')?.value)||0;
   const cnt = nkSelectedIds.size;
   if(!tujuanId||!cnt){ toast('Pilih santri dan kobong tujuan!',false); return; }
+  if(_isLoading) return;
   const kTujuan = ALL_KOBONG.find(k=>k.id===tujuanId);
 
   // Cek apakah ada santri yang sudah di kobong tujuan
@@ -7576,6 +7584,10 @@ async function nkTerapkanPindahKobong(){
   const pesanTambahan = sudahDisana.length ? `<br><small style="color:var(--gold)">(${sudahDisana.length} santri sudah di kobong ini, akan dilewati)</small>` : '';
 
   konfirm(`Pindahkan <strong>${cnt} santri</strong> ke kobong <strong>${kTujuan?.nama}</strong>?${pesanTambahan}`, async()=>{
+    const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
+    showLoadingOverlay('Memindahkan kobong...', `Memproses <strong>${cnt} santri</strong>.<br>Harap tunggu, jangan klik tombol lain.`);
+    setLoading(true, _lBtn);
+    try {
     const ids = [...nkSelectedIds].filter(id=>{
       const s = ALL_SANTRI.find(x=>x.id===id);
       return s && s.kobong_id !== tujuanId;
@@ -7590,6 +7602,8 @@ async function nkTerapkanPindahKobong(){
     nkRenderPindahList();
     nkUpdateBadge();
     document.getElementById('nk-kobong-tujuan').value='';
+    } catch(e){ toast('Gagal: '+e.message,false); }
+    finally { setLoading(false, _lBtn); }
   }, 'hapus');
 }
 
@@ -7742,6 +7756,7 @@ async function nkGantiWaliMassal(){
   const ke = document.getElementById('wali-ke')?.value||'';
   const cnt = nkWaliSelectedIds.size;
   if(!ke||!cnt){ toast('Pilih santri dan pengurus tujuan!',false); return; }
+  if(_isLoading) return;
   const namaKe = ALL_PENGURUS.find(p=>p.username===ke)?.nama||ke;
 
   // Cek apakah ada santri yang sudah di wali tujuan
@@ -7749,6 +7764,10 @@ async function nkGantiWaliMassal(){
   const pesanTambahan = sudahDisana.length ? `<br><small style="color:var(--gold)">(${sudahDisana.length} santri sudah di wali ini, akan dilewati)</small>` : '';
 
   konfirm(`Pindahkan <strong>${cnt} santri</strong> ke wali <strong>${namaKe}</strong>?${pesanTambahan}`, async()=>{
+    const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
+    showLoadingOverlay('Mengganti wali...', `Memproses <strong>${cnt} santri</strong>.<br>Harap tunggu, jangan klik tombol lain.`);
+    setLoading(true, _lBtn);
+    try {
     const ids = [...nkWaliSelectedIds].filter(id=>{
       const s = ALL_SANTRI.find(x=>x.id===id);
       return s && s.created_by !== ke;
@@ -7761,6 +7780,8 @@ async function nkGantiWaliMassal(){
     await loadAllData();
     resetAllFilters();
     nkInitWaliSelects();
+    } catch(e){ toast('Gagal: '+e.message,false); }
+    finally { setLoading(false, _lBtn); }
   }, 'lainnya');
 }
 
@@ -7828,6 +7849,11 @@ function nkHighlightRow(id){
 async function nkSimpanSatu(id){
   const p = nkPerubahanIndividu[id];
   if(!p||(!p.kelas&&!p.kobong_id)){ toast('Tidak ada perubahan untuk santri ini.',false); return; }
+  if(_isLoading) return;
+  const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
+  showLoadingOverlay('Menyimpan perubahan...','Data santri sedang disimpan.');
+  setLoading(true, _lBtn);
+  try {
   const upd = {};
   if(p.kelas!==undefined) upd.kelas = p.kelas;
   if(p.kobong_id!==undefined) upd.kobong_id = p.kobong_id;
@@ -7838,11 +7864,18 @@ async function nkSimpanSatu(id){
   await loadAllData();
   resetAllFilters();
   nkRenderTabel();
+  } catch(e){ toast('Gagal: '+e.message,false); }
+  finally { setLoading(false, _lBtn); }
 }
 
 async function nkSimpanSemuaIndividu(){
   const ids = Object.keys(nkPerubahanIndividu);
   if(!ids.length){ toast('Belum ada perubahan yang dilakukan.',false); return; }
+  if(_isLoading) return;
+  const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
+  showLoadingOverlay('Menyimpan perubahan...', `Memproses <strong>${ids.length} santri</strong>.<br>Harap tunggu, jangan klik tombol lain.`);
+  setLoading(true, _lBtn);
+  try {
   let berhasil=0;
   for(const id of ids){
     const p = nkPerubahanIndividu[id];
@@ -7856,6 +7889,8 @@ async function nkSimpanSemuaIndividu(){
   await loadAllData();
   resetAllFilters();
   nkRenderTabel();
+  } catch(e){ toast('Gagal: '+e.message,false); }
+  finally { setLoading(false, _lBtn); }
 }
 
 
