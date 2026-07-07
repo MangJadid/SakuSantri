@@ -1887,7 +1887,6 @@ function switchRole(r){
     if(ditolak){
       SESSION = null;
       clearPersistentSession();
-      clearDeviceSessionId();
       if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
       document.getElementById('pg-loading').style.display='none';
       // lanjut ke tampilan login biasa di bawah (tidak return)
@@ -2105,6 +2104,7 @@ async function loginPengurus(){
     const detectedRole = (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
     showLoginOverlay('Selamat datang!', pgData.nama||user);
     SESSION = {role: detectedRole, user: pgData};
+    _freshLoginPending = true;
     enterApp();
     return;
   }
@@ -2132,6 +2132,7 @@ async function loginPengurus(){
   const detectedRole = (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
   showLoginOverlay('Selamat datang!', pgData.nama||user);
   SESSION = {role: detectedRole, user: pgData};
+  _freshLoginPending = true;
   enterApp();
 }
 
@@ -2156,6 +2157,7 @@ async function loginSuper(){
     let sp = {}; try{ sp = JSON.parse(pd?.value||'{}'); }catch(e){}
     showLoginOverlay('Selamat datang, Admin!', sp.nama||'Kang Admin');
     SESSION = {role:'super', user:{id:'super', username:user, nama:sp.nama||'Kang Admin', foto_url:sp.foto_url||null, no_wa:sp.no_wa||''}};
+    _freshLoginPending = true;
     enterApp();
     return;
   }
@@ -2184,6 +2186,7 @@ async function loginSuper(){
   let sp2 = {}; try{ sp2 = JSON.parse(pd2?.value||'{}'); }catch(e){}
   showLoginOverlay('Selamat datang, Admin!', sp2.nama||'Kang Admin');
   SESSION = {role:'super', user:{id:'super', username:storedUser, nama:sp2.nama||'Kang Admin', foto_url:sp2.foto_url||null, no_wa:sp2.no_wa||''}};
+  _freshLoginPending = true;
   enterApp();
 }
 
@@ -2345,26 +2348,11 @@ async function loadSantriForRole(){
   if(SESSION.role==='pengurus'){
     const username = SESSION.user?.username||'';
     if(!username) return [];
-    // Ambil kobong yang dimiliki pengurus
-    const kobongIds = JSON.parse(SESSION.user?.kobong_ids||'[]').map(Number).filter(Boolean);
 
-    // Load santri berdasarkan created_by = username (santri baru setelah fix)
-    const q1 = SB.from('santri').select('*,kobong(id,nama)').eq('created_by', username).eq('is_arsip',false).order('nama');
-    const {data:d1, error:e1} = await q1;
-    if(e1) throw e1;
-
-    // Load santri berdasarkan kobong_ids yang dimiliki pengurus (data lama created_by=kangadmin)
-    let d2 = [];
-    if(kobongIds.length>0){
-      const {data, error:e2} = await SB.from('santri').select('*,kobong(id,nama)').in('kobong_id', kobongIds).eq('is_arsip',false).order('nama');
-      if(e2) throw e2;
-      d2 = data||[];
-    }
-
-    // Gabung & deduplikasi berdasarkan id
-    const map = new Map();
-    [...(d1||[]), ...d2].forEach(s=>map.set(s.id, s));
-    return [...map.values()].sort((a,b)=>a.nama.localeCompare(b.nama));
+    // Santri yang kelihatan HANYA yang wali-nya (created_by) = pengurus ini
+    const {data, error} = await SB.from('santri').select('*,kobong(id,nama)').eq('created_by', username).eq('is_arsip',false).order('nama');
+    if(error) throw error;
+    return data||[];
   }
   return [];
   } catch(e){
@@ -2387,16 +2375,8 @@ async function loadSantriForRole(){
       if(SESSION.role==='pengurus'){
         const username = SESSION.user?.username||'';
         if(!username) return [];
-        const kobongIds = JSON.parse(SESSION.user?.kobong_ids||'[]').map(Number).filter(Boolean);
-        const {data:d1} = await SB.from('santri').select('*,kobong(id,nama)').eq('created_by', username).order('nama');
-        let d2 = [];
-        if(kobongIds.length>0){
-          const {data} = await SB.from('santri').select('*,kobong(id,nama)').in('kobong_id', kobongIds).order('nama');
-          d2 = data||[];
-        }
-        const map = new Map();
-        [...(d1||[]), ...d2].forEach(s=>map.set(s.id, s));
-        return [...map.values()].sort((a,b)=>a.nama.localeCompare(b.nama));
+        const {data} = await SB.from('santri').select('*,kobong(id,nama)').eq('created_by', username).order('nama');
+        return data||[];
       }
     } catch(e2){ console.error('loadSantriForRole gagal total:', e2); }
     return [];
@@ -4113,15 +4093,22 @@ async function simpanSantri(){
       const upd={nama,kobong_id,saldo:saldoBenar,pin,kelas,catatan:kelas,dapur_id,no_wa:no_wa||null,kecamatan:kecamatan||null,kota:kota||null,jenis_kelamin};
       if(fotoUrlBaru!==undefined) upd.foto_url = fotoUrlBaru;
       // Super/sekretaris/sekretariat bisa ubah wali kobong (created_by)
+      let waliBaru = null, waliBerubah = false;
       if(SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
         const cb = document.getElementById('s-created-by')?.value||'';
-        upd.created_by = cb || 'kangadmin';
+        waliBaru = cb || 'kangadmin';
+        upd.created_by = waliBaru;
+        waliBerubah = (sLama?.created_by||'kangadmin') !== waliBaru;
       }
       const {error}=await SB.from('santri').update(upd).eq('id',id);
       if(error){ toast('Gagal: '+error.message,false); return; }
       toast('Data santri diperbarui!');
       if(sLama){
         const diffSemua = {..._diffFields(SANTRI_FIELD_APPROVAL, sLama, newVals), ..._diffFields(SANTRI_FIELD_BEBAS, sLama, newVals)};
+        if(waliBerubah){
+          const namaLabel = (u)=> u==='kangadmin' || !u ? 'Kang Admin' : (ALL_PENGURUS.find(p=>p.username===u)?.nama || u);
+          diffSemua.created_by = { label:'Wali Santri/Pengurus', lama:namaLabel(sLama?.created_by), baru:namaLabel(waliBaru) };
+        }
         await catatRiwayatSantri({santri_id:id, santri_nama:nama, asrama_id:getAsramaIdBySantri({kobong_id})||getAsramaIdBySantri(sLama), jenis:'edit', diffObj:diffSemua, sumber:'langsung'});
       }
     }
@@ -6856,7 +6843,6 @@ function doLogout(){
   if(SESSION && SESSION.role!=='ortu' && SESSION.user?.id){
     SB.from('login_sessions').delete().eq('session_id', getDeviceSessionId()).then(()=>{}).catch(()=>{});
   }
-  clearDeviceSessionId();
   clearPersistentSession();
   if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
   sessionStorage.removeItem('greeting_idx');
@@ -6920,6 +6906,7 @@ document.getElementById('mo-pengurus').addEventListener('click',function(e){
 });
 // ===== DETEKSI DEVICE (nama model, bukan cuma "HP"/"PC") =====
 const DEVICE_SID_KEY = 'siujang_device_sid';
+let _freshLoginPending = false; // true sesaat setelah login manual berhasil (username+password baru diverifikasi)
 
 function clearDeviceSessionId(){
   try{ localStorage.removeItem(DEVICE_SID_KEY); }catch(e){}
@@ -6982,6 +6969,8 @@ const DEVICE_MODEL_MAP = [
   // [regex kode model, nama familiar]
   [/^22111317P[GI]$/i, 'POCO X5 5G'],
   [/^22111317[IG]$/i, 'Redmi Note 12 5G'],
+  [/^CPH2727$/i, 'Oppo A5'],
+  [/^RMX3630$/i, 'Realme 10'],
 ];
 
 function translateModelCode(code){
@@ -7049,11 +7038,11 @@ function clearPersistentSession(){
 let activityInterval = null;
 let isPageVisible = true;
 
-async function updateActivity(isOnline){
+async function updateActivity(isOnline, isFreshLogin){
   if(!SESSION || SESSION.role==='ortu' || !SESSION.user?.id) return;
   try{
     const sid = getDeviceSessionId();
-    await SB.from('login_sessions').upsert({
+    const payload = {
       session_id: sid,
       pengurus_id: String(SESSION.user.id),
       pengurus_username: SESSION.user.username||'',
@@ -7063,7 +7052,14 @@ async function updateActivity(isOnline){
       user_agent: navigator.userAgent||'',
       last_seen: new Date().toISOString(),
       is_online: isOnline
-    },{onConflict:'session_id'});
+    };
+    if(isFreshLogin){
+      // Login manual baru saja berhasil (username+password diverifikasi) — aktifkan
+      // ulang baris device ini (reset revoked & waktu login), bukan bikin baris baru.
+      payload.revoked = false;
+      payload.created_at = new Date().toISOString();
+    }
+    await SB.from('login_sessions').upsert(payload, {onConflict:'session_id'});
   } catch(e){}
 }
 
@@ -7091,8 +7087,9 @@ async function checkForceLogout(){
 
 function startActivityTracking(){
   if(!SESSION || SESSION.role==='ortu') return;
-  updateActivity(true);
-  checkForceLogout(); // cek langsung saat app dibuka/refresh, jangan tunggu 60 detik pertama
+  const wasFreshLogin = _freshLoginPending;
+  _freshLoginPending = false;
+  updateActivity(true, wasFreshLogin).then(()=>{ checkForceLogout(); }); // tunggu reaktivasi selesai dulu baru cek
   activityInterval = setInterval(()=>{
     updateActivity(isPageVisible);
     checkForceLogout(); // lalu cek ulang tiap menit
@@ -7773,8 +7770,14 @@ async function nkGantiWaliMassal(){
       return s && s.created_by !== ke;
     });
     if(!ids.length){ toast('Semua santri sudah di wali tujuan!',false); return; }
+    const targetSantri = ids.map(id=>ALL_SANTRI.find(s=>s.id===id)).filter(Boolean);
     const {error} = await SB.from('santri').update({created_by:ke}).in('id',ids);
     if(error){ toast('Gagal: '+error.message,false); return; }
+    const namaLabel = (u)=> u==='kangadmin' || !u ? 'Kang Admin' : (ALL_PENGURUS.find(p=>p.username===u)?.nama || u);
+    for(const s of targetSantri){
+      const diffObj = {created_by:{label:'Wali Santri/Pengurus', lama:namaLabel(s.created_by), baru:namaLabel(ke)}};
+      await catatRiwayatSantri({santri_id:s.id, santri_nama:s.nama, asrama_id:getAsramaIdBySantri(s), jenis:'edit', diffObj, sumber:'langsung'});
+    }
     toast(`✅ ${ids.length} santri berhasil dipindahkan ke ${namaKe}`);
     nkWaliSelectedIds.clear();
     await loadAllData();
