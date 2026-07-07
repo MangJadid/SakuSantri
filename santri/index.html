@@ -6942,6 +6942,25 @@ function getDeviceLabel(){
 // (selalu jadi "Android 10; K") demi privasi. Model asli cuma bisa didapat lewat
 // User-Agent Client Hints API (getHighEntropyValues), yang sifatnya async & cuma ada di Chromium.
 let _cachedDeviceLabel = null;
+// Tabel terjemahan kode model teknis -> nama familiar (Xiaomi/Redmi/POCO, Samsung, dll
+// sering kirim kode internal pabrik, bukan nama jual). TIDAK LENGKAP — cuma yang paling
+// umum/terverifikasi. Kalau ketemu kode baru yang belum ada di sini, tetap tampil kode
+// aslinya (aman, tidak pernah salah label), tinggal tambahkan ke tabel ini kalau mau.
+// Cara nambah: cari "kode model" itu di Google (mis. "22111317PG xiaomi"), lalu tambah baris baru.
+const DEVICE_MODEL_MAP = [
+  // [regex kode model, nama familiar]
+  [/^22111317P[GI]$/i, 'POCO X5 5G'],
+  [/^22111317[IG]$/i, 'Redmi Note 12 5G'],
+];
+
+function translateModelCode(code){
+  if(!code) return null;
+  for(const [re, nama] of DEVICE_MODEL_MAP){
+    if(re.test(code.trim())) return nama;
+  }
+  return null;
+}
+
 async function getDeviceLabelAsync(){
   if(_cachedDeviceLabel) return _cachedDeviceLabel;
   const br = parseBrowserName(navigator.userAgent||'');
@@ -6949,7 +6968,11 @@ async function getDeviceLabelAsync(){
     if(navigator.userAgentData?.getHighEntropyValues){
       const uaCh = await navigator.userAgentData.getHighEntropyValues(['model']);
       if(uaCh?.model){
-        _cachedDeviceLabel = br ? `📱 ${uaCh.model} · ${br}` : `📱 ${uaCh.model}`;
+        const nama = translateModelCode(uaCh.model);
+        // Kalau ketemu di tabel terjemahan: tampilkan nama familiar + kode asli di kurung
+        // Kalau tidak: tampilkan kode aslinya apa adanya (tidak pernah salah label)
+        const label = nama ? `${nama} (${uaCh.model})` : uaCh.model;
+        _cachedDeviceLabel = br ? `📱 ${label} · ${br}` : `📱 ${label}`;
         return _cachedDeviceLabel;
       }
     }
@@ -7037,14 +7060,16 @@ async function checkForceLogout(){
 function startActivityTracking(){
   if(!SESSION || SESSION.role==='ortu') return;
   updateActivity(true);
+  checkForceLogout(); // cek langsung saat app dibuka/refresh, jangan tunggu 60 detik pertama
   activityInterval = setInterval(()=>{
     updateActivity(isPageVisible);
-    checkForceLogout(); // cek setiap menit
+    checkForceLogout(); // lalu cek ulang tiap menit
   }, 60000); // ping tiap 1 menit
 
   document.addEventListener('visibilitychange',()=>{
     isPageVisible = !document.hidden;
     updateActivity(isPageVisible);
+    if(isPageVisible) checkForceLogout(); // cek juga tiap kali tab/app kembali aktif
   });
 }
 
@@ -7854,11 +7879,12 @@ async function renderMonitor(){
     });
 
     // Stats cards (dihitung per device/sesi)
-    const onlineCount = entries.filter(e=>e.statusKey==='online').length;
-    const idleCount = entries.filter(e=>e.statusKey==='idle').length;
-    const offlineCount = entries.filter(e=>e.statusKey==='offline').length;
-    const totalCount = entries.length;
-    const totalPengurus = new Set(entries.map(e=>e.pengurus_id)).size;
+    const activeEntries = entries.filter(e=>!e.revoked);
+    const onlineCount = activeEntries.filter(e=>e.statusKey==='online').length;
+    const idleCount = activeEntries.filter(e=>e.statusKey==='idle').length;
+    const offlineCount = activeEntries.filter(e=>e.statusKey==='offline').length;
+    const totalCount = activeEntries.length;
+    const totalPengurus = new Set(activeEntries.map(e=>e.pengurus_id)).size;
 
     document.getElementById('monitor-stats').innerHTML = `
       <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px">
@@ -7929,7 +7955,7 @@ async function renderMonitor(){
               <div style="width:34px;height:34px;border-radius:50%;background:var(--green-p);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green);font-size:14px;flex-shrink:0">${(g.nama||'?')[0].toUpperCase()}</div>
               <div>
                 <div style="font-weight:600;font-size:13px">${g.nama||'—'}</div>
-                <div>${roleBadge} <span style="font-size:11px;color:var(--text-l)">${g.sesi.length} device</span></div>
+                <div>${roleBadge} <span style="font-size:11px;color:var(--text-l)">${g.sesi.filter(s=>!s.revoked).length} device aktif</span></div>
               </div>
             </div>
             ${g.role!=='super'?`<div style="display:flex;gap:5px;flex-wrap:wrap">
