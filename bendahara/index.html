@@ -1189,6 +1189,33 @@ _updateOfflineScreen();
       </div>
     </div>
 
+    <!-- ===== TF ADMIN ===== -->
+    <div class="sec" id="sec-tfadmin">
+      <div class="panel">
+        <div class="ph">
+          <h2>💸 TF Admin</h2>
+          <button class="btn btn-p btn-sm" onclick="bukaModalTFAdmin()">➕ Tambah TF</button>
+        </div>
+        <div class="pb">
+          <!-- Filter -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <input class="search-inp" id="cari-tf" placeholder="🔍 Cari nama santri..." oninput="renderTFAdmin()" style="flex:1;min-width:160px">
+            <select id="filter-tahun-tf" onchange="fillBulanByTahun('tf');renderTFAdmin()"><option value="">Semua Tahun</option></select>
+            <select id="filter-bulan-tf" onchange="renderTFAdmin()"><option value="">Semua Bulan</option></select>
+          </div>
+          <!-- Rekap Total -->
+          <div id="tf-rekap-total" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px"></div>
+          <!-- Tabel -->
+          <div id="tf-list"></div>
+          <div id="tf-empty" class="empty" style="display:none"><span class="ei">💸</span><p>Belum ada data TF Admin.</p></div>
+          <!-- Tombol Print -->
+          <div style="margin-top:16px;text-align:right">
+            <button class="btn btn-b btn-sm" onclick="printTFAdmin()">🖨️ Print Rekap</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== RIWAYAT ===== -->
     <div class="sec" id="sec-riwayat">
       <div class="panel">
@@ -1798,6 +1825,7 @@ _updateOfflineScreen();
               </label>
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);padding:5px 0">
                 <input type="checkbox" name="akun-fitur" value="riwayat" style="accent-color:var(--green);width:15px;height:15px"> 📜 Riwayat
+                <input type="checkbox" name="akun-fitur" value="tfadmin" style="accent-color:var(--green);width:15px;height:15px"> 💸 TF Admin
               </label>
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);padding:5px 0">
                 <input type="checkbox" name="akun-fitur" value="import" style="accent-color:var(--green);width:15px;height:15px"> 📥 Import
@@ -1833,6 +1861,76 @@ _updateOfflineScreen();
       <div id="wa-list" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
       <div style="margin-top:14px">
         <button class="btn btn-wa" style="width:100%;justify-content:center" onclick="kirimWASemua()">📱 Kirim ke Semua</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TF ADMIN -->
+<div class="mo" id="mo-tf-admin">
+  <div class="mo-box" style="max-width:480px">
+    <div class="mo-h"><h3 id="mo-tf-title">➕ Tambah TF Admin</h3><button class="mo-cls" onclick="closeMo('mo-tf-admin')">✕</button></div>
+    <div class="mo-b">
+      <input type="hidden" id="tf-edit-id">
+      <div class="fg">
+        <label>Santri</label>
+        <select id="tf-santri-id" onchange="tfAutoFillTagihan()">
+          <option value="">-- Pilih Santri --</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Bulan</label>
+        <select id="tf-bulan"><option value="">-- Pilih Bulan --</option></select>
+      </div>
+      <div class="fg">
+        <label>Total TF dari Ortu (Rp)</label>
+        <input type="number" id="tf-total" placeholder="0" oninput="tfHitungSisa()" style="font-size:16px;font-weight:700">
+      </div>
+      <div style="background:var(--bg2);border-radius:12px;padding:14px;margin:8px 0">
+        <div style="font-size:12px;font-weight:700;color:var(--text-m);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Rincian Penggunaan</div>
+        <div class="fg">
+          <label>🍽️ Uang Makan (Rp) <span id="tf-makan-hint" style="color:var(--green);font-size:11px"></span></label>
+          <input type="number" id="tf-makan" placeholder="0" oninput="tfHitungSisa()">
+        </div>
+        <div class="fg">
+          <label>⚡ Listrik (Rp) <span id="tf-listrik-hint" style="color:var(--green);font-size:11px"></span></label>
+          <input type="number" id="tf-listrik" placeholder="0" oninput="tfHitungSisa()">
+        </div>
+        <div class="fg">
+          <label>📚 SPP Sekolah (Rp)</label>
+          <input type="number" id="tf-spp" placeholder="0" oninput="tfHitungSisa()">
+        </div>
+        <div class="fg">
+          <label>💵 Uang Jajan (Rp)</label>
+          <input type="number" id="tf-jajan" placeholder="0" oninput="tfHitungSisa()">
+        </div>
+        <!-- Sisa -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:8px;margin-top:6px" id="tf-sisa-box">
+          <span style="font-size:13px;font-weight:600">Sisa / Kelebihan</span>
+          <span id="tf-sisa-display" style="font-size:16px;font-weight:700">Rp 0</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Catatan (opsional)</label>
+        <input type="text" id="tf-catatan" placeholder="Misal: TF via BRI, sudah konfirmasi">
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn-p" style="flex:1;justify-content:center" onclick="simpanTFAdmin()">💾 Simpan</button>
+        <button class="btn btn-o" style="justify-content:center" onclick="closeMo('mo-tf-admin')">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRINT TF ADMIN -->
+<div class="mo" id="mo-print-tf">
+  <div class="mo-box" style="max-width:600px">
+    <div class="mo-h"><h3>🖨️ Print Rekap TF Admin</h3><button class="mo-cls" onclick="closeMo('mo-print-tf')">✕</button></div>
+    <div class="mo-b">
+      <div id="print-tf-content"></div>
+      <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-b" onclick="doPrintTF()">🖨️ Print</button>
+        <button class="btn btn-o" onclick="closeMo('mo-print-tf')">Tutup</button>
       </div>
     </div>
   </div>
@@ -1935,6 +2033,7 @@ function setLoadingProgress(current, total, subtitle=''){
 
 let SB, SESSION = null, CONFIG = {};
 let ALL_SANTRI = [], ALL_TAGIHAN = [], ALL_AKUN = [], ALL_AKSES = [], ALL_ASRAMA = [], ALL_KOBONG = [];
+let ALL_TF_ADMIN = [];
 let ACTIVE_DAPUR = null;
 let MONITOR_INTERVAL = null;
 let IMPORT_PARSED = [];
@@ -2202,19 +2301,21 @@ async function _loadAllDataCore(){
     SB.from('asrama').select('*').order('nama'),
     SB.from('kobong').select('*,asrama(id,nama)').order('nama'),
     SB.from('piutang_alumni').select('*').order('tgl_keluar',{ascending:false}),
+    SB.from('tf_admin').select('*').order('created_at',{ascending:false}),
   ];
   if(isAdmin){
     queries.push(SB.from('bendahara_users').select('id,username,nama_tampilan,role,dapur_id,foto_url,created_at').order('created_at'));
     queries.push(SB.from('bendahara_akses').select('*'));
   }
   const results = await Promise.all(queries);
-  const [r0,r1,r2,r3,r4,r5,r6] = results;
+  const [r0,r1,r2,r3,r4,r5,r6,r7] = results;
 
   ALL_ASRAMA = r2.data||[];
   ALL_KOBONG = r3.data||[];
   ALL_PIUTANG_ALUMNI = r4.data||[];
-  ALL_AKUN = r5?.data||[];
-  ALL_AKSES = r6?.data||[];
+  ALL_TF_ADMIN = r5.data||[];
+  ALL_AKUN = r6?.data||[];
+  ALL_AKSES = r7?.data||[];
 
   let santri = r0.data||[];
   if(!isAdmin && SESSION.akses_asrama && SESSION.akses_asrama.length>0){
@@ -2375,6 +2476,7 @@ function buildTabs(){
   if(hasAkses('rekap')) t+=tab('rekap','📊 Rekap Tunggakan');
   if(hasAkses('kelulusan')) t+=tab('kelulusan','🎓 Kelulusan');
   if(hasAkses('riwayat')) t+=tab('riwayat','📜 Riwayat');
+  if(hasAkses('tfadmin')) t+=tab('tfadmin','💸 TF Admin');
   if(hasAkses('import')) t+=tab('import','📥 Import');
   if(hasAkses('kobong')) t+=tab('kobong','🏠 Kobong');
   if(isAdmin){
@@ -2408,6 +2510,7 @@ function showTab(id){
   if(id==='rekap') renderRekap();
   if(id==='kelulusan') renderKelulusan();
   if(id==='riwayat') renderRiwayat();
+  if(id==='tfadmin') renderTFAdmin();
   if(id==='kobong') renderKobongBendahara();
   if(id==='manajemen') renderManajemenBendahara();
   if(id==='monitor') renderMonitor();
@@ -2484,7 +2587,7 @@ function fillSelects(){
   const tahunSet = new Set(bulanSorted.map(b=>b.split(' ')[1]).filter(Boolean));
   const tahunSorted = [...tahunSet].sort((a,b)=>parseInt(b)-parseInt(a));
   const tahunOpts = tahunSorted.map(t=>`<option value="${t}">${t}</option>`).join('');
-  ['filter-tahun-tagihan','filter-tahun-riwayat','filter-tahun-rekap'].forEach(id=>{
+  ['filter-tahun-tagihan','filter-tahun-riwayat','filter-tahun-rekap','filter-tahun-tf'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     el.innerHTML='<option value="">Semua Tahun</option>'+tahunOpts;
   });
@@ -5111,6 +5214,356 @@ function printSuratBebas(){
   const c=document.getElementById('surat-bebas-content').innerHTML;
   const w=window.open('','_blank');
   w.document.write('<html><head><style>body{font-family:"Times New Roman",serif;padding:40px;max-width:600px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>'+c+'</body></html>');
+  w.document.close(); w.print();
+}
+
+// ===== TF ADMIN =====
+function renderTFAdmin(){
+  const q=(document.getElementById('cari-tf')?.value||'').toLowerCase();
+  const tahunF=document.getElementById('filter-tahun-tf')?.value||'';
+  const bulanF=document.getElementById('filter-bulan-tf')?.value||'';
+
+  let data = ALL_TF_ADMIN.filter(tf=>{
+    if(q && !(tf.nama_santri||'').toLowerCase().includes(q)) return false;
+    if(tahunF && !(tf.bulan||'').endsWith(tahunF)) return false;
+    if(bulanF && (tf.bulan||'')!==bulanF) return false;
+    return true;
+  });
+
+  // Rekap total
+  const totalMasuk = data.reduce((s,tf)=>s+Number(tf.total_tf||0),0);
+  const totalMakan = data.reduce((s,tf)=>s+Number(tf.uang_makan||0),0);
+  const totalListrik = data.reduce((s,tf)=>s+Number(tf.listrik||0),0);
+  const totalSPP = data.reduce((s,tf)=>s+Number(tf.spp||0),0);
+  const totalJajan = data.reduce((s,tf)=>s+Number(tf.uang_jajan||0),0);
+  const totalSisa = data.reduce((s,tf)=>s+Number(tf.sisa||0),0);
+
+  const rekapEl = document.getElementById('tf-rekap-total');
+  if(rekapEl) rekapEl.innerHTML = `
+    <div style="background:var(--green-p);border:1.5px solid var(--green-b);border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">Total TF Masuk</div>
+      <div style="font-size:16px;font-weight:700;color:var(--green)">${fmtRp(totalMasuk)}</div>
+    </div>
+    <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">🍽️ Uang Makan</div>
+      <div style="font-size:16px;font-weight:700;color:#0369a1">${fmtRp(totalMakan)}</div>
+    </div>
+    <div style="background:#fefce8;border:1.5px solid #fde047;border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">⚡ Listrik</div>
+      <div style="font-size:16px;font-weight:700;color:#a16207">${fmtRp(totalListrik)}</div>
+    </div>
+    <div style="background:#fdf4ff;border:1.5px solid #e879f9;border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">📚 SPP</div>
+      <div style="font-size:16px;font-weight:700;color:#7e22ce">${fmtRp(totalSPP)}</div>
+    </div>
+    <div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">💵 Uang Jajan</div>
+      <div style="font-size:16px;font-weight:700;color:#c2410c">${fmtRp(totalJajan)}</div>
+    </div>
+    ${totalSisa!==0?`<div style="background:${totalSisa>0?'#f0fdf4':'#fef2f2'};border:1.5px solid ${totalSisa>0?'#bbf7d0':'#fecaca'};border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${totalSisa>0?'💰 Sisa/Kelebihan':'⚠️ Kekurangan'}</div>
+      <div style="font-size:16px;font-weight:700;color:${totalSisa>0?'var(--green)':'var(--red)'}">${fmtRp(Math.abs(totalSisa))}</div>
+    </div>`:''}
+  `;
+
+  const el = document.getElementById('tf-list');
+  const emptyEl = document.getElementById('tf-empty');
+  if(!data.length){ if(el) el.innerHTML=''; if(emptyEl) emptyEl.style.display='block'; return; }
+  if(emptyEl) emptyEl.style.display='none';
+
+  el.innerHTML = data.map(tf=>{
+    const sisa = Number(tf.sisa||0);
+    const tgl = tf.created_at ? new Date(tf.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    return `<div style="border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+            <strong style="font-size:14px">${tf.nama_santri||'—'}</strong>
+            <span class="badge badge-lunas">${tf.bulan}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-m);margin-bottom:6px">📅 ${tgl}${tf.catatan?' · 📝 '+tf.catatan:''}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${tf.uang_makan?`<span style="font-size:11px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:2px 8px;color:#0369a1">🍽️ ${fmtRp(tf.uang_makan)}</span>`:''}
+            ${tf.listrik?`<span style="font-size:11px;background:#fefce8;border:1px solid #fde047;border-radius:6px;padding:2px 8px;color:#a16207">⚡ ${fmtRp(tf.listrik)}</span>`:''}
+            ${tf.spp?`<span style="font-size:11px;background:#fdf4ff;border:1px solid #e879f9;border-radius:6px;padding:2px 8px;color:#7e22ce">📚 ${fmtRp(tf.spp)}</span>`:''}
+            ${tf.uang_jajan?`<span style="font-size:11px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:2px 8px;color:#c2410c">💵 ${fmtRp(tf.uang_jajan)}</span>`:''}
+            ${sisa!==0?`<span style="font-size:11px;background:${sisa>0?'#f0fdf4':'#fef2f2'};border:1px solid ${sisa>0?'#bbf7d0':'#fecaca'};border-radius:6px;padding:2px 8px;color:${sisa>0?'var(--green)':'var(--red)'}">
+              ${sisa>0?'💰 Sisa':'⚠️ Kurang'}: ${fmtRp(Math.abs(sisa))}</span>`:''}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:18px;font-weight:700;color:var(--green)">${fmtRp(tf.total_tf)}</div>
+          <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
+            <button class="btn btn-b btn-xs" onclick="editTFAdmin(${tf.id})">✏️</button>
+            <button class="btn btn-d btn-xs" onclick="hapusTFAdmin(${tf.id},'${(tf.nama_santri||'').replace(/'/g,'')}')">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function bukaModalTFAdmin(){
+  document.getElementById('tf-edit-id').value='';
+  document.getElementById('tf-santri-id').value='';
+  document.getElementById('tf-bulan').value='';
+  document.getElementById('tf-total').value='';
+  document.getElementById('tf-makan').value='';
+  document.getElementById('tf-listrik').value='';
+  document.getElementById('tf-spp').value='';
+  document.getElementById('tf-jajan').value='';
+  document.getElementById('tf-catatan').value='';
+  document.getElementById('tf-makan-hint').textContent='';
+  document.getElementById('tf-listrik-hint').textContent='';
+  document.getElementById('mo-tf-title').textContent='➕ Tambah TF Admin';
+  tfHitungSisa();
+  // Isi dropdown santri
+  const sel = document.getElementById('tf-santri-id');
+  sel.innerHTML='<option value="">-- Pilih Santri --</option>'+
+    [...ALL_SANTRI].sort((a,b)=>(a.nama||'').localeCompare(b.nama||'')).map(s=>
+      `<option value="${s.id}">${s.nama}</option>`
+    ).join('');
+  // Isi dropdown bulan
+  const bulanSel = document.getElementById('tf-bulan');
+  const bulanList = [...new Set(ALL_TAGIHAN.map(t=>t.bulan).filter(Boolean))].sort().reverse();
+  bulanSel.innerHTML='<option value="">-- Pilih Bulan --</option>'+bulanList.map(b=>`<option value="${b}">${b}</option>`).join('');
+  openMo('mo-tf-admin');
+}
+
+function editTFAdmin(id){
+  const tf = ALL_TF_ADMIN.find(t=>String(t.id)===String(id));
+  if(!tf) return;
+  bukaModalTFAdmin();
+  document.getElementById('tf-edit-id').value=tf.id;
+  document.getElementById('tf-santri-id').value=tf.santri_id||'';
+  document.getElementById('tf-bulan').value=tf.bulan||'';
+  document.getElementById('tf-total').value=tf.total_tf||'';
+  document.getElementById('tf-makan').value=tf.uang_makan||'';
+  document.getElementById('tf-listrik').value=tf.listrik||'';
+  document.getElementById('tf-spp').value=tf.spp||'';
+  document.getElementById('tf-jajan').value=tf.uang_jajan||'';
+  document.getElementById('tf-catatan').value=tf.catatan||'';
+  document.getElementById('mo-tf-title').textContent='✏️ Edit TF Admin';
+  tfAutoFillTagihan();
+  tfHitungSisa();
+}
+
+function tfAutoFillTagihan(){
+  const santriId = document.getElementById('tf-santri-id')?.value;
+  const bulan = document.getElementById('tf-bulan')?.value;
+  if(!santriId || !bulan) return;
+  const tagihan = ALL_TAGIHAN.find(t=>String(t.santri_id)===String(santriId)&&t.bulan===bulan);
+  if(tagihan){
+    const makan = Number(tagihan.nominal_makan||0);
+    const listrik = Number(tagihan.nominal_listrik||0);
+    const sisaMakan = makan - Number(tagihan.nominal_bayar||0);
+    document.getElementById('tf-makan-hint').textContent = `(Tagihan: ${fmtRp(makan)})`;
+    document.getElementById('tf-listrik-hint').textContent = `(Tagihan: ${fmtRp(listrik)})`;
+    if(!document.getElementById('tf-makan').value) document.getElementById('tf-makan').value=makan;
+    if(!document.getElementById('tf-listrik').value) document.getElementById('tf-listrik').value=listrik;
+    tfHitungSisa();
+  }
+}
+
+function tfHitungSisa(){
+  const total = Number(document.getElementById('tf-total')?.value||0);
+  const makan = Number(document.getElementById('tf-makan')?.value||0);
+  const listrik = Number(document.getElementById('tf-listrik')?.value||0);
+  const spp = Number(document.getElementById('tf-spp')?.value||0);
+  const jajan = Number(document.getElementById('tf-jajan')?.value||0);
+  const sisa = total - makan - listrik - spp - jajan;
+  const sisaEl = document.getElementById('tf-sisa-display');
+  const sisaBox = document.getElementById('tf-sisa-box');
+  if(sisaEl){
+    sisaEl.textContent = fmtRp(Math.abs(sisa));
+    sisaEl.style.color = sisa>=0?'var(--green)':'var(--red)';
+  }
+  if(sisaBox){
+    sisaBox.style.background = sisa>=0?'var(--green-p)':'#fef2f2';
+    sisaBox.querySelector('span:first-child').textContent = sisa>=0?'Sisa / Kelebihan':'⚠️ Kekurangan';
+  }
+}
+
+async function simpanTFAdmin(){
+  const editId = document.getElementById('tf-edit-id').value;
+  const santriId = document.getElementById('tf-santri-id').value;
+  const bulan = document.getElementById('tf-bulan').value;
+  const total = Number(document.getElementById('tf-total').value||0);
+  const makan = Number(document.getElementById('tf-makan').value||0);
+  const listrik = Number(document.getElementById('tf-listrik').value||0);
+  const spp = Number(document.getElementById('tf-spp').value||0);
+  const jajan = Number(document.getElementById('tf-jajan').value||0);
+  const catatan = document.getElementById('tf-catatan').value.trim();
+
+  if(!santriId){ toast('Pilih santri dulu!', false); return; }
+  if(!bulan){ toast('Pilih bulan dulu!', false); return; }
+  if(!total){ toast('Isi total TF!', false); return; }
+
+  const s = getSantriById(santriId)||{};
+  const sisa = total - makan - listrik - spp - jajan;
+
+  const payload = {
+    santri_id: santriId,
+    nama_santri: s.nama||'',
+    bulan, total_tf: total,
+    uang_makan: makan,
+    listrik, spp,
+    uang_jajan: jajan,
+    sisa, catatan,
+    created_by: SESSION?.username||''
+  };
+
+  try{
+    let error;
+    if(editId){
+      ({error} = await SB.from('tf_admin').update(payload).eq('id', editId));
+    } else {
+      ({error} = await SB.from('tf_admin').insert(payload));
+    }
+    if(error){ toast('Gagal simpan: '+error.message, false); return; }
+
+    // Update tagihan santri otomatis (uang makan + listrik)
+    if(makan||listrik){
+      const tagihan = ALL_TAGIHAN.find(t=>String(t.santri_id)===String(santriId)&&t.bulan===bulan);
+      if(tagihan){
+        const totalBayar = makan + listrik;
+        const nominal = Number(tagihan.nominal||0);
+        const status = totalBayar >= nominal ? 'lunas' : totalBayar > 0 ? 'cicilan' : tagihan.status;
+        await SB.from('tagihan_pondok').update({
+          nominal_bayar: totalBayar,
+          status,
+          tgl_bayar: new Date().toISOString().split('T')[0],
+          keterangan: `TF Admin${catatan?' - '+catatan:''}`
+        }).eq('id', tagihan.id);
+      }
+    }
+
+    toast(editId?'✅ TF berhasil diupdate!':'✅ TF berhasil disimpan!');
+    closeMo('mo-tf-admin');
+    await loadAllData();
+    renderTFAdmin();
+    renderTagihanTable();
+  } catch(e){ toast('Error: '+e.message, false); }
+}
+
+async function hapusTFAdmin(id, nama){
+  konfirm(`Hapus data TF Admin "${nama}"? Data akan dihapus permanen!`, async()=>{
+    try{
+      const {error} = await SB.from('tf_admin').delete().eq('id', id);
+      if(error){ toast('Gagal hapus: '+error.message, false); return; }
+      toast('🗑️ Data TF berhasil dihapus!');
+      await loadAllData();
+      renderTFAdmin();
+    } catch(e){ toast('Error: '+e.message, false); }
+  }, 'hapus');
+}
+
+function printTFAdmin(){
+  const tahunF=document.getElementById('filter-tahun-tf')?.value||'';
+  const bulanF=document.getElementById('filter-bulan-tf')?.value||'';
+  let data = ALL_TF_ADMIN.filter(tf=>{
+    if(tahunF && !(tf.bulan||'').endsWith(tahunF)) return false;
+    if(bulanF && (tf.bulan||'')!==bulanF) return false;
+    return true;
+  });
+
+  const totalMasuk = data.reduce((s,tf)=>s+Number(tf.total_tf||0),0);
+  const totalMakan = data.reduce((s,tf)=>s+Number(tf.uang_makan||0),0);
+  const totalListrik = data.reduce((s,tf)=>s+Number(tf.listrik||0),0);
+  const totalSPP = data.reduce((s,tf)=>s+Number(tf.spp||0),0);
+  const totalJajan = data.reduce((s,tf)=>s+Number(tf.uang_jajan||0),0);
+  const totalSisa = data.reduce((s,tf)=>s+Number(tf.sisa||0),0);
+  const judul = bulanF ? `Rekap TF Admin — ${bulanF}` : tahunF ? `Rekap TF Admin — ${tahunF}` : 'Rekap TF Admin — Semua';
+
+  const rows = data.map((tf,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${tf.nama_santri||'—'}</td>
+      <td>${tf.bulan||'—'}</td>
+      <td style="text-align:right">${fmtRp(tf.total_tf)}</td>
+      <td style="text-align:right">${tf.uang_makan?fmtRp(tf.uang_makan):'—'}</td>
+      <td style="text-align:right">${tf.listrik?fmtRp(tf.listrik):'—'}</td>
+      <td style="text-align:right">${tf.spp?fmtRp(tf.spp):'—'}</td>
+      <td style="text-align:right">${tf.uang_jajan?fmtRp(tf.uang_jajan):'—'}</td>
+      <td style="text-align:right;color:${Number(tf.sisa||0)>=0?'green':'red'}">${tf.sisa?fmtRp(Math.abs(tf.sisa)):'—'}</td>
+    </tr>
+  `).join('');
+
+  const content = `
+    <div style="font-family:sans-serif;padding:20px">
+      <div style="text-align:center;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px">${CONFIG.pesantren_nama||'Pondok Pesantren An-Nur'}</h2>
+        <h3 style="margin:4px 0;font-size:15px;color:#666">${judul}</h3>
+        <div style="font-size:12px;color:#999">Dicetak: ${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+      </div>
+
+      <!-- Rekap Ringkas -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+        <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#666;font-weight:600">TOTAL TF MASUK</div>
+          <div style="font-size:15px;font-weight:700;color:green">${fmtRp(totalMasuk)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#666;font-weight:600">🍽️ UANG MAKAN</div>
+          <div style="font-size:15px;font-weight:700">${fmtRp(totalMakan)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#666;font-weight:600">⚡ LISTRIK</div>
+          <div style="font-size:15px;font-weight:700">${fmtRp(totalListrik)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#666;font-weight:600">📚 SPP</div>
+          <div style="font-size:15px;font-weight:700">${fmtRp(totalSPP)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#666;font-weight:600">💵 UANG JAJAN</div>
+          <div style="font-size:15px;font-weight:700">${fmtRp(totalJajan)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center;background:${totalSisa>=0?'#f0fdf4':'#fef2f2'}">
+          <div style="font-size:11px;color:#666;font-weight:600">${totalSisa>=0?'SISA':'KEKURANGAN'}</div>
+          <div style="font-size:15px;font-weight:700;color:${totalSisa>=0?'green':'red'}">${fmtRp(Math.abs(totalSisa))}</div>
+        </div>
+      </div>
+
+      <!-- Tabel Detail -->
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:#f1f5f9">
+            <th style="border:1px solid #ddd;padding:6px;text-align:center">#</th>
+            <th style="border:1px solid #ddd;padding:6px">Nama Santri</th>
+            <th style="border:1px solid #ddd;padding:6px">Bulan</th>
+            <th style="border:1px solid #ddd;padding:6px;text-align:right">Total TF</th>
+            <th style="border:1px solid #ddd;padding:6px;text-align:right">Makan</th>
+            <th style="border:1px solid #ddd;padding:6px;text-align:right">Listrik</th>
+            <th style="border:1px solid #ddd;padding:6px;text-align:right">SPP</th>
+            <th style="border:1px solid #ddd;padding:6px;text-align:right">Jajan</th>
+            <th style="border:1px solid #ddd;padding:6px;text-align:right">Sisa</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr style="background:#f8fafc;font-weight:700">
+            <td colspan="3" style="border:1px solid #ddd;padding:6px;text-align:right">TOTAL</td>
+            <td style="border:1px solid #ddd;padding:6px;text-align:right">${fmtRp(totalMasuk)}</td>
+            <td style="border:1px solid #ddd;padding:6px;text-align:right">${fmtRp(totalMakan)}</td>
+            <td style="border:1px solid #ddd;padding:6px;text-align:right">${fmtRp(totalListrik)}</td>
+            <td style="border:1px solid #ddd;padding:6px;text-align:right">${fmtRp(totalSPP)}</td>
+            <td style="border:1px solid #ddd;padding:6px;text-align:right">${fmtRp(totalJajan)}</td>
+            <td style="border:1px solid #ddd;padding:6px;text-align:right;color:${totalSisa>=0?'green':'red'}">${fmtRp(Math.abs(totalSisa))}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div style="margin-top:30px;text-align:right;font-size:12px;color:#666">Bendahara An-Nur</div>
+    </div>
+  `;
+  document.getElementById('print-tf-content').innerHTML=content;
+  openMo('mo-print-tf');
+}
+
+function doPrintTF(){
+  const c=document.getElementById('print-tf-content').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write('<html><head><style>body{margin:0;padding:0}@media print{@page{margin:15mm}}</style></head><body>'+c+'</body></html>');
   w.document.close(); w.print();
 }
 
