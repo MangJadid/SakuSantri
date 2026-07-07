@@ -1862,9 +1862,40 @@ function switchRole(r){
   const savedSession = loadPersistentSession();
   if(savedSession){
     SESSION = {role: savedSession.role, user: savedSession.user||null};
-    document.getElementById('pg-loading').style.display='none';
-    await enterApp();
-    return;
+
+    // Validasi dulu: apakah device ini sudah di-logout paksa / akun diblokir admin?
+    // Ini WAJIB dicek di sini (sebelum enterApp), bukan cuma lewat ping berkala —
+    // supaya device yang sudah di-logout tidak bisa "hidup lagi" cuma dengan reload.
+    let ditolak = false;
+    if(SESSION.role!=='ortu' && SESSION.user?.id){
+      try{
+        if(SESSION.role!=='super'){
+          const {data:pg} = await SB.from('pengurus').select('force_logout,is_blocked').eq('id',SESSION.user.id).single();
+          if(pg?.force_logout || pg?.is_blocked) ditolak = true;
+        }
+        if(!ditolak){
+          const sid = getDeviceSessionId();
+          const {data:ses} = await SB.from('login_sessions').select('revoked').eq('session_id', sid).maybeSingle();
+          if(ses?.revoked){
+            ditolak = true;
+            SB.from('login_sessions').delete().eq('session_id', sid).then(()=>{}).catch(()=>{}); // bersihkan barisnya sendiri
+          }
+        }
+      }catch(e){}
+    }
+
+    if(ditolak){
+      SESSION = null;
+      clearPersistentSession();
+      clearDeviceSessionId();
+      if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
+      document.getElementById('pg-loading').style.display='none';
+      // lanjut ke tampilan login biasa di bawah (tidak return)
+    } else {
+      document.getElementById('pg-loading').style.display='none';
+      await enterApp();
+      return;
+    }
   }
 
   // Load santri names for ortu datalist
@@ -6823,7 +6854,7 @@ function doLogout(){
   stopActivityTracking();
   teardownRealtimeSync();
   if(SESSION && SESSION.role!=='ortu' && SESSION.user?.id){
-    SB.from('login_sessions').update({is_online:false, last_seen:new Date().toISOString()}).eq('session_id', getDeviceSessionId()).then(()=>{}).catch(()=>{});
+    SB.from('login_sessions').delete().eq('session_id', getDeviceSessionId()).then(()=>{}).catch(()=>{});
   }
   clearDeviceSessionId();
   clearPersistentSession();
@@ -7052,6 +7083,7 @@ async function checkForceLogout(){
     const {data:ses} = await SB.from('login_sessions').select('revoked').eq('session_id', sid).maybeSingle();
     if(ses?.revoked){
       toast('⚠️ Sesi di perangkat ini telah di-logout oleh Admin', false);
+      SB.from('login_sessions').delete().eq('session_id', sid).then(()=>{}).catch(()=>{}); // bersihkan barisnya sendiri
       setTimeout(()=>doLogout(), 2000);
     }
   }catch(e){}
@@ -7832,6 +7864,10 @@ async function renderMonitor(){
   const now = Date.now();
   const updateTime = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
+  // Jaring pengaman: sapu bersih baris revoked yang sudah >1 hari & belum sempat
+  // bersihin dirinya sendiri (misal HP-nya hilang/rusak, jadi tidak pernah dibuka lagi)
+  SB.from('login_sessions').delete().eq('revoked', true).lt('last_seen', new Date(now - 24*60*60*1000).toISOString()).then(()=>{}).catch(()=>{});
+
   sec.innerHTML = `
   <div class="panel" style="margin-bottom:16px">
     <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
@@ -7855,6 +7891,7 @@ async function renderMonitor(){
   try{
     const {data:logs, error:logsErr} = await SB.from('login_sessions')
       .select('*')
+      .eq('revoked', false)
       .order('last_seen', {ascending:false});
     if(logsErr) throw logsErr;
 
@@ -7864,8 +7901,7 @@ async function renderMonitor(){
       const diffMin = Math.floor(diffMs/60000);
       const diffJam = Math.floor(diffMin/60);
       let statusKey;
-      if(log.revoked) statusKey='offline';
-      else if(log.is_online && diffMin < 2) statusKey='online';
+      if(log.is_online && diffMin < 2) statusKey='online';
       else if(diffMin < 10) statusKey='idle';
       else statusKey='offline';
       const waktu = diffMin < 1 ? 'Baru saja' :
@@ -7929,7 +7965,7 @@ async function renderMonitor(){
         '<span style="background:#ede9fe;color:#7c3aed;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Sekretariat</span>':
         g.role==='super'?'<span style="background:#fef3c7;color:#92400e;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Admin</span>':
         '<span style="background:var(--green-p);color:var(--green);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Pengurus</span>';
-      const anyAktif = g.sesi.some(s=>s.statusKey!=='offline');
+      const anyAktif = g.sesi.length > 0;
 
       const sesiRows = g.sesi.map(s=>{
         const statusDot = s.statusKey==='online'?'🟢':s.statusKey==='idle'?'🟡':'⚫';
@@ -7939,11 +7975,11 @@ async function renderMonitor(){
         return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-top:1px dashed var(--border)">
           <div style="min-width:0;flex:1">
             <div style="font-size:13px;font-weight:600">${s.device_name||'—'} ${s.isBaru?'<span style="background:#fee2e2;color:#b91c1c;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px">🆕 Baru login</span>':''}</div>
-            <div style="font-size:12px;color:${statusColor};font-weight:600;margin-top:2px">${statusDot} ${s.revoked?'Di-logout admin':s.waktu}</div>
+            <div style="font-size:12px;color:${statusColor};font-weight:600;margin-top:2px">${statusDot} ${s.waktu}${s.statusKey==='offline'?' (app tertutup, tapi masih login)':''}</div>
             <div style="font-size:11px;color:var(--text-l);margin-top:2px">Login pertama: ${s.loginFirst}</div>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0">
-            ${(!s.revoked && s.statusKey!=='offline')?`<button class="btn btn-d btn-xs" onclick="monitorLogoutDevice('${s.session_id}','${namaEsc}','${deviceEsc}')">⬅️ Logout</button>`:''}
+            <button class="btn btn-d btn-xs" onclick="monitorLogoutDevice('${s.session_id}','${namaEsc}','${deviceEsc}')">⬅️ Logout</button>
           </div>
         </div>`;
       }).join('');
