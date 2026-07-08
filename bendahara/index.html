@@ -5675,18 +5675,28 @@ function printTFAdmin(){
     const d = DAPUR_LIST?.find(dp=>String(dp.id)===String(s.dapur_id));
     const dNama = d ? d.nama : '—';
     return `<tr>
-      <td style="border:1px solid #ddd;padding:6px;text-align:center">${i+1}</td>
-      <td style="border:1px solid #ddd;padding:6px">${tf.nama_santri||'—'}</td>
-      <td style="border:1px solid #ddd;padding:6px;font-size:11px">${tgl}</td>
-      <td style="border:1px solid #ddd;padding:6px;font-size:11px">${tf.bulan||'—'}</td>
-      <td style="border:1px solid #ddd;padding:6px;text-align:right">${fmtRp(tf.total_tf)}</td>
-      <td style="border:1px solid #ddd;padding:6px;text-align:right;font-size:11px">${tf.uang_makan?`${fmtRp(tf.uang_makan)}<br><span style="color:#666">${dNama}</span>`:'—'}</td>
-      <td style="border:1px solid #ddd;padding:6px;text-align:right">${tf.listrik?fmtRp(tf.listrik):'—'}</td>
-      <td style="border:1px solid #ddd;padding:6px;text-align:right">${tf.spp?fmtRp(tf.spp):'—'}</td>
-      <td style="border:1px solid #ddd;padding:6px;text-align:right">${tf.uang_jajan?fmtRp(tf.uang_jajan):'—'}</td>
-      <td style="border:1px solid #ddd;padding:6px;text-align:right;color:${Number(tf.sisa||0)>=0?'green':'red'}">${tf.sisa?fmtRp(Math.abs(tf.sisa)):'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:center">${i+1}</td>
+      <td style="border:1px solid #ddd;padding:5px">${tf.nama_santri||'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;font-size:11px">${tgl}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(tf.total_tf)}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right;font-size:11px">${tf.uang_makan?`${fmtRp(tf.uang_makan)}<br><span style="color:#666">${dNama}</span>`:'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right">${tf.listrik?fmtRp(tf.listrik):'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right">${tf.spp?fmtRp(tf.spp):'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right">${tf.uang_jajan?fmtRp(tf.uang_jajan):'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right;color:${Number(tf.sisa||0)>=0?'green':'red'}">${tf.sisa?fmtRp(Math.abs(tf.sisa)):'—'}</td>
     </tr>`;
   }).join('');
+
+  // Total per dapur untuk baris total
+  const totalPerDapur = {};
+  data.forEach(tf=>{
+    const s = getSantriById(tf.santri_id)||{};
+    const dNama = getDapurNama(s.dapur_id)||'Lainnya';
+    if(!totalPerDapur[dNama]) totalPerDapur[dNama]=0;
+    totalPerDapur[dNama] += Number(tf.uang_makan||0);
+  });
+  const totalMakanPerDapurHtml = Object.entries(totalPerDapur)
+    .map(([nama,total])=>`${nama}: ${fmtRp(total)}`).join('<br>');
 
   const content = `
     <div style="font-family:sans-serif;padding:16px;font-size:12px">
@@ -5729,7 +5739,6 @@ function printTFAdmin(){
               <th style="border:1px solid #ddd;padding:5px;text-align:center">#</th>
               <th style="border:1px solid #ddd;padding:5px">Nama Santri</th>
               <th style="border:1px solid #ddd;padding:5px">Tgl Input</th>
-              <th style="border:1px solid #ddd;padding:5px">Bulan</th>
               <th style="border:1px solid #ddd;padding:5px;text-align:right">Total TF</th>
               <th style="border:1px solid #ddd;padding:5px;text-align:right">Makan/Dapur</th>
               <th style="border:1px solid #ddd;padding:5px;text-align:right">Listrik</th>
@@ -5741,9 +5750,9 @@ function printTFAdmin(){
           <tbody>${rows}</tbody>
           <tfoot>
             <tr style="background:#f8fafc;font-weight:700">
-              <td colspan="4" style="border:1px solid #ddd;padding:5px;text-align:right">TOTAL</td>
+              <td colspan="3" style="border:1px solid #ddd;padding:5px;text-align:right">TOTAL</td>
               <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalMasuk)}</td>
-              <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalMakan)}</td>
+              <td style="border:1px solid #ddd;padding:5px;text-align:right;font-size:10px;line-height:1.6">${totalMakanPerDapurHtml}</td>
               <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalListrik)}</td>
               <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalSPP)}</td>
               <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalJajan)}</td>
