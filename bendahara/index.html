@@ -5768,26 +5768,44 @@ function printTFAdmin(){
   openMo('mo-print-tf');
 }
 
-function doPrintTF(){
+async function doPrintTF(){
   const c = document.getElementById('print-tf-content').innerHTML;
-  const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Rekap TF Admin</title>
-  <style>
-    body{font-family:sans-serif;margin:0;padding:16px}
-    table{width:100%;border-collapse:collapse;font-size:11px}
-    th,td{border:1px solid #ddd;padding:5px}
-    @media print{@page{margin:10mm}}
-  </style></head><body>${c}
-  <script>window.onload=function(){window.print();}<\/script>
-  </body></html>`;
 
-  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'Rekap-TF-Admin.html';
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('📄 File rekap berhasil didownload!');
+  // Buat container sementara landscape
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:1123px;background:#fff;padding:24px;box-sizing:border-box;font-family:sans-serif;font-size:12px';
+  container.innerHTML = c;
+  document.body.appendChild(container);
+
+  try{
+    // Load html2canvas jika belum ada
+    if(!window.html2canvas){
+      await new Promise((res,rej)=>{
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+
+    toast('⏳ Membuat gambar...');
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      width: 1123,
+    });
+
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'Rekap-TF-Admin.png';
+    a.click();
+    toast('🖼️ PNG berhasil didownload!');
+  } catch(e){
+    toast('Gagal generate PNG: '+e.message, false);
+  } finally {
+    container.remove();
+  }
 }
 
 function exportExcelTFAdmin(){
