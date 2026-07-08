@@ -800,7 +800,9 @@ _updateOfflineScreen();
 (function(){
   var box = document.getElementById('debug-error-box');
   var timer;
+  let _isPrinting = false;
   function showErr(msg){
+    if(_isPrinting) return;
     // Abaikan error Service Worker dan popup blocker
     if(msg && (msg.indexOf('ServiceWorker')!==-1 || msg.indexOf('sw.js')!==-1 || msg.indexOf('fetching the script')!==-1)) return;
     if(msg && (msg.indexOf('popup')!==-1 || msg.indexOf('Popup')!==-1 || msg.indexOf('blocked')!==-1 || msg.indexOf('window.open')!==-1)) return;
@@ -809,6 +811,7 @@ _updateOfflineScreen();
     clearTimeout(timer);
     timer = setTimeout(function(){ box.style.display='none'; }, 6000);
   }
+  window._setPrinting = function(v){ _isPrinting = v; };
   window.addEventListener('error', function(e){
     showErr(e.message);
   });
@@ -5765,12 +5768,14 @@ function doPrintTF(){
   document.head.appendChild(style);
 
   printDiv.style.display = 'block';
+  window._setPrinting && window._setPrinting(true);
   setTimeout(()=>{
-    window.print();
+    try{ window.print(); } catch(e){}
     setTimeout(()=>{
+      window._setPrinting && window._setPrinting(false);
       printDiv.remove();
       style.remove();
-    }, 500);
+    }, 1000);
   }, 300);
 }
 
