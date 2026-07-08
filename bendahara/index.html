@@ -803,10 +803,10 @@ _updateOfflineScreen();
   let _isPrinting = false;
   function showErr(msg){
     if(_isPrinting) return;
-    // Abaikan error Service Worker dan popup blocker
-    if(msg && (msg.indexOf('ServiceWorker')!==-1 || msg.indexOf('sw.js')!==-1 || msg.indexOf('fetching the script')!==-1)) return;
-    if(msg && (msg.indexOf('popup')!==-1 || msg.indexOf('Popup')!==-1 || msg.indexOf('blocked')!==-1 || msg.indexOf('window.open')!==-1)) return;
     if(!msg || msg.trim()==='') return;
+    // Abaikan error Service Worker, popup blocker, dan print
+    const skip = ['ServiceWorker','sw.js','fetching the script','popup','Popup','blocked','window.open','print','Print'];
+    if(skip.some(s=>msg.indexOf(s)!==-1)) return;
     box.style.display = 'flex';
     clearTimeout(timer);
     timer = setTimeout(function(){ box.style.display='none'; }, 6000);
@@ -5648,7 +5648,12 @@ function printTFAdmin(){
   let judul = bulanF ? `Rekap TF Admin — ${bulanF}` : tahunF ? `Rekap TF Admin — ${tahunF}` : 'Rekap TF Admin — Semua';
   if(dariF||sampaiF) judul += ` (${dariF||'...'} s/d ${sampaiF||'...'})`;
 
-  // Rekap per dapur
+  const totalMasuk = data.reduce((s,tf)=>s+Number(tf.total_tf||0),0);
+  const totalMakan = data.reduce((s,tf)=>s+Number(tf.uang_makan||0),0);
+  const totalListrik = data.reduce((s,tf)=>s+Number(tf.listrik||0),0);
+  const totalSPP = data.reduce((s,tf)=>s+Number(tf.spp||0),0);
+  const totalJajan = data.reduce((s,tf)=>s+Number(tf.uang_jajan||0),0);
+  const totalSisa = data.reduce((s,tf)=>s+Number(tf.sisa||0),0);
   const dapurRekap = {};
   data.forEach(tf=>{
     const s = getSantriById(tf.santri_id)||{};
@@ -5756,27 +5761,24 @@ function printTFAdmin(){
 
 function doPrintTF(){
   const c = document.getElementById('print-tf-content').innerHTML;
-  const printDiv = document.createElement('div');
-  printDiv.id = 'tf-print-area';
-  printDiv.innerHTML = c;
-  printDiv.style.cssText = 'display:none;position:fixed;inset:0;background:#fff;z-index:99999;overflow:auto;padding:16px';
-  document.body.appendChild(printDiv);
 
-  const style = document.createElement('style');
-  style.id = 'tf-print-style';
-  style.innerHTML = `@media print { body > *:not(#tf-print-area){ display:none!important; } #tf-print-area{ display:block!important; } }`;
-  document.head.appendChild(style);
+  // Buat overlay fullscreen untuk screenshot
+  const overlay = document.createElement('div');
+  overlay.id = 'tf-print-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:99999;overflow-y:auto;padding:16px';
 
-  printDiv.style.display = 'block';
+  overlay.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #eee">
+      <div style="font-size:13px;color:#666">📸 Screenshot halaman ini lalu kirim ke atasan</div>
+      <button onclick="document.getElementById('tf-print-overlay').remove()" 
+        style="background:#e5e7eb;border:none;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600">✕ Tutup</button>
+    </div>
+    ${c}
+  `;
+
+  document.body.appendChild(overlay);
   window._setPrinting && window._setPrinting(true);
-  setTimeout(()=>{
-    try{ window.print(); } catch(e){}
-    setTimeout(()=>{
-      window._setPrinting && window._setPrinting(false);
-      printDiv.remove();
-      style.remove();
-    }, 1000);
-  }, 300);
+  setTimeout(()=>{ window._setPrinting && window._setPrinting(false); }, 1000);
 }
 
 function exportExcelTFAdmin(){
