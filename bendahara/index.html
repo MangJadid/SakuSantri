@@ -5752,10 +5752,26 @@ function printTFAdmin(){
 }
 
 function doPrintTF(){
-  const c=document.getElementById('print-tf-content').innerHTML;
-  const w=window.open('','_blank');
-  w.document.write('<html><head><style>body{margin:0;padding:0}@media print{@page{margin:10mm}table{font-size:10px}}</style></head><body>'+c+'</body></html>');
-  w.document.close(); w.print();
+  const c = document.getElementById('print-tf-content').innerHTML;
+  const printDiv = document.createElement('div');
+  printDiv.id = 'tf-print-area';
+  printDiv.innerHTML = c;
+  printDiv.style.cssText = 'display:none;position:fixed;inset:0;background:#fff;z-index:99999;overflow:auto;padding:16px';
+  document.body.appendChild(printDiv);
+
+  const style = document.createElement('style');
+  style.id = 'tf-print-style';
+  style.innerHTML = `@media print { body > *:not(#tf-print-area){ display:none!important; } #tf-print-area{ display:block!important; } }`;
+  document.head.appendChild(style);
+
+  printDiv.style.display = 'block';
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      printDiv.remove();
+      style.remove();
+    }, 500);
+  }, 300);
 }
 
 function exportExcelTFAdmin(){
