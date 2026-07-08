@@ -1781,7 +1781,7 @@ function konfirm(msg, fn, tipe, okLabel){
     wrap.className = 'info-box';
   } else if(tipe === 'lainnya'){
     judul.textContent = '⚠️ Konfirmasi';
-    okBtn.textContent = 'Ya, Lanjutkan';
+    okBtn.textContent = okLabel || 'Ya, Lanjutkan';
     okBtn.className = 'btn btn-g';
     wrap.className = 'warn-box';
   } else if(tipe === 'duplikat'){
@@ -5448,7 +5448,7 @@ async function bukaBlokirPengurus(id, nama){
     toast(`✅ Blokir ${nama} sudah dibuka, akun bisa login lagi.`);
     await loadAllData();
     renderPengurus();
-  });
+  }, 'lainnya', 'Ya, Buka Blokir');
 }
 
 function editPengurus(id){
