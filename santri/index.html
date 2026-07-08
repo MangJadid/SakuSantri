@@ -5407,12 +5407,14 @@ function renderPengurus(){
     const roleBadge = isSekretariat
       ? `<span style="background:var(--blue-p);color:var(--blue);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">🏢 Sekretariat</span>`
       : `<span style="background:var(--green-p);color:var(--green);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">👨‍💼 Pengurus</span>`;
-    html+=`<div class="pcard" style="align-items:flex-start;gap:16px">
+    const blokirBadge = p.is_blocked ? `<span style="background:#fee2e2;color:#b91c1c;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">🚫 Diblokir</span>` : '';
+    html+=`<div class="pcard" style="align-items:flex-start;gap:16px${p.is_blocked?';background:#fef2f2':''}">
       <div class="pav" style="width:58px;height:58px;font-size:22px;flex-shrink:0;background:${c}22;color:${c};overflow:hidden;border-radius:50%;border:2px solid ${c}44">${p.foto_url?`<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(p.nama)}</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
           <span style="font-weight:700;font-size:14px">${p.nama}</span>
           ${roleBadge}
+          ${blokirBadge}
         </div>
         <div style="font-size:12px;color:var(--text-l);margin-bottom:4px">@${p.username}</div>
         ${p.no_wa
@@ -5431,11 +5433,22 @@ function renderPengurus(){
       </div>
       <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
         <button class="btn btn-o btn-sm" onclick="editPengurus(${p.id})">✏️</button>
+        ${p.is_blocked ? `<button class="btn btn-p btn-sm" style="background:#16a34a;border-color:#16a34a" onclick="bukaBlokirPengurus(${p.id},'${(p.nama||'').replace(/'/g,"\\'")}')">✅</button>` : ''}
         <button class="btn btn-d btn-sm" onclick="hapusPengurus(${p.id})">🗑</button>
       </div>
     </div>`;
   });
   document.getElementById('pengurus-grid').innerHTML=html||'<div class="empty"><span class="ei">👨‍💼</span><p>Belum ada pengurus</p></div>';
+}
+
+async function bukaBlokirPengurus(id, nama){
+  konfirm(`Buka blokir <strong>${nama}</strong>? Akun ini akan bisa login lagi.`, async()=>{
+    const {error} = await SB.from('pengurus').update({is_blocked:false, force_logout:false}).eq('id', id);
+    if(error){ toast('Gagal: '+error.message,false); return; }
+    toast(`✅ Blokir ${nama} sudah dibuka, akun bisa login lagi.`);
+    await loadAllData();
+    renderPengurus();
+  });
 }
 
 function editPengurus(id){
