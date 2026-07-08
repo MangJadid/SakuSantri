@@ -1203,13 +1203,25 @@ _updateOfflineScreen();
             <select id="filter-tahun-tf" onchange="fillBulanByTahun('tf');renderTFAdmin()"><option value="">Semua Tahun</option></select>
             <select id="filter-bulan-tf" onchange="renderTFAdmin()"><option value="">Semua Bulan</option></select>
           </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:140px">
+              <label style="font-size:12px;color:var(--text-m);white-space:nowrap">Dari:</label>
+              <input type="date" id="filter-tgl-dari-tf" onchange="renderTFAdmin()" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:140px">
+              <label style="font-size:12px;color:var(--text-m);white-space:nowrap">Sampai:</label>
+              <input type="date" id="filter-tgl-sampai-tf" onchange="renderTFAdmin()" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            </div>
+            <button class="btn btn-o btn-sm" onclick="resetFilterTF()">↺ Reset</button>
+          </div>
           <!-- Rekap Total -->
           <div id="tf-rekap-total" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px"></div>
           <!-- Tabel -->
           <div id="tf-list"></div>
           <div id="tf-empty" class="empty" style="display:none"><span class="ei">💸</span><p>Belum ada data TF Admin.</p></div>
-          <!-- Tombol Print -->
-          <div style="margin-top:16px;text-align:right">
+          <!-- Tombol Print & Export -->
+          <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+            <button class="btn btn-g btn-sm" onclick="exportExcelTFAdmin()">📊 Export Excel</button>
             <button class="btn btn-b btn-sm" onclick="printTFAdmin()">🖨️ Print Rekap</button>
           </div>
         </div>
@@ -5242,17 +5254,34 @@ function printSuratBebas(){
 }
 
 // ===== TF ADMIN =====
-function renderTFAdmin(){
+function getTFFiltered(){
   const q=(document.getElementById('cari-tf')?.value||'').toLowerCase();
   const tahunF=document.getElementById('filter-tahun-tf')?.value||'';
   const bulanF=document.getElementById('filter-bulan-tf')?.value||'';
+  const dariF=document.getElementById('filter-tgl-dari-tf')?.value||'';
+  const sampaiF=document.getElementById('filter-tgl-sampai-tf')?.value||'';
 
-  let data = ALL_TF_ADMIN.filter(tf=>{
+  return ALL_TF_ADMIN.filter(tf=>{
     if(q && !(tf.nama_santri||'').toLowerCase().includes(q)) return false;
     if(tahunF && !(tf.bulan||'').endsWith(tahunF)) return false;
     if(bulanF && !(tf.bulan||'').includes(bulanF)) return false;
+    if(dariF && tf.created_at && tf.created_at.split('T')[0] < dariF) return false;
+    if(sampaiF && tf.created_at && tf.created_at.split('T')[0] > sampaiF) return false;
     return true;
   });
+}
+
+function resetFilterTF(){
+  document.getElementById('cari-tf').value='';
+  document.getElementById('filter-tahun-tf').value='';
+  document.getElementById('filter-bulan-tf').value='';
+  document.getElementById('filter-tgl-dari-tf').value='';
+  document.getElementById('filter-tgl-sampai-tf').value='';
+  renderTFAdmin();
+}
+
+function renderTFAdmin(){
+  const data = getTFFiltered();
 
   // Rekap total
   const totalMasuk = data.reduce((s,tf)=>s+Number(tf.total_tf||0),0);
@@ -5266,7 +5295,7 @@ function renderTFAdmin(){
   const dapurRekap = {};
   data.forEach(tf=>{
     const s = getSantriById(tf.santri_id)||{};
-    const d = ALL_DAPUR?.find(dp=>String(dp.id)===String(s.dapur_id));
+    const d = DAPUR_LIST?.find(dp=>String(dp.id)===String(s.dapur_id));
     const dNama = d ? `${d.emoji||'🍽️'} ${d.nama}` : '🍽️ Dapur';
     if(!dapurRekap[dNama]) dapurRekap[dNama]=0;
     dapurRekap[dNama] += Number(tf.uang_makan||0);
@@ -5315,7 +5344,7 @@ function renderTFAdmin(){
     const sisa = Number(tf.sisa||0);
     const tgl = tf.created_at ? new Date(tf.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '—';
     const s = getSantriById(tf.santri_id)||{};
-    const d = ALL_DAPUR?.find(dp=>String(dp.id)===String(s.dapur_id));
+    const d = DAPUR_LIST?.find(dp=>String(dp.id)===String(s.dapur_id));
     const dNama = d ? `${d.emoji||'🍽️'} ${d.nama}` : null;
     const bulanArr = tf.bulan ? tf.bulan.split(',').map(b=>b.trim()) : [];
 
@@ -5378,7 +5407,7 @@ function tfPilihSantri(id, nama){
 
   // Isi info dapur
   const s = getSantriById(id)||{};
-  const d = ALL_DAPUR?.find(dp=>String(dp.id)===String(s.dapur_id));
+  const d = DAPUR_LIST?.find(dp=>String(dp.id)===String(s.dapur_id));
   const dapurInfo = document.getElementById('tf-makan-dapur-info');
   if(dapurInfo) dapurInfo.textContent = d ? `Dapur: ${d.emoji||''} ${d.nama}` : '';
 
@@ -5499,7 +5528,7 @@ function editTFAdmin(id){
 
   // Info dapur
   const s = getSantriById(tf.santri_id)||{};
-  const d = ALL_DAPUR?.find(dp=>String(dp.id)===String(s.dapur_id));
+  const d = DAPUR_LIST?.find(dp=>String(dp.id)===String(s.dapur_id));
   const dapurInfo = document.getElementById('tf-makan-dapur-info');
   if(dapurInfo) dapurInfo.textContent = d ? `Dapur: ${d.emoji||''} ${d.nama}` : '';
   tfHitungSisa();
@@ -5608,27 +5637,19 @@ async function hapusTFAdmin(id, nama){
 }
 
 function printTFAdmin(){
+  const data = getTFFiltered();
   const tahunF=document.getElementById('filter-tahun-tf')?.value||'';
   const bulanF=document.getElementById('filter-bulan-tf')?.value||'';
-  let data = ALL_TF_ADMIN.filter(tf=>{
-    if(tahunF && !(tf.bulan||'').endsWith(tahunF)) return false;
-    if(bulanF && !(tf.bulan||'').includes(bulanF)) return false;
-    return true;
-  });
-
-  const totalMasuk = data.reduce((s,tf)=>s+Number(tf.total_tf||0),0);
-  const totalMakan = data.reduce((s,tf)=>s+Number(tf.uang_makan||0),0);
-  const totalListrik = data.reduce((s,tf)=>s+Number(tf.listrik||0),0);
-  const totalSPP = data.reduce((s,tf)=>s+Number(tf.spp||0),0);
-  const totalJajan = data.reduce((s,tf)=>s+Number(tf.uang_jajan||0),0);
-  const totalSisa = data.reduce((s,tf)=>s+Number(tf.sisa||0),0);
-  const judul = bulanF ? `Rekap TF Admin — ${bulanF}` : tahunF ? `Rekap TF Admin — ${tahunF}` : 'Rekap TF Admin — Semua';
+  const dariF=document.getElementById('filter-tgl-dari-tf')?.value||'';
+  const sampaiF=document.getElementById('filter-tgl-sampai-tf')?.value||'';
+  let judul = bulanF ? `Rekap TF Admin — ${bulanF}` : tahunF ? `Rekap TF Admin — ${tahunF}` : 'Rekap TF Admin — Semua';
+  if(dariF||sampaiF) judul += ` (${dariF||'...'} s/d ${sampaiF||'...'})`;
 
   // Rekap per dapur
   const dapurRekap = {};
   data.forEach(tf=>{
     const s = getSantriById(tf.santri_id)||{};
-    const d = ALL_DAPUR?.find(dp=>String(dp.id)===String(s.dapur_id));
+    const d = DAPUR_LIST?.find(dp=>String(dp.id)===String(s.dapur_id));
     const dNama = d ? `${d.emoji||'🍽️'} ${d.nama}` : '🍽️ Lainnya';
     if(!dapurRekap[dNama]) dapurRekap[dNama]=0;
     dapurRekap[dNama] += Number(tf.uang_makan||0);
@@ -5643,7 +5664,7 @@ function printTFAdmin(){
   const rows = data.map((tf,i)=>{
     const tgl = tf.created_at ? new Date(tf.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '—';
     const s = getSantriById(tf.santri_id)||{};
-    const d = ALL_DAPUR?.find(dp=>String(dp.id)===String(s.dapur_id));
+    const d = DAPUR_LIST?.find(dp=>String(dp.id)===String(s.dapur_id));
     const dNama = d ? d.nama : '—';
     return `<tr>
       <td style="border:1px solid #ddd;padding:6px;text-align:center">${i+1}</td>
@@ -5737,7 +5758,71 @@ function doPrintTF(){
   w.document.close(); w.print();
 }
 
-// ===== RIWAYAT =====
+function exportExcelTFAdmin(){
+  const data = getTFFiltered();
+  const tahunF=document.getElementById('filter-tahun-tf')?.value||'';
+  const bulanF=document.getElementById('filter-bulan-tf')?.value||'';
+  const dariF=document.getElementById('filter-tgl-dari-tf')?.value||'';
+  const sampaiF=document.getElementById('filter-tgl-sampai-tf')?.value||'';
+  let judul = bulanF ? `TF Admin - ${bulanF}` : tahunF ? `TF Admin - ${tahunF}` : 'TF Admin - Semua';
+  if(dariF||sampaiF) judul += ` (${dariF||'...'} sd ${sampaiF||'...'})`;
+
+  const rows = data.map((tf,i)=>{
+    const tgl = tf.created_at ? new Date(tf.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    const s = getSantriById(tf.santri_id)||{};
+    const dNama = getDapurNama(s.dapur_id)||'—';
+    return [
+      i+1,
+      tf.nama_santri||'—',
+      tgl,
+      tf.bulan||'—',
+      Number(tf.total_tf||0),
+      Number(tf.uang_makan||0),
+      dNama,
+      Number(tf.listrik||0),
+      Number(tf.spp||0),
+      Number(tf.uang_jajan||0),
+      Number(tf.sisa||0),
+      tf.catatan||''
+    ];
+  });
+
+  // Header
+  const header = ['#','Nama Santri','Tgl Input','Bulan','Total TF','Uang Makan','Dapur','Listrik','SPP','Uang Jajan','Sisa','Catatan'];
+
+  // Total row
+  const totalRow = [
+    '','TOTAL','','',
+    data.reduce((s,tf)=>s+Number(tf.total_tf||0),0),
+    data.reduce((s,tf)=>s+Number(tf.uang_makan||0),0),
+    '',
+    data.reduce((s,tf)=>s+Number(tf.listrik||0),0),
+    data.reduce((s,tf)=>s+Number(tf.spp||0),0),
+    data.reduce((s,tf)=>s+Number(tf.uang_jajan||0),0),
+    data.reduce((s,tf)=>s+Number(tf.sisa||0),0),
+    ''
+  ];
+
+  // Buat CSV (kompatibel Excel)
+  const csvRows = [header, ...rows, totalRow].map(row=>
+    row.map(cell=>{
+      const str = String(cell??'');
+      return str.includes(',') || str.includes('"') || str.includes('\n')
+        ? `"${str.replace(/"/g,'""')}"` : str;
+    }).join(',')
+  );
+
+  const BOM = '\uFEFF'; // agar Excel baca UTF-8 dengan benar
+  const csv = BOM + csvRows.join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${judul}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📊 Export Excel berhasil!');
+}
 function renderRiwayat(){
   const q=document.getElementById('cari-riwayat')?.value.toLowerCase()||'';
   const tahunF=document.getElementById('filter-tahun-riwayat')?.value||'';
