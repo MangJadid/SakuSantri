@@ -3040,9 +3040,9 @@ function renderDashboard(){
     const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const sc = s.saldo<0?'s-minus':s.saldo===0?'s-nol':s.saldo<kritis?'s-warn':'s-ok';
     const isKritis = s.saldo>=0 && s.saldo<kritis || s.saldo<0;
-    const waBtn = isKritis && s.no_wa
+    const waBtn = s.no_wa
       ? `<button class="btn btn-wa btn-sm" onclick="kirimWASantri(${s.id})" title="Kirim WA ke ${s.no_wa}">📲</button>`
-      : (isKritis && !s.no_wa ? `<button class="btn btn-o btn-sm" style="opacity:.4;cursor:not-allowed" title="No WA tidak ada">📵</button>` : '');
+      : `<button class="btn btn-o btn-sm" style="opacity:.4;cursor:not-allowed" title="No WA tidak ada">📵</button>`;
     html+=`<tr>
       <td style="color:var(--text-l);font-size:12px">${i+1}</td>
       <td><div style="display:flex;align-items:center;gap:9px">
