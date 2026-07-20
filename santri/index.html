@@ -2319,7 +2319,6 @@ async function refreshFromRealtime(){
   _suppressBroadcast = true; // jangan ikut broadcast balik, cegah loop
   await loadAllData();
   _suppressBroadcast = false;
-  resetAllFilters();
   renderDashboard();
   renderTabelSantri();
   renderRiwayat();
@@ -3397,7 +3396,6 @@ async function simpanBulkEdit(){
       _bulkSelected.clear();
       closeMo('mo-bulk-edit');
       await loadAllData();
-      resetAllFilters();
       populateWaliSelects();
       populateKobongSelects();
       renderTabelSantri();
@@ -3466,7 +3464,6 @@ async function bulkHapusSantri(){
     toast(`✅ ${ids.length} santri dihapus!`);
     _bulkSelected.clear();
     await loadAllData();
-    resetAllFilters();
     renderTabelSantri();
   
     } finally { setLoading(false, _lBtn2); }}, 'hapus');
@@ -3814,7 +3811,6 @@ async function hapusTx(txId, santriId){
     await SB.from('santri').update({saldo: saldoBenar}).eq('id', santriId);
     toast('Transaksi dihapus');
     await loadAllData();
-    resetAllFilters();
     openDetailModal(santriId);
   
     } finally { setLoading(false, _lBtn2); }});
@@ -4193,7 +4189,6 @@ async function simpanSantri(){
           toast('Santri berhasil ditambahkan!');
           closeMo('mo-santri'); hapusFoto(); fotoFile=null;
           await loadAllData(); await loadSantriNames();
-          resetAllFilters();
           renderTabelSantri(); renderDashboard(); updateNotif();
         } finally { setLoading(false, _lBtn); }
       }, 'duplikat');
@@ -4226,7 +4221,6 @@ async function simpanSantri(){
     alert('[DEBUG] loadAllData ERROR:\n' + errLoad);
   }
   await loadSantriNames();
-  resetAllFilters();
   renderTabelSantri();
   renderDashboard();
   updateNotif();
@@ -4265,7 +4259,6 @@ async function hapusSantri(id){
     await catatRiwayatSantri({santri_id:id, santri_nama:s.nama, asrama_id:getAsramaIdBySantri(s), jenis:'hapus', diffObj:null, sumber:'langsung'});
     toast('Santri dihapus');
     await loadAllData();
-    resetAllFilters();
     renderTabelSantri();
     renderDashboard();
     } finally { setLoading(false, _lBtn2); }});
@@ -4590,7 +4583,6 @@ async function approveHapus(reqId, santriId, santriNama){
       await catatRiwayatSantri({santri_id:santriIdInt, santri_nama:santriNama, asrama_id:asramaId, jenis:'hapus', diffObj:null, sumber:'persetujuan', permintaan_id:parseInt(String(reqId),10), diajukan_oleh:req?.diajukan_oleh, diajukan_nama:req?.diajukan_nama, alasan:req?.alasan});
       toast('✅ Santri berhasil dihapus!');
       await loadAllData();
-      resetAllFilters();
       renderTabelSantri();
       renderDashboard();
       renderPersetujuan();
@@ -4620,7 +4612,6 @@ async function approveEdit(reqId){
       await catatRiwayatSantri({santri_id:santriIdInt, santri_nama:req.santri_nama, asrama_id:req.asrama_id, jenis:'edit', diffObj, sumber:'persetujuan', permintaan_id:reqId, diajukan_oleh:req.diajukan_oleh, diajukan_nama:req.diajukan_nama, alasan:req.alasan});
       toast('✅ Perubahan data santri disetujui!');
       await loadAllData();
-      resetAllFilters();
       renderTabelSantri();
       renderDashboard();
       renderPersetujuan();
@@ -4868,7 +4859,6 @@ async function prossMassal(){
     }
 
     await loadAllData();
-    resetAllFilters();
     renderDashboard();
     if(SESSION.role==='pengurus') loadMassalSantriPengurus();
     else loadMassalSantri();
@@ -5123,7 +5113,6 @@ async function simpanAsrama(){
   }
   closeMo('mo-asrama');
   await loadAllData();
-  resetAllFilters();
   renderKobong();
 
   } finally { setLoading(false, _lBtn); }
@@ -5145,7 +5134,6 @@ async function hapusAsrama(id){
     if(error){ toast('Gagal: '+error.message,false); return; }
     toast('Asrama dihapus');
     await loadAllData();
-    resetAllFilters();
     renderKobong();
   
     } finally { setLoading(false, _lBtn2); }});
@@ -5368,7 +5356,6 @@ async function simpanKobong(){
   document.getElementById('kob-nama').value='';
   document.getElementById('kob-ket').value='';
   await loadAllData();
-  resetAllFilters();
   renderKobong();
 
   } finally { setLoading(false, _lBtn); }
@@ -5389,7 +5376,6 @@ async function hapusKobong(id){
     await SB.from('kobong').delete().eq('id',id);
     toast('Kobong dihapus');
     await loadAllData();
-    resetAllFilters();
     renderKobong();
   
     } finally { setLoading(false, _lBtn2); }});
@@ -5578,7 +5564,6 @@ async function simpanPengurus(){
   closeMo('mo-pengurus');
   document.getElementById('edit-pengurus-id').value='';
   await loadAllData();
-  resetAllFilters();
   renderPengurus();
 
   } finally { setLoading(false, _lBtn); }
@@ -5614,7 +5599,6 @@ async function hapusPengurus(id){
     }
     toast('✅ Pengurus dihapus');
     await loadAllData();
-    resetAllFilters();
     renderPengurus();
   
     } finally { setLoading(false, _lBtn2); }});
@@ -5965,7 +5949,6 @@ async function prosesImportExcel(){
     closeMo('mo-import');
     toast(`✅ ${rows.length} santri berhasil diimport!`);
     await loadAllData();
-    resetAllFilters();
     if(typeof loadSantriNames==='function') await loadSantriNames();
     populateFilterKelas();
     renderTabelSantri();
@@ -7477,7 +7460,6 @@ async function nkTerapkanNaikKelas(){
     toast(`✅ ${ids.length} santri berhasil naik ke Kelas ${tujuan}!`);
     nkKelasSelectedIds.clear();
     await loadAllData();
-    resetAllFilters();
     nkInitKelasFilter();
     nkRenderKelasList();
     } catch(e){ toast('Gagal: '+e.message,false); }
@@ -7617,7 +7599,6 @@ async function nkTerapkanPindahKobong(){
     toast(`✅ ${ids.length} santri berhasil dipindah ke ${kTujuan?.nama}!`);
     nkSelectedIds.clear();
     await loadAllData();
-    resetAllFilters();
     nkRenderPindahList();
     nkUpdateBadge();
     document.getElementById('nk-kobong-tujuan').value='';
@@ -7803,7 +7784,6 @@ async function nkGantiWaliMassal(){
     toast(`✅ ${ids.length} santri berhasil dipindahkan ke ${namaKe}`);
     nkWaliSelectedIds.clear();
     await loadAllData();
-    resetAllFilters();
     nkInitWaliSelects();
     } catch(e){ toast('Gagal: '+e.message,false); }
     finally { setLoading(false, _lBtn); }
@@ -7887,7 +7867,6 @@ async function nkSimpanSatu(id){
   delete nkPerubahanIndividu[id];
   toast('✅ Data santri diperbarui!');
   await loadAllData();
-  resetAllFilters();
   nkRenderTabel();
   } catch(e){ toast('Gagal: '+e.message,false); }
   finally { setLoading(false, _lBtn); }
@@ -7912,7 +7891,6 @@ async function nkSimpanSemuaIndividu(){
   }
   toast(`✅ ${berhasil} santri berhasil diperbarui!`);
   await loadAllData();
-  resetAllFilters();
   nkRenderTabel();
   } catch(e){ toast('Gagal: '+e.message,false); }
   finally { setLoading(false, _lBtn); }
@@ -8140,7 +8118,7 @@ async function massalKobongPindah(){
       const {error} = await SB.from('santri').update({kobong_id:tujuan}).in('id', ids);
       if(error){ toast('Gagal: '+error.message); return; }
       toast('✅ '+ids.length+' santri berhasil dipindah!');
-      await loadAllData(); resetAllFilters(); lihatSantriKobong(_currentKobongId);
+      await loadAllData(); lihatSantriKobong(_currentKobongId);
     }, 'pindah', 'Pindahkan');
 }
 
@@ -8154,7 +8132,7 @@ async function massalKobongKelas(){
       const {error} = await SB.from('santri').update({kelas}).in('id', ids);
       if(error){ toast('Gagal: '+error.message); return; }
       toast('✅ Kelas berhasil diupdate!');
-      await loadAllData(); resetAllFilters(); lihatSantriKobong(_currentKobongId);
+      await loadAllData(); lihatSantriKobong(_currentKobongId);
     }, 'simpan', 'Simpan Kelas');
 }
 
@@ -8170,7 +8148,7 @@ async function massalKobongWali(){
       const {error} = await SB.from('santri').update({created_by: waliUsername}).in('id', ids);
       if(error){ toast('Gagal: '+error.message); return; }
       toast('✅ Wali berhasil diupdate!');
-      await loadAllData(); resetAllFilters(); populateWaliSelects(); lihatSantriKobong(_currentKobongId);
+      await loadAllData(); populateWaliSelects(); lihatSantriKobong(_currentKobongId);
     }, 'simpan', 'Simpan Wali');
 }
 
@@ -8182,7 +8160,7 @@ async function massalKobongHapus(){
       const {error} = await SB.from('santri').delete().in('id', ids);
       if(error){ toast('Gagal: '+error.message); return; }
       toast('🗑 '+ids.length+' santri dihapus!');
-      await loadAllData(); resetAllFilters(); lihatSantriKobong(_currentKobongId);
+      await loadAllData(); lihatSantriKobong(_currentKobongId);
     }, 'hapus', 'HAPUS');
 }
 
