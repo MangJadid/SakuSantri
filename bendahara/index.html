@@ -1934,12 +1934,22 @@ _updateOfflineScreen();
           <input type="number" id="tf-listrik" placeholder="0" oninput="tfHitungSisa()">
         </div>
         <div class="fg">
-          <label>📚 SPP Sekolah (Rp)</label>
-          <input type="number" id="tf-spp" placeholder="0" oninput="tfHitungSisa()">
+          <label>📚 SPP MTs (Rp)</label>
+          <input type="number" id="tf-spp-mts" placeholder="0" oninput="tfHitungSisa()">
+        </div>
+        <div class="fg">
+          <label>📚 SPP MA (Rp)</label>
+          <input type="number" id="tf-spp-ma" placeholder="0" oninput="tfHitungSisa()">
         </div>
         <div class="fg">
           <label>💵 Uang Jajan (Rp)</label>
           <input type="number" id="tf-jajan" placeholder="0" oninput="tfHitungSisa()">
+        </div>
+        <!-- DLL -->
+        <div style="border-top:1px dashed var(--border);margin:8px 0;padding-top:8px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-m);margin-bottom:8px;text-transform:uppercase">➕ Lainnya (Dll)</div>
+          <div id="tf-dll-list"></div>
+          <button type="button" onclick="tfTambahDll()" style="background:none;border:1.5px dashed var(--green-b);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--green);cursor:pointer;width:100%;margin-top:4px">+ Tambah Item</button>
         </div>
 
         <!-- Sisa -->
@@ -2444,7 +2454,7 @@ function fitValPx(text, base=22, min=12){
   if(len<=16) return Math.max(min-1, base-10);
   return Math.max(min-2, 9);
 }
-function today(){ return new Date().toISOString().split('T')[0]; }
+function today(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function fmtTgl(s){ if(!s) return '—'; try{ return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return s; } }
 
 function bulanAktif(){ return CONFIG.bulan_aktif||BULAN_AKTIF_DEFAULT; }
@@ -2539,6 +2549,10 @@ function showTab(id){
   // Cek role dari hdr-role sebagai fallback jika SESSION belum siap
   const isAdminFallback = document.getElementById('hdr-role')?.textContent?.includes('Kang Admin');
   if(['pengaturan','manajemen','monitor','tanpaDapur'].includes(id) && !isAdmin && !isAdminFallback) return;
+
+  // Reset filter saat pindah tab
+  resetFiltersBendahara();
+
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));
   document.querySelectorAll('.tb').forEach(t=>t.classList.remove('act'));
   const s=document.getElementById('sec-'+id), t=document.getElementById('tab-'+id);
@@ -2565,15 +2579,14 @@ function fillSelects(){
   ['s-dapur','akun-dapur'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML='<option value="">-- Pilih Dapur --</option>'+dapurOpts; });
 
   // Asrama select
-  const asramaOpts = ALL_ASRAMA.map(a=>`<option value="${a.id}">${a.nama}</option>`).join('');
   ['filter-asrama-tagihan','filter-asrama-santri','filter-asrama-rekap','s-asrama'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
+    const cur = el.value;
     const hasAll = id!=='s-asrama';
-    el.innerHTML=(hasAll?'<option value="">Semua Asrama</option>':'')+asramaOpts;
+    const asramaOptsSel = ALL_ASRAMA.map(a=>`<option value="${a.id}" ${cur===String(a.id)?'selected':''}>${a.nama}</option>`).join('');
+    el.innerHTML=(hasAll?'<option value="">Semua Asrama</option>':'')+asramaOptsSel;
   });
 
-  // Kobong di tagihan filter
-  const kobongOpts = ALL_KOBONG.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
   // Populate wali dropdowns
   const waliList = [...new Set(ALL_SANTRI.map(s=>s.created_by).filter(Boolean))].sort();
   ['filter-wali-tagihan','filter-wali-rekap'].forEach(id=>{
@@ -2590,15 +2603,19 @@ function fillSelects(){
 
   ['filter-kobong-tagihan','filter-kobong-santri','filter-kobong-rekap'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
-    el.innerHTML='<option value="">Semua Kobong</option>'+kobongOpts;
+    const cur = el.value;
+    const kobongOptsSel = ALL_KOBONG.map(k=>`<option value="${k.id}" ${cur===String(k.id)?'selected':''}>${k.nama}</option>`).join('');
+    el.innerHTML='<option value="">Semua Kobong</option>'+kobongOptsSel;
   });
 
   // Kelas dari data santri
   const kelasSet = new Set(ALL_SANTRI.map(s=>s.kelas).filter(Boolean));
-  const kelasOpts = [...kelasSet].sort((a,b)=>parseInt(a)-parseInt(b)).map(k=>`<option value="${k}">${k}</option>`).join('');
+  const kelasList = [...kelasSet].sort((a,b)=>parseInt(a)-parseInt(b));
   ['filter-kelas-tagihan','filter-kelas-santri','filter-kelas-rekap'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
-    el.innerHTML='<option value="">Semua Kelas</option>'+kelasOpts;
+    const cur = el.value;
+    const kelasOptsSel = kelasList.map(k=>`<option value="${k}" ${cur===String(k)?'selected':''}>${k}</option>`).join('');
+    el.innerHTML='<option value="">Semua Kelas</option>'+kelasOptsSel;
   });
 
   // Nama bulan untuk sorting yang benar
@@ -2613,22 +2630,25 @@ function fillSelects(){
   // Bulan di tagihan filter — urut benar, terbaru di atas
   const bulanSet = new Set(ALL_TAGIHAN.map(t=>t.bulan).filter(Boolean));
   const bulanSorted = [...bulanSet].sort((a,b)=>bulanOrder(b)-bulanOrder(a)); // desc (terbaru dulu)
-  const bulanOpts = bulanSorted.map(b=>`<option value="${b}">${b}</option>`).join('');
+  const bulanOptsBase = bulanSorted.map(b=>`<option value="${b}">${b}</option>`).join('');
   ['filter-bulan-tagihan','filter-bulan-riwayat','filter-bulan-rekap'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
-    el.innerHTML='<option value="">Semua Bulan</option>'+bulanOpts;
+    const cur = el.value;
+    const bulanOptsSel = bulanSorted.map(b=>`<option value="${b}" ${cur===b?'selected':''}>${b}</option>`).join('');
+    el.innerHTML='<option value="">Semua Bulan</option>'+bulanOptsSel;
   });
   // wa-bulan tetap seperti biasa
   const waEl=document.getElementById('wa-bulan');
-  if(waEl) waEl.innerHTML='<option value="">Bulan aktif</option>'+bulanOpts;
+  if(waEl) waEl.innerHTML='<option value="">Bulan aktif</option>'+bulanOptsBase;
 
   // Tahun dropdown — ambil dari bulan yang ada
   const tahunSet = new Set(bulanSorted.map(b=>b.split(' ')[1]).filter(Boolean));
   const tahunSorted = [...tahunSet].sort((a,b)=>parseInt(b)-parseInt(a));
-  const tahunOpts = tahunSorted.map(t=>`<option value="${t}">${t}</option>`).join('');
   ['filter-tahun-tagihan','filter-tahun-riwayat','filter-tahun-rekap','filter-tahun-tf'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
-    el.innerHTML='<option value="">Semua Tahun</option>'+tahunOpts;
+    const cur = el.value;
+    const tahunOptsSel = tahunSorted.map(t=>`<option value="${t}" ${cur===t?'selected':''}>${t}</option>`).join('');
+    el.innerHTML='<option value="">Semua Tahun</option>'+tahunOptsSel;
   });
 
   // Hapus semua button — hanya kangadmin
@@ -3674,7 +3694,7 @@ async function prosesGeneratePerSantri(){
         nominal_listrik: nomListrik,
         status,
         nominal_bayar: sudahBayar,
-        tgl_bayar: status==='lunas' ? new Date().toISOString().split('T')[0] : null,
+        tgl_bayar: status==='lunas' ? today() : null,
         dicatat_oleh: SESSION.nama||SESSION.username,
       });
       if(error){
@@ -5036,7 +5056,7 @@ async function prosesSantriKeluar(){
   const s = getSantriById(_skSantriId)||{};
   const opsi = document.querySelector('input[name="sk-opsi"]:checked')?.value||'piutang';
   const catatan = document.getElementById('sk-catatan').value.trim();
-  const tglKeluar = new Date().toISOString().split('T')[0];
+  const tglKeluar = today();
   const btn = document.getElementById('btn-proses-keluar');
 
   const tunggakanList = ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(_skSantriId)&&t.status!=='lunas');
@@ -5205,7 +5225,7 @@ async function prosesPiutangLunas(){
   try{
     const {error} = await SB.from('piutang_alumni').update({
       status_piutang:'lunas',
-      tgl_lunas: new Date().toISOString().split('T')[0],
+      tgl_lunas: today(),
       catatan_lunas: catatan||null,
     }).eq('id',_plId);
     if(error){ toast('Gagal: '+error.message,false); return; }
@@ -5364,8 +5384,10 @@ function renderTFAdmin(){
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             ${tf.uang_makan?`<span style="font-size:11px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:2px 8px;color:#0369a1">🍽️${dNama?' '+dNama:''}: ${fmtRp(tf.uang_makan)}</span>`:''}
             ${tf.listrik?`<span style="font-size:11px;background:#fefce8;border:1px solid #fde047;border-radius:6px;padding:2px 8px;color:#a16207">⚡ ${fmtRp(tf.listrik)}</span>`:''}
-            ${tf.spp?`<span style="font-size:11px;background:#fdf4ff;border:1px solid #e879f9;border-radius:6px;padding:2px 8px;color:#7e22ce">📚 ${fmtRp(tf.spp)}</span>`:''}
+            ${tf.spp_mts?`<span style="font-size:11px;background:#fdf4ff;border:1px solid #e879f9;border-radius:6px;padding:2px 8px;color:#7e22ce">📚 MTs: ${fmtRp(tf.spp_mts)}</span>`:''}
+            ${tf.spp_ma?`<span style="font-size:11px;background:#fdf4ff;border:1px solid #e879f9;border-radius:6px;padding:2px 8px;color:#7e22ce">📚 MA: ${fmtRp(tf.spp_ma)}</span>`:''}
             ${tf.uang_jajan?`<span style="font-size:11px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:2px 8px;color:#c2410c">💵 ${fmtRp(tf.uang_jajan)}</span>`:''}
+            ${tf.dll?JSON.parse(tf.dll).map(i=>`<span style="font-size:11px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:2px 8px;color:#475569">📌 ${i.ket}: ${fmtRp(i.nominal)}</span>`).join(''):''}
             ${sisa!==0?`<span style="font-size:11px;background:${sisa>0?'#f0fdf4':'#fef2f2'};border:1px solid ${sisa>0?'#bbf7d0':'#fecaca'};border-radius:6px;padding:2px 8px;color:${sisa>0?'var(--green)':'var(--red)'}">
               ${sisa>0?'💰':'⚠️'}: ${fmtRp(Math.abs(sisa))}</span>`:''}
           </div>
@@ -5491,9 +5513,11 @@ function bukaModalTFAdmin(){
   document.getElementById('tf-total').value='';
   document.getElementById('tf-makan').value='';
   document.getElementById('tf-listrik').value='';
-  document.getElementById('tf-spp').value='';
+  document.getElementById('tf-spp-mts').value='';
+  document.getElementById('tf-spp-ma').value='';
   document.getElementById('tf-jajan').value='';
   document.getElementById('tf-catatan').value='';
+  document.getElementById('tf-dll-list').innerHTML='';
   document.getElementById('tf-makan-hint').textContent='';
   document.getElementById('tf-listrik-hint').textContent='';
   document.getElementById('tf-makan-dapur-info').textContent='';
@@ -5514,9 +5538,15 @@ function editTFAdmin(id){
   document.getElementById('tf-total').value=tf.total_tf||'';
   document.getElementById('tf-makan').value=tf.uang_makan||'';
   document.getElementById('tf-listrik').value=tf.listrik||'';
-  document.getElementById('tf-spp').value=tf.spp||'';
+  document.getElementById('tf-spp-mts').value=tf.spp_mts||'';
+  document.getElementById('tf-spp-ma').value=tf.spp_ma||'';
   document.getElementById('tf-jajan').value=tf.uang_jajan||'';
   document.getElementById('tf-catatan').value=tf.catatan||'';
+  // Isi dll
+  document.getElementById('tf-dll-list').innerHTML='';
+  if(tf.dll && Array.isArray(tf.dll)){
+    tf.dll.forEach(item=>tfTambahDll(item.ket, item.nominal));
+  }
   document.getElementById('mo-tf-title').textContent='✏️ Edit TF Admin';
   if(tf.santri_id) tfIsibulanCheckbox(tf.santri_id);
   // Re-check bulan yang sudah dipilih
@@ -5539,13 +5569,33 @@ function editTFAdmin(id){
 
 function tfAutoFillTagihan(){ /* deprecated, pakai tfBulanChecked */ }
 
+function tfTambahDll(ket='', nominal=''){
+  const list = document.getElementById('tf-dll-list');
+  const idx = list.children.length;
+  const div = document.createElement('div');
+  div.style.cssText='display:flex;gap:6px;margin-bottom:6px;align-items:center';
+  div.innerHTML=`
+    <input type="text" placeholder="Keterangan" value="${ket}" 
+      style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"
+      class="tf-dll-ket">
+    <input type="number" placeholder="Nominal" value="${nominal}"
+      style="width:120px;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"
+      class="tf-dll-nominal" oninput="tfHitungSisa()">
+    <button type="button" onclick="this.parentElement.remove();tfHitungSisa()"
+      style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--red);font-size:14px">✕</button>
+  `;
+  list.appendChild(div);
+}
+
 function tfHitungSisa(){
   const total = Number(document.getElementById('tf-total')?.value||0);
   const makan = Number(document.getElementById('tf-makan')?.value||0);
   const listrik = Number(document.getElementById('tf-listrik')?.value||0);
-  const spp = Number(document.getElementById('tf-spp')?.value||0);
+  const sppMts = Number(document.getElementById('tf-spp-mts')?.value||0);
+  const sppMa = Number(document.getElementById('tf-spp-ma')?.value||0);
   const jajan = Number(document.getElementById('tf-jajan')?.value||0);
-  const sisa = total - makan - listrik - spp - jajan;
+  const dllTotal = [...document.querySelectorAll('.tf-dll-nominal')].reduce((s,el)=>s+Number(el.value||0),0);
+  const sisa = total - makan - listrik - sppMts - sppMa - jajan - dllTotal;
   const sisaEl = document.getElementById('tf-sisa-display');
   const sisaBox = document.getElementById('tf-sisa-box');
   if(sisaEl){
@@ -5564,9 +5614,19 @@ async function simpanTFAdmin(){
   const total = Number(document.getElementById('tf-total').value||0);
   const makan = Number(document.getElementById('tf-makan').value||0);
   const listrik = Number(document.getElementById('tf-listrik').value||0);
-  const spp = Number(document.getElementById('tf-spp').value||0);
+  const sppMts = Number(document.getElementById('tf-spp-mts').value||0);
+  const sppMa = Number(document.getElementById('tf-spp-ma').value||0);
   const jajan = Number(document.getElementById('tf-jajan').value||0);
   const catatan = document.getElementById('tf-catatan').value.trim();
+
+  // Kumpulkan dll
+  const dllItems = [];
+  document.querySelectorAll('#tf-dll-list > div').forEach(div=>{
+    const ket = div.querySelector('.tf-dll-ket')?.value?.trim()||'';
+    const nom = Number(div.querySelector('.tf-dll-nominal')?.value||0);
+    if(ket || nom) dllItems.push({ket, nominal:nom});
+  });
+  const dllTotal = dllItems.reduce((s,i)=>s+i.nominal,0);
 
   // Ambil bulan yang dicentang
   const cbs = document.querySelectorAll('.tf-bulan-cb:checked');
@@ -5577,7 +5637,7 @@ async function simpanTFAdmin(){
   if(!total){ toast('Isi total TF!', false); return; }
 
   const s = getSantriById(santriId)||{};
-  const sisa = total - makan - listrik - spp - jajan;
+  const sisa = total - makan - listrik - sppMts - sppMa - jajan - dllTotal;
   const bulanStr = bulanArr.join(', ');
 
   const payload = {
@@ -5586,8 +5646,12 @@ async function simpanTFAdmin(){
     bulan: bulanStr,
     total_tf: total,
     uang_makan: makan,
-    listrik, spp,
+    listrik,
+    spp_mts: sppMts,
+    spp_ma: sppMa,
+    spp: sppMts + sppMa,
     uang_jajan: jajan,
+    dll: dllItems.length ? JSON.stringify(dllItems) : null,
     sisa, catatan,
     created_by: SESSION?.username||''
   };
@@ -7182,7 +7246,27 @@ function updateHeaderProfilAv(){
 }
 
 // ===== LOGOUT =====
+function resetFiltersBendahara(){
+  // Reset semua input filter
+  [
+    'cari-santri','cari-tagihan','cari-rekap','cari-riwayat','cari-tf',
+    'filter-tgl-dari-tf','filter-tgl-sampai-tf'
+  ].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+
+  // Reset semua select filter
+  [
+    'filter-asrama-tagihan','filter-kobong-tagihan','filter-kelas-tagihan',
+    'filter-bulan-tagihan','filter-tahun-tagihan','filter-status-tagihan',
+    'filter-asrama-rekap','filter-kobong-rekap','filter-kelas-rekap',
+    'filter-bulan-rekap','filter-tahun-rekap',
+    'filter-asrama-santri','filter-kobong-santri','filter-kelas-santri',
+    'filter-tahun-riwayat','filter-bulan-riwayat',
+    'filter-tahun-tf','filter-bulan-tf','filter-piutang-status'
+  ].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+}
+
 function doLogout(){
+  resetFiltersBendahara();
   if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
   teardownRealtimeSync();
   clearSession(); SESSION=null;
