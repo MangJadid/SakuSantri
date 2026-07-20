@@ -1749,7 +1749,7 @@ function fmtTanggal(tgl){
   return `${hari}, ${tglNum} ${bln} ${thn}`;
 }
 const rpSaldo = v => (v < 0 ? `<span style="color:var(--red);font-weight:800">− Rp ${Math.abs(v||0).toLocaleString('id-ID')}</span>` : `Rp ${(v||0).toLocaleString('id-ID')}`);
-const today = () => new Date().toISOString().split('T')[0];
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const bNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const avColor = name => COLORS[name ? name.charCodeAt(0) % COLORS.length : 0];
 const avLetter = name => (name||'?')[0].toUpperCase();
@@ -2577,6 +2577,10 @@ function showTab(id){
   if((id==='pengaturan'||id==='monitor'||id==='pengurus') && SESSION && SESSION.role!=='super') return;
   if((id==='kobong'||id==='naikkelas'||id==='persetujuan') && SESSION && SESSION.role!=='super' && SESSION.role!=='sekretaris' && SESSION.role!=='sekretariat') return;
   if(['dashboard','santri','massal','riwayat','kobong','pengurus','monitor','naikkelas','pengaturan','persetujuan'].includes(id) && SESSION && SESSION.role==='ortu') return;
+
+  // Reset filter saat pindah tab
+  resetAllFilters();
+
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));
   document.querySelectorAll('.tb').forEach(t=>t.classList.remove('act'));
   const s=document.getElementById('sec-'+id), t=document.getElementById('tab-'+id);
@@ -3782,7 +3786,6 @@ async function simpanTx(){
 
   closeMo('mo-tx');
   await loadAllData();
-  resetAllFilters();
   renderDashboard();
   renderTabelSantri();
   renderRiwayat();
@@ -6860,6 +6863,12 @@ function doLogout(){
   if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
   sessionStorage.removeItem('greeting_idx');
   SESSION=null; ALL_SANTRI=[]; ALL_KOBONG=[]; ALL_ASRAMA=[]; ALL_PENGURUS=[]; ALL_TX=[];
+
+  // Reset semua filter
+  resetFPanel('dash', DASH_FILTER_IDS, ()=>{});
+  resetFPanel('santri', SANTRI_FILTER_IDS, ()=>{});
+  resetFPanel('riw', RIW_FILTER_IDS, ()=>{});
+
   document.body.classList.remove('role-super','role-pengurus','role-ortu');
   document.getElementById('pg-app').style.display='none';
   document.getElementById('pg-login').style.display='flex';
