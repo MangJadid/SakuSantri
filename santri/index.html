@@ -612,6 +612,10 @@ body.role-pengurus #sec-pengaturan{display:none!important}
 body.role-ortu #sec-pengaturan{display:none!important}
 body.role-sekretaris #sec-pengaturan{display:none!important}
 body.role-sekretariat #sec-pengaturan{display:none!important}
+body.role-pengurus #sec-notifikasi{display:none!important}
+body.role-ortu #sec-notifikasi{display:none!important}
+body.role-sekretaris #sec-notifikasi{display:none!important}
+body.role-sekretariat #sec-notifikasi{display:none!important}
 body.role-ortu #notif-bar{display:none!important}
 body.role-sekretaris .super-only{display:inline-block!important}
 body.role-sekretariat .super-only{display:inline-block!important}
@@ -1190,6 +1194,63 @@ _updateOfflineScreen();
     <div class="sec" id="sec-pengaturan"></div>
 
     <!-- MONITOR AKTIVITAS (hanya super admin) -->
+    <div class="sec" id="sec-notifikasi">
+      <div class="panel">
+        <div class="ph"><h2>🔔 Kirim Notifikasi</h2></div>
+        <div class="pb">
+
+          <!-- Subscriber aktif -->
+          <div style="background:var(--green-p);border:1.5px solid var(--green-b);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:20px">📱</span>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--green)" id="notif-subscriber-count">Memuat subscriber...</div>
+              <div style="font-size:11px;color:var(--text-m)">Pengurus yang sudah izinkan notifikasi</div>
+            </div>
+          </div>
+
+          <!-- Jenis notifikasi -->
+          <div class="fg">
+            <label>Jenis Notifikasi</label>
+            <select id="notif-tipe" onchange="onNotifTipeChange()">
+              <option value="bebas">📢 Pesan Bebas</option>
+              <option value="tutup_bulan">📅 Pengingat Tutup Bulan</option>
+            </select>
+          </div>
+
+          <!-- Judul -->
+          <div class="fg">
+            <label>Judul</label>
+            <input type="text" id="notif-judul" placeholder="Judul notifikasi...">
+          </div>
+
+          <!-- Pesan -->
+          <div class="fg">
+            <label>Pesan</label>
+            <textarea id="notif-pesan" rows="4" placeholder="Isi pesan notifikasi..." style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+
+          <!-- Penerima -->
+          <div class="fg">
+            <label>Kirim ke</label>
+            <select id="notif-target">
+              <option value="">Semua Pengurus</option>
+            </select>
+          </div>
+
+          <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px" onclick="kirimNotifikasi()">
+            🔔 Kirim Notifikasi
+          </button>
+
+          <!-- Riwayat -->
+          <div style="margin-top:24px">
+            <div style="font-size:13px;font-weight:700;color:var(--text-m);margin-bottom:10px">📋 Riwayat Notifikasi</div>
+            <div id="notif-riwayat-list"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <div class="sec" id="sec-monitor"></div>
 
     <!-- NAIK KELAS / PINDAH KOBONG (hanya super admin) -->
@@ -2253,6 +2314,12 @@ async function enterApp(){
   resetSessionTimer();
   if(SESSION.role==='ortu'){ renderDetailOrtu(); updateBadgeSyahriyah(); }
   if(SESSION.role==='pengurus'||SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') startActivityTracking();
+
+  // Daftarkan push notification untuk pengurus/super/sekretaris
+  if(SESSION.role!=='ortu'){
+    setTimeout(()=>registerPushNotification(), 2000);
+  }
+
   hideLoginOverlay();
 }
 
@@ -2560,6 +2627,7 @@ function buildTabs(){
       t += tab('naikkelas','🎓 Naik Kelas');
       t += tab('pengurus','👨‍💼 Pengurus');
       t += tab('persetujuan','🗑️ Persetujuan<span id="badge-persetujuan" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:5px">0</span>');
+      t += tab('notifikasi','🔔 Notifikasi');
       t += tab('monitor','👁️ Monitor');
       t += tab('pengaturan','⚙️ Pengaturan');
     }
@@ -2591,6 +2659,7 @@ function showTab(id){
   if(id==='riwayat') renderRiwayat();
   if(id==='kobong') renderKobong();
   if(id==='pengurus') renderPengurus();
+  if(id==='notifikasi') renderNotifikasi();
   if(id==='monitor') renderMonitor();
   if(id==='naikkelas') renderNaikKelas();
   if(id==='persetujuan') prsShowSub('pending');
@@ -6832,6 +6901,138 @@ async function tutupBulan(){
     if(st) st.innerHTML = `<span style="color:var(--red)">❌ Gagal: ${e.message}</span>`;
     if(btn){ btn.disabled=false; btn.textContent='🗓️ 2. Tutup Bulan'; }
     toast('Gagal tutup bulan: '+e.message, false);
+  }
+}
+
+// ===== NOTIFIKASI =====
+async function renderNotifikasi(){
+  // Hitung subscriber
+  const { data: subs } = await SB.from('push_subscriptions').select('id, username');
+  const countEl = document.getElementById('notif-subscriber-count');
+  if(countEl) countEl.textContent = `${subs?.length||0} pengurus terdaftar`;
+
+  // Isi dropdown penerima
+  const sel = document.getElementById('notif-target');
+  if(sel){
+    sel.innerHTML = '<option value="">Semua Pengurus</option>';
+    (subs||[]).forEach(s=>{
+      sel.innerHTML += `<option value="${s.username}">${s.username}</option>`;
+    });
+  }
+
+  // Riwayat notifikasi
+  const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  const listEl = document.getElementById('notif-riwayat-list');
+  if(listEl){
+    if(!riwayat?.length){ listEl.innerHTML='<div style="color:var(--text-l);font-size:13px;text-align:center;padding:16px">Belum ada notifikasi dikirim</div>'; return; }
+    listEl.innerHTML = riwayat.map(n=>{
+      const tgl = new Date(n.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div>
+            <div style="font-weight:700;font-size:13px">${n.judul}</div>
+            <div style="font-size:12px;color:var(--text-m);margin-top:2px">${n.pesan}</div>
+            <div style="font-size:11px;color:var(--text-l);margin-top:4px">
+              ${n.target_username?`👤 ${n.target_username}`:'👥 Semua pengurus'} · ${tgl}
+            </div>
+          </div>
+          <span style="font-size:11px;background:var(--green-p);color:var(--green);padding:2px 8px;border-radius:6px;white-space:nowrap">${n.tipe||'bebas'}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function onNotifTipeChange(){
+  const tipe = document.getElementById('notif-tipe')?.value;
+  const judulEl = document.getElementById('notif-judul');
+  const pesanEl = document.getElementById('notif-pesan');
+  if(tipe==='tutup_bulan'){
+    if(judulEl) judulEl.value = '📅 Pengingat Tutup Bulan';
+    if(pesanEl) pesanEl.value = `Mohon segera selesaikan input data bulan ${bulanAktif()} sebelum ditutup. Pastikan semua transaksi sudah tercatat dengan benar.`;
+  } else {
+    if(judulEl) judulEl.value = '';
+    if(pesanEl) pesanEl.value = '';
+  }
+}
+
+async function kirimNotifikasi(){
+  const judul = document.getElementById('notif-judul')?.value?.trim();
+  const pesan = document.getElementById('notif-pesan')?.value?.trim();
+  const tipe = document.getElementById('notif-tipe')?.value;
+  const target = document.getElementById('notif-target')?.value;
+
+  if(!judul){ toast('Isi judul notifikasi!', false); return; }
+  if(!pesan){ toast('Isi pesan notifikasi!', false); return; }
+
+  toast('⏳ Mengirim notifikasi...');
+
+  try{
+    const res = await fetch('https://menfnmfwtxgcgvkbbjxh.supabase.co/functions/v1/send-push', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec`
+      },
+      body: JSON.stringify({
+        judul, pesan, tipe,
+        target_username: target || null,
+        dikirim_oleh: SESSION?.user?.username || 'admin'
+      })
+    });
+    const data = await res.json();
+    if(data.success){
+      toast(`✅ Notifikasi terkirim ke ${data.sent} pengurus!`);
+      document.getElementById('notif-judul').value='';
+      document.getElementById('notif-pesan').value='';
+      renderNotifikasi();
+    } else {
+      toast('Gagal kirim: '+(data.error||'Unknown error'), false);
+    }
+  } catch(e){
+    toast('Error: '+e.message, false);
+  }
+}
+
+// ===== PUSH NOTIFICATION =====
+const VAPID_PUBLIC_KEY = 'BFY1KcdVaEFgXe_qujetvzOPuulb7Q7DNpQasCptcH7rWK4hqh3w-u4ab9xxgOAXOSAn4nh7tKPFbKZDP-nU42U';
+const PUSH_FUNCTION_URL = 'https://menfnmfwtxgcgvkbbjxh.supabase.co/functions/v1/send-push';
+
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
+}
+
+async function registerPushNotification(){
+  try{
+    if(!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    const reg = await navigator.serviceWorker.ready;
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted') return;
+
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    // Simpan subscription ke Supabase
+    const username = SESSION?.user?.username || SESSION?.user?.nama || '';
+    const pengurusId = SESSION?.user?.id || null;
+    await SB.from('push_subscriptions').upsert({
+      pengurus_id: pengurusId,
+      username: username,
+      subscription: sub.toJSON(),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'username' });
+
+    console.log('Push notification registered for', username);
+  } catch(e){
+    console.log('Push registration failed:', e.message);
   }
 }
 
