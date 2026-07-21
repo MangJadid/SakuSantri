@@ -5310,9 +5310,23 @@ function renderTFAdmin(){
   const totalMasuk = data.reduce((s,tf)=>s+Number(tf.total_tf||0),0);
   const totalMakan = data.reduce((s,tf)=>s+Number(tf.uang_makan||0),0);
   const totalListrik = data.reduce((s,tf)=>s+Number(tf.listrik||0),0);
-  const totalSPP = data.reduce((s,tf)=>s+Number(tf.spp||0),0);
+  const totalSppMts = data.reduce((s,tf)=>s+Number(tf.spp_mts||0),0);
+  const totalSppMa = data.reduce((s,tf)=>s+Number(tf.spp_ma||0),0);
   const totalJajan = data.reduce((s,tf)=>s+Number(tf.uang_jajan||0),0);
   const totalSisa = data.reduce((s,tf)=>s+Number(tf.sisa||0),0);
+
+  // Rekap Dll per keterangan
+  const dllRekap = {};
+  data.forEach(tf=>{
+    if(!tf.dll) return;
+    try{
+      JSON.parse(tf.dll).forEach(item=>{
+        const ket = item.ket || 'Lainnya';
+        if(!dllRekap[ket]) dllRekap[ket]=0;
+        dllRekap[ket] += Number(item.nominal||0);
+      });
+    }catch(e){}
+  });
 
   // Rekap per dapur
   const dapurRekap = {};
@@ -5333,6 +5347,13 @@ function renderTFAdmin(){
       </div>
     `).join('');
 
+    const dllHtml = Object.entries(dllRekap).map(([ket,total])=>`
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">📌 ${ket}</div>
+        <div style="font-size:16px;font-weight:700;color:#475569">${fmtRp(total)}</div>
+      </div>
+    `).join('');
+
     rekapEl.innerHTML = `
       <div style="background:var(--green-p);border:1.5px solid var(--green-b);border-radius:10px;padding:12px;text-align:center">
         <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">Total TF Masuk</div>
@@ -5343,14 +5364,19 @@ function renderTFAdmin(){
         <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">⚡ Listrik</div>
         <div style="font-size:16px;font-weight:700;color:#a16207">${fmtRp(totalListrik)}</div>
       </div>
-      <div style="background:#fdf4ff;border:1.5px solid #e879f9;border-radius:10px;padding:12px;text-align:center">
-        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">📚 SPP</div>
-        <div style="font-size:16px;font-weight:700;color:#7e22ce">${fmtRp(totalSPP)}</div>
-      </div>
+      ${totalSppMts?`<div style="background:#fdf4ff;border:1.5px solid #e879f9;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">📚 SPP MTs</div>
+        <div style="font-size:16px;font-weight:700;color:#7e22ce">${fmtRp(totalSppMts)}</div>
+      </div>`:''}
+      ${totalSppMa?`<div style="background:#fdf4ff;border:1.5px solid #e879f9;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">📚 SPP MA</div>
+        <div style="font-size:16px;font-weight:700;color:#7e22ce">${fmtRp(totalSppMa)}</div>
+      </div>`:''}
       <div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:10px;padding:12px;text-align:center">
         <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">💵 Uang Jajan</div>
         <div style="font-size:16px;font-weight:700;color:#c2410c">${fmtRp(totalJajan)}</div>
       </div>
+      ${dllHtml}
       ${totalSisa!==0?`<div style="background:${totalSisa>0?'#f0fdf4':'#fef2f2'};border:1.5px solid ${totalSisa>0?'#bbf7d0':'#fecaca'};border-radius:10px;padding:12px;text-align:center">
         <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${totalSisa>0?'💰 Sisa':'⚠️ Kekurangan'}</div>
         <div style="font-size:16px;font-weight:700;color:${totalSisa>0?'var(--green)':'var(--red)'}">${fmtRp(Math.abs(totalSisa))}</div>
@@ -5715,9 +5741,31 @@ function printTFAdmin(){
   const totalMasuk = data.reduce((s,tf)=>s+Number(tf.total_tf||0),0);
   const totalMakan = data.reduce((s,tf)=>s+Number(tf.uang_makan||0),0);
   const totalListrik = data.reduce((s,tf)=>s+Number(tf.listrik||0),0);
-  const totalSPP = data.reduce((s,tf)=>s+Number(tf.spp||0),0);
+  const totalSppMts = data.reduce((s,tf)=>s+Number(tf.spp_mts||0),0);
+  const totalSppMa = data.reduce((s,tf)=>s+Number(tf.spp_ma||0),0);
   const totalJajan = data.reduce((s,tf)=>s+Number(tf.uang_jajan||0),0);
   const totalSisa = data.reduce((s,tf)=>s+Number(tf.sisa||0),0);
+  const totalDllAll = data.reduce((s,tf)=>{
+    if(!tf.dll) return s;
+    try{ return s + JSON.parse(tf.dll).reduce((s2,i)=>s2+Number(i.nominal||0),0); }catch(e){ return s; }
+  },0);
+  const dllRekap = {};
+  data.forEach(tf=>{
+    if(!tf.dll) return;
+    try{
+      JSON.parse(tf.dll).forEach(item=>{
+        const ket = item.ket || 'Lainnya';
+        if(!dllRekap[ket]) dllRekap[ket]=0;
+        dllRekap[ket] += Number(item.nominal||0);
+      });
+    }catch(e){}
+  });
+  const dllRekapHtml = Object.entries(dllRekap).map(([ket,total])=>`
+    <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:10px;color:#666;font-weight:600">📌 ${ket.toUpperCase()}</div>
+      <div style="font-size:14px;font-weight:700">${fmtRp(total)}</div>
+    </div>
+  `).join('');
   const dapurRekap = {};
   data.forEach(tf=>{
     const s = getSantriById(tf.santri_id)||{};
@@ -5738,6 +5786,9 @@ function printTFAdmin(){
     const s = getSantriById(tf.santri_id)||{};
     const d = DAPUR_LIST?.find(dp=>String(dp.id)===String(s.dapur_id));
     const dNama = d ? d.nama : '—';
+    let dllList = [];
+    try{ dllList = tf.dll ? JSON.parse(tf.dll) : []; }catch(e){}
+    const dllText = dllList.length ? dllList.map(it=>`${it.ket}: ${fmtRp(it.nominal)}`).join('<br>') : '—';
     return `<tr>
       <td style="border:1px solid #ddd;padding:5px;text-align:center">${i+1}</td>
       <td style="border:1px solid #ddd;padding:5px">${tf.nama_santri||'—'}</td>
@@ -5745,8 +5796,10 @@ function printTFAdmin(){
       <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(tf.total_tf)}</td>
       <td style="border:1px solid #ddd;padding:5px;text-align:right;font-size:11px">${tf.uang_makan?`${fmtRp(tf.uang_makan)}<br><span style="color:#666">${dNama}</span>`:'—'}</td>
       <td style="border:1px solid #ddd;padding:5px;text-align:right">${tf.listrik?fmtRp(tf.listrik):'—'}</td>
-      <td style="border:1px solid #ddd;padding:5px;text-align:right">${tf.spp?fmtRp(tf.spp):'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right">${tf.spp_mts?fmtRp(tf.spp_mts):'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right">${tf.spp_ma?fmtRp(tf.spp_ma):'—'}</td>
       <td style="border:1px solid #ddd;padding:5px;text-align:right">${tf.uang_jajan?fmtRp(tf.uang_jajan):'—'}</td>
+      <td style="border:1px solid #ddd;padding:5px;text-align:right;font-size:10px">${dllText}</td>
       <td style="border:1px solid #ddd;padding:5px;text-align:right;color:${Number(tf.sisa||0)>=0?'green':'red'}">${tf.sisa?fmtRp(Math.abs(tf.sisa)):'—'}</td>
     </tr>`;
   }).join('');
@@ -5782,13 +5835,18 @@ function printTFAdmin(){
           <div style="font-size:14px;font-weight:700">${fmtRp(totalListrik)}</div>
         </div>
         <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:#666;font-weight:600">📚 SPP</div>
-          <div style="font-size:14px;font-weight:700">${fmtRp(totalSPP)}</div>
+          <div style="font-size:10px;color:#666;font-weight:600">📚 SPP MTs</div>
+          <div style="font-size:14px;font-weight:700">${fmtRp(totalSppMts)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:#666;font-weight:600">📚 SPP MA</div>
+          <div style="font-size:14px;font-weight:700">${fmtRp(totalSppMa)}</div>
         </div>
         <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
           <div style="font-size:10px;color:#666;font-weight:600">💵 UANG JAJAN</div>
           <div style="font-size:14px;font-weight:700">${fmtRp(totalJajan)}</div>
         </div>
+        ${dllRekapHtml}
         <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center;background:${totalSisa>=0?'#f0fdf4':'#fef2f2'}">
           <div style="font-size:10px;color:#666;font-weight:600">${totalSisa>=0?'SISA':'KEKURANGAN'}</div>
           <div style="font-size:14px;font-weight:700;color:${totalSisa>=0?'green':'red'}">${fmtRp(Math.abs(totalSisa))}</div>
@@ -5806,8 +5864,10 @@ function printTFAdmin(){
               <th style="border:1px solid #ddd;padding:5px;text-align:right">Total TF</th>
               <th style="border:1px solid #ddd;padding:5px;text-align:right">Makan/Dapur</th>
               <th style="border:1px solid #ddd;padding:5px;text-align:right">Listrik</th>
-              <th style="border:1px solid #ddd;padding:5px;text-align:right">SPP</th>
+              <th style="border:1px solid #ddd;padding:5px;text-align:right">SPP MTs</th>
+              <th style="border:1px solid #ddd;padding:5px;text-align:right">SPP MA</th>
               <th style="border:1px solid #ddd;padding:5px;text-align:right">Jajan</th>
+              <th style="border:1px solid #ddd;padding:5px;text-align:right">Lainnya (Dll)</th>
               <th style="border:1px solid #ddd;padding:5px;text-align:right">Sisa</th>
             </tr>
           </thead>
@@ -5818,8 +5878,10 @@ function printTFAdmin(){
               <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalMasuk)}</td>
               <td style="border:1px solid #ddd;padding:5px;text-align:right;font-size:10px;line-height:1.6">${totalMakanPerDapurHtml}</td>
               <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalListrik)}</td>
-              <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalSPP)}</td>
+              <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalSppMts)}</td>
+              <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalSppMa)}</td>
               <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalJajan)}</td>
+              <td style="border:1px solid #ddd;padding:5px;text-align:right">${fmtRp(totalDllAll)}</td>
               <td style="border:1px solid #ddd;padding:5px;text-align:right;color:${totalSisa>=0?'green':'red'}">${fmtRp(Math.abs(totalSisa))}</td>
             </tr>
           </tfoot>
@@ -5867,6 +5929,10 @@ function exportExcelTFAdmin(){
     const tgl = tf.created_at ? new Date(tf.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '—';
     const s = getSantriById(tf.santri_id)||{};
     const dNama = getDapurNama(s.dapur_id)||'—';
+    let dllList = [];
+    try{ dllList = tf.dll ? JSON.parse(tf.dll) : []; }catch(e){}
+    const dllText = dllList.map(it=>`${it.ket}: ${fmtRp(it.nominal)}`).join('; ');
+    const dllTotal = dllList.reduce((s2,it)=>s2+Number(it.nominal||0),0);
     return [
       i+1,
       tf.nama_santri||'—',
@@ -5876,15 +5942,18 @@ function exportExcelTFAdmin(){
       Number(tf.uang_makan||0),
       dNama,
       Number(tf.listrik||0),
-      Number(tf.spp||0),
+      Number(tf.spp_mts||0),
+      Number(tf.spp_ma||0),
       Number(tf.uang_jajan||0),
+      dllText,
+      dllTotal,
       Number(tf.sisa||0),
       tf.catatan||''
     ];
   });
 
   // Header
-  const header = ['#','Nama Santri','Tgl Input','Bulan','Total TF','Uang Makan','Dapur','Listrik','SPP','Uang Jajan','Sisa','Catatan'];
+  const header = ['#','Nama Santri','Tgl Input','Bulan','Total TF','Uang Makan','Dapur','Listrik','SPP MTs','SPP MA','Uang Jajan','Lainnya (Dll)','Total Dll','Sisa','Catatan'];
 
   // Total row
   const totalRow = [
@@ -5893,8 +5962,14 @@ function exportExcelTFAdmin(){
     data.reduce((s,tf)=>s+Number(tf.uang_makan||0),0),
     '',
     data.reduce((s,tf)=>s+Number(tf.listrik||0),0),
-    data.reduce((s,tf)=>s+Number(tf.spp||0),0),
+    data.reduce((s,tf)=>s+Number(tf.spp_mts||0),0),
+    data.reduce((s,tf)=>s+Number(tf.spp_ma||0),0),
     data.reduce((s,tf)=>s+Number(tf.uang_jajan||0),0),
+    '',
+    data.reduce((s,tf)=>{
+      if(!tf.dll) return s;
+      try{ return s + JSON.parse(tf.dll).reduce((s2,it)=>s2+Number(it.nominal||0),0); }catch(e){ return s; }
+    },0),
     data.reduce((s,tf)=>s+Number(tf.sisa||0),0),
     ''
   ];
