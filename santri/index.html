@@ -612,6 +612,12 @@ body.role-pengurus #sec-pengaturan{display:none!important}
 body.role-ortu #sec-pengaturan{display:none!important}
 body.role-sekretaris #sec-pengaturan{display:none!important}
 body.role-sekretariat #sec-pengaturan{display:none!important}
+body.role-pengawas #sec-pengaturan{display:none!important}
+body.role-pengawas #sec-notifikasi{display:none!important}
+body.role-pengawas #sec-massal{display:none!important}
+body.role-pengawas #sec-persetujuan{display:none!important}
+body.role-pengawas #sec-naikkelas{display:none!important}
+body.role-pengawas .non-pengawas{display:none!important}
 body.role-pengurus #sec-notifikasi{display:none!important}
 body.role-ortu #sec-notifikasi{display:none!important}
 body.role-sekretaris #sec-notifikasi{display:none!important}
@@ -1251,6 +1257,27 @@ _updateOfflineScreen();
       </div>
     </div>
 
+    <!-- KEUANGAN (pengawas) -->
+    <div class="sec" id="sec-keuangan">
+      <div class="panel">
+        <div class="ph">
+          <h2>💰 Rekap Keuangan</h2>
+          <select id="filter-bulan-keuangan" onchange="renderKeuangan()" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="">Semua Bulan</option>
+          </select>
+        </div>
+        <div class="pb">
+          <div id="keuangan-rekap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px"></div>
+          <div id="keuangan-progress" style="margin-bottom:20px"></div>
+          <div id="keuangan-dapur" style="margin-bottom:20px"></div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-m);margin-bottom:10px">⚠️ Santri Tunggakan Terbesar</div>
+            <div id="keuangan-tunggakan"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="sec" id="sec-monitor"></div>
 
     <!-- NAIK KELAS / PINDAH KOBONG (hanya super admin) -->
@@ -1555,6 +1582,7 @@ _updateOfflineScreen();
         <select id="pg-role" onchange="onPengurusRoleChange()" style="padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%">
           <option value="pengurus">👨‍💼 Pengurus — kelola santri kobong sendiri</option>
           <option value="sekretariat">🏢 Sekretariat — akses lebih luas per asrama</option>
+          <option value="pengawas">👁️ Pengawas — lihat semua data tanpa aksi</option>
         </select>
       </div>
       <!-- Kobong (untuk pengurus biasa) -->
@@ -2194,7 +2222,11 @@ async function loginPengurus(){
     await SB.from('pengurus').update({password_hash: upgraded}).eq('id', pgData.id);
   }
   if(pgData.force_logout) await SB.from('pengurus').update({force_logout:false}).eq('id', pgData.id);
-  const detectedRole = (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
+  const detectedRole = pgData.role==='pengawas' ? 'pengawas' : (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
+  if(detectedRole==='pengawas'){
+    const {data:cfg} = await SB.from('settings').select('value').eq('key','pengawas_akses_tab').single().catch(()=>({data:null}));
+    if(cfg) pgData.akses_tab = cfg.value;
+  }
   showLoginOverlay('Selamat datang!', pgData.nama||user);
   SESSION = {role: detectedRole, user: pgData};
   _freshLoginPending = true;
@@ -2285,7 +2317,7 @@ async function enterApp(){
   savePersistentSession();
 
   // Tambah class role ke body untuk CSS targeting
-  document.body.classList.remove('role-super','role-pengurus','role-ortu','role-sekretaris','role-sekretariat');
+  document.body.classList.remove('role-super','role-pengurus','role-ortu','role-sekretaris','role-sekretariat','role-pengawas');
   document.body.classList.add('role-'+SESSION.role);
 
   document.getElementById('pg-login').style.display='none';
@@ -2613,6 +2645,19 @@ function buildTabs(){
     tabs.classList.add('tabs-ortu');
     t += tab('detail','📊 Saldo Santri');
     t += tab('syahriyah','🧾 Uang Syahriyah<span id="badge-syahriyah" class="badge-tab" style="display:none">0</span>');
+  } else if(SESSION.role==='pengawas'){
+    tabs.classList.remove('tabs-ortu');
+    const aksesTabs = SESSION.user?.akses_tab ? JSON.parse(SESSION.user.akses_tab) : ['dashboard','santri','riwayat','kobong','pengurus','keuangan'];
+    const allTabs = [
+      {id:'dashboard', label:'📊 Dashboard'},
+      {id:'santri', label:'👥 Santri'},
+      {id:'riwayat', label:'📜 Riwayat'},
+      {id:'kobong', label:'🏠 Kobong'},
+      {id:'pengurus', label:'👨‍💼 Pengurus'},
+      {id:'monitor', label:'👁️ Monitor'},
+      {id:'keuangan', label:'💰 Keuangan'},
+    ];
+    allTabs.forEach(tb=>{ if(aksesTabs.includes(tb.id)) t += tab(tb.id, tb.label); });
   } else {
     tabs.classList.remove('tabs-ortu');
     t += tab('dashboard','📊 Dashboard');
@@ -2646,6 +2691,10 @@ function tab(id, label){
 function showTab(id){
   // Cegah akses tab yang tidak sesuai role
   if((id==='pengaturan'||id==='monitor'||id==='pengurus') && SESSION && SESSION.role!=='super') return;
+  if(SESSION && SESSION.role==='pengawas'){
+    const aksesTabs = SESSION.user?.akses_tab ? JSON.parse(SESSION.user.akses_tab) : ['dashboard','santri','riwayat','kobong','pengurus','keuangan'];
+    if(!aksesTabs.includes(id)) return;
+  }
   if((id==='kobong'||id==='naikkelas'||id==='persetujuan') && SESSION && SESSION.role!=='super' && SESSION.role!=='sekretaris' && SESSION.role!=='sekretariat') return;
   if(['dashboard','santri','massal','riwayat','kobong','pengurus','monitor','naikkelas','pengaturan','persetujuan'].includes(id) && SESSION && SESSION.role==='ortu') return;
 
@@ -2665,6 +2714,7 @@ function showTab(id){
   if(id==='kobong') renderKobong();
   if(id==='pengurus') renderPengurus();
   if(id==='notifikasi') renderNotifikasi();
+  if(id==='keuangan') renderKeuangan();
   if(id==='monitor') renderMonitor();
   if(id==='naikkelas') renderNaikKelas();
   if(id==='persetujuan') prsShowSub('pending');
@@ -2859,6 +2909,13 @@ create policy "public delete fotos" on storage.objects
           <div class="info-box" style="margin-bottom:14px">Variabel: <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{nama}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{kobong}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{saldo}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{link}}</code></div>
           <div class="fg" style="margin-bottom:14px"><label>Template Pesan</label><textarea id="set-wa-template" rows="10" style="font-family:'DM Mono',monospace;font-size:12.5px;line-height:1.7;resize:vertical" placeholder="Tulis template pesan WA..."></textarea></div>
           <button class="btn btn-p btn-sm" onclick="simpanTemplateWA()">💾 Simpan Template</button>
+        </div></div>
+        <div class="panel"><div class="ph"><h2>👁️ Akses Pengawas</h2></div><div class="pb">
+          <p style="font-size:13px;color:var(--text-m);margin-bottom:12px;line-height:1.7">Atur tab yang bisa dilihat pengawas. Pengawas hanya bisa melihat data tanpa aksi.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+            ${[{id:'dashboard',label:'📊 Dashboard'},{id:'santri',label:'👥 Santri'},{id:'riwayat',label:'📜 Riwayat'},{id:'kobong',label:'🏠 Kobong'},{id:'pengurus',label:'👨‍💼 Pengurus'},{id:'monitor',label:'👁️ Monitor'},{id:'keuangan',label:'💰 Keuangan'}].map(tb=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" class="pengawas-tab-cb" value="${tb.id}" style="width:15px;height:15px;accent-color:var(--green)">${tb.label}</label>`).join('')}
+          </div>
+          <button class="btn btn-p btn-sm" onclick="simpanAksesPengawas()">💾 Simpan Akses</button>
         </div></div>
         <div class="panel"><div class="ph"><h2>💾 Backup & Tutup Bulan</h2></div><div class="pb">
           <p style="font-size:13px;color:var(--text-m);margin-bottom:16px;line-height:1.7">Lakukan ini di <strong>awal setiap bulan baru</strong> agar website tetap ringan. Data bulan lalu diarsip ke Excel, lalu transaksi lama dihapus. Saldo santri tetap terbawa sebagai transaksi pembuka bulan baru.</p>
@@ -8177,6 +8234,129 @@ async function nkSimpanSemuaIndividu(){
 }
 
 
+
+// ===== KEUANGAN (PENGAWAS) =====
+async function renderKeuangan(){
+  const bulanF = document.getElementById('filter-bulan-keuangan')?.value||'';
+  let query = SB.from('tagihan_pondok').select('*');
+  if(bulanF) query = query.eq('bulan', bulanF);
+  const {data: tagihan} = await query;
+  if(!tagihan) return;
+
+  const bulanSel = document.getElementById('filter-bulan-keuangan');
+  if(bulanSel && bulanSel.options.length <= 1){
+    const {data: allT} = await SB.from('tagihan_pondok').select('bulan').order('bulan',{ascending:false});
+    const bulanList = [...new Set((allT||[]).map(t=>t.bulan).filter(Boolean))];
+    bulanList.forEach(b=>{ bulanSel.innerHTML += `<option value="${b}">${b}</option>`; });
+  }
+
+  const totalTagihan = tagihan.reduce((s,t)=>s+Number(t.nominal||0),0);
+  const totalBayar = tagihan.reduce((s,t)=>s+Number(t.nominal_bayar||0),0);
+  const totalTunggakan = totalTagihan - totalBayar;
+  const totalLunas = tagihan.filter(t=>t.status==='lunas').length;
+  const persen = totalTagihan>0 ? Math.round(totalBayar/totalTagihan*100) : 0;
+
+  const rekapEl = document.getElementById('keuangan-rekap');
+  if(rekapEl) rekapEl.innerHTML = `
+    <div style="background:var(--green-p);border:1.5px solid var(--green-b);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:700;text-transform:uppercase">Total Tagihan</div>
+      <div style="font-size:18px;font-weight:700;color:var(--green)">${fmtRp(totalTagihan)}</div>
+      <div style="font-size:11px;color:var(--text-l)">${tagihan.length} tagihan</div>
+    </div>
+    <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:700;text-transform:uppercase">Terbayar</div>
+      <div style="font-size:18px;font-weight:700;color:#0369a1">${fmtRp(totalBayar)}</div>
+      <div style="font-size:11px;color:var(--text-l)">${totalLunas} lunas</div>
+    </div>
+    <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:11px;color:var(--text-m);font-weight:700;text-transform:uppercase">Tunggakan</div>
+      <div style="font-size:18px;font-weight:700;color:var(--red)">${fmtRp(totalTunggakan)}</div>
+      <div style="font-size:11px;color:var(--text-l)">${tagihan.filter(t=>t.status!=='lunas').length} belum lunas</div>
+    </div>
+  `;
+
+  const progressEl = document.getElementById('keuangan-progress');
+  if(progressEl) progressEl.innerHTML = `
+    <div style="background:#f8fafc;border:1.5px solid var(--border);border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700">📈 Progress Pembayaran</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">${persen}%</span>
+      </div>
+      <div style="background:#e5e7eb;border-radius:99px;height:12px;overflow:hidden">
+        <div style="background:linear-gradient(90deg,var(--green),#22c55e);height:100%;border-radius:99px;width:${persen}%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-l)">
+        <span>${fmtRp(totalBayar)} terbayar</span>
+        <span>${fmtRp(totalTunggakan)} sisa</span>
+      </div>
+    </div>
+  `;
+
+  const dapurMap = {};
+  tagihan.forEach(t=>{
+    const d = String(t.dapur_id||'lainnya');
+    if(!dapurMap[d]) dapurMap[d]={total:0,bayar:0,count:0};
+    dapurMap[d].total += Number(t.nominal||0);
+    dapurMap[d].bayar += Number(t.nominal_bayar||0);
+    dapurMap[d].count++;
+  });
+  const {data:dapurList} = await SB.from('asrama').select('id,nama,emoji').catch(()=>({data:[]}));
+  const dapurNamaMap = {};
+  (dapurList||[]).forEach(d=>{ dapurNamaMap[String(d.id)]=`${d.emoji||'🍽️'} ${d.nama}`; });
+
+  const dapurEl = document.getElementById('keuangan-dapur');
+  if(dapurEl) dapurEl.innerHTML = `
+    <div style="font-size:13px;font-weight:700;color:var(--text-m);margin-bottom:10px">🍽️ Rekap Per Dapur</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+      ${Object.entries(dapurMap).map(([id,d])=>{
+        const nama = dapurNamaMap[id]||`Dapur ${id}`;
+        const tunggak = d.total-d.bayar;
+        const pct = d.total>0?Math.round(d.bayar/d.total*100):0;
+        return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:12px">
+          <div style="font-size:12px;font-weight:700;margin-bottom:6px">${nama}</div>
+          <div style="font-size:13px;color:var(--green);font-weight:700">${fmtRp(d.bayar)}</div>
+          <div style="font-size:11px;color:var(--red)">Tunggakan: ${fmtRp(tunggak)}</div>
+          <div style="background:#e5e7eb;border-radius:99px;height:6px;margin-top:6px">
+            <div style="background:var(--green);height:100%;border-radius:99px;width:${pct}%"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text-l);margin-top:3px">${pct}% lunas</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  const santriTunggak = {};
+  tagihan.filter(t=>t.status!=='lunas').forEach(t=>{
+    if(!santriTunggak[t.santri_id]) santriTunggak[t.santri_id]={nama:t.santri_nama||t.santri_id,tunggak:0};
+    santriTunggak[t.santri_id].tunggak += Number(t.nominal||0)-Number(t.nominal_bayar||0);
+  });
+  const top5 = Object.values(santriTunggak).sort((a,b)=>b.tunggak-a.tunggak).slice(0,5);
+  const tunggakanEl = document.getElementById('keuangan-tunggakan');
+  if(tunggakanEl){
+    if(!top5.length){ tunggakanEl.innerHTML='<div style="color:var(--text-l);text-align:center;padding:16px">✅ Tidak ada tunggakan!</div>'; return; }
+    tunggakanEl.innerHTML = top5.map((s,i)=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="width:24px;height:24px;background:${i===0?'#fef3c7':i===1?'#f1f5f9':'var(--bg2)'};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;font-size:13px;font-weight:600">${s.nama}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--red)">${fmtRp(s.tunggak)}</div>
+      </div>`).join('');
+  }
+}
+
+async function simpanAksesPengawas(){
+  const cbs = document.querySelectorAll('.pengawas-tab-cb:checked');
+  const tabs = [...cbs].map(cb=>cb.value);
+  if(!tabs.length){ toast('Pilih minimal 1 tab!', false); return; }
+  const {error} = await SB.from('settings').upsert({key:'pengawas_akses_tab', value:JSON.stringify(tabs)});
+  if(error){ toast('Gagal: '+error.message, false); return; }
+  CONFIG.pengawas_akses_tab = JSON.stringify(tabs);
+  toast('✅ Akses pengawas disimpan!');
+}
+
+async function loadAksesPengawas(){
+  const akses = CONFIG.pengawas_akses_tab ? JSON.parse(CONFIG.pengawas_akses_tab) : ['dashboard','santri','riwayat','kobong','pengurus','keuangan'];
+  document.querySelectorAll('.pengawas-tab-cb').forEach(cb=>{ cb.checked = akses.includes(cb.value); });
+}
+
 async function renderMonitor(){
   const sec = document.getElementById('sec-monitor');
   const now = Date.now();
@@ -8282,6 +8462,7 @@ async function renderMonitor(){
       const roleBadge = (g.role==='sekretariat'||g.role==='sekretaris')?
         '<span style="background:#ede9fe;color:#7c3aed;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Sekretariat</span>':
         g.role==='super'?'<span style="background:#fef3c7;color:#92400e;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Admin</span>':
+        g.role==='pengawas'?'<span style="background:#f0f9ff;color:#0369a1;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">👁️ Pengawas</span>':
         '<span style="background:var(--green-p);color:var(--green);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">Pengurus</span>';
       const anyAktif = g.sesi.length > 0;
 
