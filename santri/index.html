@@ -2377,7 +2377,7 @@ async function _loadAllDataCore(){
   const [as, ks, ps] = await Promise.all([
     SB.from('asrama').select('*').order('nama'),
     SB.from('kobong').select('*,asrama(id,nama)').order('nama'),
-    (SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') ? SB.from('pengurus').select('*').order('nama') : {data:[]}
+    (SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat'||SESSION.role==='pengawas') ? SB.from('pengurus').select('*').order('nama') : {data:[]}
   ]);
   ALL_ASRAMA = as.data||[];
   ALL_KOBONG = ks.data||[];
@@ -2436,7 +2436,7 @@ async function refreshFromRealtime(){
 
 async function loadSantriForRole(){
   try{
-  if(SESSION.role==='super'){
+  if(SESSION.role==='super'||SESSION.role==='pengawas'){
     const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').eq('is_arsip',false).order('nama');
     if(error){
       alert('[DEBUG] Query super ERROR:\n' + error.message);
@@ -2468,7 +2468,7 @@ async function loadSantriForRole(){
     console.warn('[DEBUG] loadSantriForRole fallback (is_arsip mungkin belum ada):', e.message);
     alert('[DEBUG] Fallback aktif!\nError: ' + e.message);
     try{
-      if(SESSION.role==='super'){
+      if(SESSION.role==='super'||SESSION.role==='pengawas'){
         const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').order('nama');
         return data||[];
       }
@@ -2493,7 +2493,7 @@ async function loadSantriForRole(){
 
 async function loadTxForRole(){
   if(SESSION.role==='ortu') return [];
-  if(SESSION.role==='super'){
+  if(SESSION.role==='super'||SESSION.role==='pengawas'){
     const {data} = await SB.from('transaksi').select('*,santri(nama,kobong(id,nama))').order('tanggal',{ascending:false}).order('created_at',{ascending:false}).limit(500);
     return data||[];
   }
@@ -2939,7 +2939,7 @@ create policy "public delete fotos" on storage.objects
       document.getElementById('set-nama').value = CONFIG.pesantren_nama||'';
       document.getElementById('set-bulan').value = CONFIG.bulan_aktif||'';
       document.getElementById('set-kritis').value = CONFIG.kritis_batas||50000;
-      loadGreetingList(); loadTemplateWAInput();
+      loadGreetingList(); loadTemplateWAInput(); loadAksesPengawas();
     }
   }
 }
