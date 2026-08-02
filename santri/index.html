@@ -2176,6 +2176,16 @@ async function loginOrtu(){
   enterApp();
 }
 
+// Tentukan role final pengurus (termasuk pengawas) + muat akses_tab kalau pengawas
+async function resolvePengurusRole(pgData){
+  const detectedRole = pgData.role==='pengawas' ? 'pengawas' : (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
+  if(detectedRole==='pengawas'){
+    const {data:cfg} = await SB.from('settings').select('value').eq('key','pengawas_akses_tab').single();
+    if(cfg) pgData.akses_tab = cfg.value;
+  }
+  return detectedRole;
+}
+
 async function loginPengurus(){
   const user = document.getElementById('pg-user').value.trim();
   const pass = document.getElementById('pg-pass').value.trim();
@@ -2194,7 +2204,7 @@ async function loginPengurus(){
 
   if(!authErr && authData?.user){
     if(pgData.force_logout) await SB.from('pengurus').update({force_logout:false}).eq('id', pgData.id);
-    const detectedRole = (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
+    const detectedRole = await resolvePengurusRole(pgData);
     showLoginOverlay('Selamat datang!', pgData.nama||user);
     SESSION = {role: detectedRole, user: pgData};
     _freshLoginPending = true;
@@ -2222,11 +2232,7 @@ async function loginPengurus(){
     await SB.from('pengurus').update({password_hash: upgraded}).eq('id', pgData.id);
   }
   if(pgData.force_logout) await SB.from('pengurus').update({force_logout:false}).eq('id', pgData.id);
-  const detectedRole = pgData.role==='pengawas' ? 'pengawas' : (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
-  if(detectedRole==='pengawas'){
-    const {data:cfg} = await SB.from('settings').select('value').eq('key','pengawas_akses_tab').single().catch(()=>({data:null}));
-    if(cfg) pgData.akses_tab = cfg.value;
-  }
+  const detectedRole = await resolvePengurusRole(pgData);
   showLoginOverlay('Selamat datang!', pgData.nama||user);
   SESSION = {role: detectedRole, user: pgData};
   _freshLoginPending = true;
@@ -8300,7 +8306,7 @@ async function renderKeuangan(){
     dapurMap[d].bayar += Number(t.nominal_bayar||0);
     dapurMap[d].count++;
   });
-  const {data:dapurList} = await SB.from('asrama').select('id,nama,emoji').catch(()=>({data:[]}));
+  const {data:dapurList} = await SB.from('asrama').select('id,nama,emoji');
   const dapurNamaMap = {};
   (dapurList||[]).forEach(d=>{ dapurNamaMap[String(d.id)]=`${d.emoji||'🍽️'} ${d.nama}`; });
 
