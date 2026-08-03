@@ -613,10 +613,6 @@ body.role-ortu #sec-pengaturan{display:none!important}
 body.role-sekretaris #sec-pengaturan{display:none!important}
 body.role-sekretariat #sec-pengaturan{display:none!important}
 body.role-pengawas #sec-pengaturan{display:none!important}
-body.role-pengawas #sec-notifikasi{display:none!important}
-body.role-pengawas #sec-massal{display:none!important}
-body.role-pengawas #sec-persetujuan{display:none!important}
-body.role-pengawas #sec-naikkelas{display:none!important}
 body.role-pengawas .non-pengawas{display:none!important}
 body.role-pengurus #sec-notifikasi{display:none!important}
 body.role-ortu #sec-notifikasi{display:none!important}
@@ -2176,14 +2172,9 @@ async function loginOrtu(){
   enterApp();
 }
 
-// Tentukan role final pengurus (termasuk pengawas) + muat akses_tab kalau pengawas
-async function resolvePengurusRole(pgData){
-  const detectedRole = pgData.role==='pengawas' ? 'pengawas' : (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
-  if(detectedRole==='pengawas'){
-    const {data:cfg} = await SB.from('settings').select('value').eq('key','pengawas_akses_tab').single();
-    if(cfg) pgData.akses_tab = cfg.value;
-  }
-  return detectedRole;
+// Tentukan role final pengurus (termasuk pengawas)
+function resolvePengurusRole(pgData){
+  return pgData.role==='pengawas' ? 'pengawas' : (pgData.role==='sekretaris'||pgData.role==='sekretariat') ? 'sekretariat' : 'pengurus';
 }
 
 async function loginPengurus(){
@@ -2651,19 +2642,6 @@ function buildTabs(){
     tabs.classList.add('tabs-ortu');
     t += tab('detail','📊 Saldo Santri');
     t += tab('syahriyah','🧾 Uang Syahriyah<span id="badge-syahriyah" class="badge-tab" style="display:none">0</span>');
-  } else if(SESSION.role==='pengawas'){
-    tabs.classList.remove('tabs-ortu');
-    const aksesTabs = SESSION.user?.akses_tab ? JSON.parse(SESSION.user.akses_tab) : ['dashboard','santri','riwayat','kobong','pengurus','keuangan'];
-    const allTabs = [
-      {id:'dashboard', label:'📊 Dashboard'},
-      {id:'santri', label:'👥 Santri'},
-      {id:'riwayat', label:'📜 Riwayat'},
-      {id:'kobong', label:'🏠 Kobong'},
-      {id:'pengurus', label:'👨‍💼 Pengurus'},
-      {id:'monitor', label:'👁️ Monitor'},
-      {id:'keuangan', label:'💰 Keuangan'},
-    ];
-    allTabs.forEach(tb=>{ if(aksesTabs.includes(tb.id)) t += tab(tb.id, tb.label); });
   } else {
     tabs.classList.remove('tabs-ortu');
     t += tab('dashboard','📊 Dashboard');
@@ -2677,14 +2655,19 @@ function buildTabs(){
       t += tab('naikkelas','🎓 Naik Kelas');
       t += tab('persetujuan','🗑️ Persetujuan<span id="badge-persetujuan" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:5px">0</span>');
     }
-    if(SESSION.role==='super'){
+    if(SESSION.role==='super'||SESSION.role==='pengawas'){
       t += tab('kobong','🏠 Kobong');
       t += tab('naikkelas','🎓 Naik Kelas');
       t += tab('pengurus','👨‍💼 Pengurus');
       t += tab('persetujuan','🗑️ Persetujuan<span id="badge-persetujuan" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:5px">0</span>');
       t += tab('notifikasi','🔔 Notifikasi');
       t += tab('monitor','👁️ Monitor');
+    }
+    if(SESSION.role==='super'){
       t += tab('pengaturan','⚙️ Pengaturan');
+    }
+    if(SESSION.role==='pengawas'){
+      t += tab('keuangan','💰 Keuangan');
     }
   }
   tabs.innerHTML = t;
@@ -2696,12 +2679,9 @@ function tab(id, label){
 
 function showTab(id){
   // Cegah akses tab yang tidak sesuai role
-  if((id==='pengaturan'||id==='monitor'||id==='pengurus') && SESSION && SESSION.role!=='super') return;
-  if(SESSION && SESSION.role==='pengawas'){
-    const aksesTabs = SESSION.user?.akses_tab ? JSON.parse(SESSION.user.akses_tab) : ['dashboard','santri','riwayat','kobong','pengurus','keuangan'];
-    if(!aksesTabs.includes(id)) return;
-  }
-  if((id==='kobong'||id==='naikkelas'||id==='persetujuan') && SESSION && SESSION.role!=='super' && SESSION.role!=='sekretaris' && SESSION.role!=='sekretariat') return;
+  if(id==='pengaturan' && SESSION && SESSION.role!=='super') return;
+  if((id==='monitor'||id==='pengurus') && SESSION && SESSION.role!=='super' && SESSION.role!=='pengawas') return;
+  if((id==='kobong'||id==='naikkelas'||id==='persetujuan') && SESSION && SESSION.role!=='super' && SESSION.role!=='sekretaris' && SESSION.role!=='sekretariat' && SESSION.role!=='pengawas') return;
   if(['dashboard','santri','massal','riwayat','kobong','pengurus','monitor','naikkelas','pengaturan','persetujuan'].includes(id) && SESSION && SESSION.role==='ortu') return;
 
   // Reset filter HANYA saat pindah ke tab yang berbeda
@@ -2916,13 +2896,6 @@ create policy "public delete fotos" on storage.objects
           <div class="fg" style="margin-bottom:14px"><label>Template Pesan</label><textarea id="set-wa-template" rows="10" style="font-family:'DM Mono',monospace;font-size:12.5px;line-height:1.7;resize:vertical" placeholder="Tulis template pesan WA..."></textarea></div>
           <button class="btn btn-p btn-sm" onclick="simpanTemplateWA()">💾 Simpan Template</button>
         </div></div>
-        <div class="panel"><div class="ph"><h2>👁️ Akses Pengawas</h2></div><div class="pb">
-          <p style="font-size:13px;color:var(--text-m);margin-bottom:12px;line-height:1.7">Atur tab yang bisa dilihat pengawas. Pengawas hanya bisa melihat data tanpa aksi.</p>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
-            ${[{id:'dashboard',label:'📊 Dashboard'},{id:'santri',label:'👥 Santri'},{id:'riwayat',label:'📜 Riwayat'},{id:'kobong',label:'🏠 Kobong'},{id:'pengurus',label:'👨‍💼 Pengurus'},{id:'monitor',label:'👁️ Monitor'},{id:'keuangan',label:'💰 Keuangan'}].map(tb=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" class="pengawas-tab-cb" value="${tb.id}" style="width:15px;height:15px;accent-color:var(--green)">${tb.label}</label>`).join('')}
-          </div>
-          <button class="btn btn-p btn-sm" onclick="simpanAksesPengawas()">💾 Simpan Akses</button>
-        </div></div>
         <div class="panel"><div class="ph"><h2>💾 Backup & Tutup Bulan</h2></div><div class="pb">
           <p style="font-size:13px;color:var(--text-m);margin-bottom:16px;line-height:1.7">Lakukan ini di <strong>awal setiap bulan baru</strong> agar website tetap ringan. Data bulan lalu diarsip ke Excel, lalu transaksi lama dihapus. Saldo santri tetap terbawa sebagai transaksi pembuka bulan baru.</p>
           <div style="background:var(--gold-p);border:1px solid var(--gold-l);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;color:#7a5c00">
@@ -2939,7 +2912,7 @@ create policy "public delete fotos" on storage.objects
       document.getElementById('set-nama').value = CONFIG.pesantren_nama||'';
       document.getElementById('set-bulan').value = CONFIG.bulan_aktif||'';
       document.getElementById('set-kritis').value = CONFIG.kritis_batas||50000;
-      loadGreetingList(); loadTemplateWAInput(); loadAksesPengawas();
+      loadGreetingList(); loadTemplateWAInput();
     }
   }
 }
@@ -8348,21 +8321,6 @@ async function renderKeuangan(){
   }
 }
 
-async function simpanAksesPengawas(){
-  const cbs = document.querySelectorAll('.pengawas-tab-cb:checked');
-  const tabs = [...cbs].map(cb=>cb.value);
-  if(!tabs.length){ toast('Pilih minimal 1 tab!', false); return; }
-  const {error} = await SB.from('settings').upsert({key:'pengawas_akses_tab', value:JSON.stringify(tabs)});
-  if(error){ toast('Gagal: '+error.message, false); return; }
-  CONFIG.pengawas_akses_tab = JSON.stringify(tabs);
-  toast('✅ Akses pengawas disimpan!');
-}
-
-async function loadAksesPengawas(){
-  const akses = CONFIG.pengawas_akses_tab ? JSON.parse(CONFIG.pengawas_akses_tab) : ['dashboard','santri','riwayat','kobong','pengurus','keuangan'];
-  document.querySelectorAll('.pengawas-tab-cb').forEach(cb=>{ cb.checked = akses.includes(cb.value); });
-}
-
 async function renderMonitor(){
   const sec = document.getElementById('sec-monitor');
   const now = Date.now();
@@ -8864,6 +8822,37 @@ if ('serviceWorker' in navigator) {
       }
     }
   },true);
+})();
+
+// ===== PENGAWAS: read-only guard — blokir semua tombol aksi (simpan/hapus/tambah/edit/transfer/dll), hanya lihat =====
+(function(){
+  const AKSI_AMAN = new Set([
+    // navigasi & login
+    'switchRole','loginOrtu','loginPengurus','loginSuper','doLogout','showTab',
+    // filter & tampilan (tidak mengubah data)
+    'toggleFPanel','resetFPanel','dhToggle','switchDetailTab','toggleAsramaBlock',
+    // modal umum
+    'closeMo','openDetailModal','lihatSantriKobong','openRekeningModal','openProfilPengurus',
+    // hanya lihat/unduh (read-only)
+    'exportLengkap','downloadTemplateExcel','backupSemuaData','cekKoneksi','renderMonitor','mintaIzinNotif',
+    // isi form lokal (belum tersimpan, tombol simpannya sendiri tetap diblokir)
+    'isiSemuaNominal','terapNominalSama','bulkBatalPilih','prsShowSub',
+    // navigasi/seleksi di wizard Naik Kelas (belum menerapkan perubahan)
+    'nkSetMode','nkKelasPilihSemua','nkKelasBatalSemua','nkKelasPilihGroup',
+    'nkPilihSemua','nkBatalSemua','nkPilihSatuKobong',
+    'nkWaliPilihSemua','nkWaliBatalSemua','nkWaliPilihGroup',
+  ]);
+  document.addEventListener('click', function(e){
+    if(!SESSION || SESSION.role!=='pengawas') return;
+    const el = e.target.closest('[onclick]');
+    if(!el) return;
+    const m = (el.getAttribute('onclick')||'').match(/^\s*([a-zA-Z_$][\w$]*)\s*\(/);
+    const fn = m ? m[1] : null;
+    if(fn && !AKSI_AMAN.has(fn)){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
 })();
 </script>
 </body>
