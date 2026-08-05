@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Masuk ke Sistem — Saku Santri Pesantren An-Nur</title>
+  <title>Masuk ke Sistem: Saku Santri Pesantren An-Nur</title>
   <meta name="description" content="Pilih aplikasi Saku Santri sesuai peran kamu: Saku Santri untuk santri &amp; orang tua, atau Bendahara untuk pengurus keuangan Pondok Pesantren An-Nur."/>
   <meta name="theme-color" content="#0d2818"/>
   <link rel="icon" type="image/png" href="jadid-logo.png"/>
@@ -15,6 +15,23 @@
 <body class="access-page">
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
+
+  <svg class="motif" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="motifGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#e8c96a"/>
+        <stop offset="100%" stop-color="#7ed6a0"/>
+      </linearGradient>
+    </defs>
+    <g class="motif-ring motif-ring-a">
+      <rect x="60" y="60" width="280" height="280" fill="none" stroke="url(#motifGrad)" stroke-width="1"/>
+      <rect x="60" y="60" width="280" height="280" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGrad)" stroke-width="1"/>
+    </g>
+    <g class="motif-ring motif-ring-b">
+      <rect x="120" y="120" width="160" height="160" fill="none" stroke="url(#motifGrad)" stroke-width="1"/>
+      <rect x="120" y="120" width="160" height="160" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGrad)" stroke-width="1"/>
+    </g>
+  </svg>
 
   <div class="access-hero">
     <a href="index.html" class="back-link">
@@ -37,35 +54,24 @@
 
     <div class="card">
       <div class="card-body">
-        <p class="section-label">Masuk Sebagai</p>
+        <p class="section-label">Pilih Aplikasi</p>
 
         <div class="role-grid">
           <a href="santri/index.html" class="role-card card-santri">
-            <div class="icon-wrap"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M20 7H4C2.9 7 2 7.9 2 9V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V9C22 7.9 21.1 7 20 7Z" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M16 3H8L6 7H18L16 3Z" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M22 13H18C17.4 13 17 13.4 17 14V15C17 15.6 17.4 16 18 16H22" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="19" cy="14.5" r="0.8" fill="#7ed6a0"/>
-</svg></div>
+            <div class="icon-wrap"><img src="santri/icon-192.png" alt="" width="54" height="54"/></div>
             <span class="badge badge-green"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:3px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#7ed6a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#7ed6a0" stroke-width="2.2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#7ed6a0" stroke-width="2.2" stroke-linecap="round"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#7ed6a0" stroke-width="2.2" stroke-linecap="round"/></svg>Orang Tua &amp; Pengurus</span>
             <div class="role-title">Saku Santri</div>
-            <div class="role-desc">Untuk orang tua &amp; pengurus asrama — cek saldo dan riwayat keuangan santri.</div>
+            <div class="role-desc">Untuk orang tua dan pengurus asrama. Cek saldo dan riwayat keuangan santri.</div>
             <div class="role-cta">Masuk sebagai Orang Tua &amp; Pengurus
               <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
           </a>
 
           <a href="bendahara/index.html" class="role-card card-bendahara">
-            <div class="icon-wrap"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M14 2V8H20" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M8 13H16" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M8 17H12" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M10 9H8" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round"/>
-</svg></div>
+            <div class="icon-wrap"><img src="bendahara/icon-192.png" alt="" width="54" height="54"/></div>
             <span class="badge badge-gold">&#128274; Khusus Bendahara</span>
             <div class="role-title">Bendahara</div>
-            <div class="role-desc">Untuk pengurus keuangan pesantren — kelola transaksi &amp; laporan kas.</div>
+            <div class="role-desc">Untuk pengurus keuangan pesantren. Kelola transaksi dan laporan kas.</div>
             <div class="role-cta">Masuk sebagai Bendahara
               <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
@@ -77,7 +83,7 @@
         <div class="divider"></div>
 
         <div class="card-footer">
-          <span class="powered-by">&copy; 2026 Saku Santri &mdash; Pesantren An-Nur</span>
+          <span class="powered-by">&copy; 2026 Saku Santri, Pesantren An-Nur</span>
         </div>
       </div>
     </div>

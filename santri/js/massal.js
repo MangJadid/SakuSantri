@@ -145,14 +145,13 @@ async function prossMassal(){
     : ALL_SANTRI.filter(s=>String(s.kobong_id)===kid);
   const oleh=SESSION.role==='super'?'Kang Admin':(SESSION.user?.nama||'Pengurus');
 
-  let txs=[], updates=[], totalMasukRekening=0;
+  let txs=[], sIds=[], totalMasukRekening=0;
   santris.forEach(s=>{
     const el=document.getElementById('massal-'+s.id);
     const nom=parseInt(el?.value)||0;
     if(!nom) return;
     txs.push({santri_id:s.id,tanggal:tgl,jenis,keterangan:ket,nominal:nom,oleh});
-    const ns=(s.saldo||0)+(jenis==='masuk'?nom:-nom);
-    updates.push({id:s.id,saldo:ns});
+    sIds.push(s.id);
     if(jenis==='masuk' && sumber==='rekening') totalMasukRekening+=nom;
   });
 
@@ -168,8 +167,15 @@ async function prossMassal(){
     const {error}=await SB.from('transaksi').insert(txs);
     if(error){ toast('Gagal: '+error.message,false); return; }
 
-    for(const u of updates){
-      await SB.from('santri').update({saldo:u.saldo}).eq('id',u.id);
+    // Hitung ulang saldo dari SELURUH transaksi di database (bukan dari data di memori)
+    // supaya tidak meleset kalau ada transaksi lain yang masuk bersamaan dari device lain
+    const {data:semuaTx} = await SB.from('transaksi').select('santri_id,jenis,nominal').in('santri_id', sIds);
+    const saldoMap = {};
+    (semuaTx||[]).forEach(t=>{
+      saldoMap[t.santri_id] = (saldoMap[t.santri_id]||0) + (t.jenis==='masuk'?t.nominal:-t.nominal);
+    });
+    for(const sid of sIds){
+      await SB.from('santri').update({saldo: saldoMap[sid]||0}).eq('id', sid);
     }
 
     if(jenis==='masuk' && sumber==='rekening' && SESSION.role==='pengurus' && totalMasukRekening>0){
