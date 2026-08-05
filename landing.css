@@ -184,13 +184,10 @@ img { max-width: 100%; display: block; }
 }
 .hero-badge img { width: 22px; height: 22px; border-radius: 50%; object-fit: contain; }
 .hero h1 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(32px, 4.4vw, 50px); line-height: 1.14; letter-spacing: -0.03em;
+  font-family: 'Amiri', 'Plus Jakarta Sans', serif;
+  font-weight: 700;
+  font-size: clamp(34px, 4.6vw, 54px); line-height: 1.18; letter-spacing: -0.005em;
   color: var(--white); margin: 20px 0 18px; max-width: 620px;
-}
-.hero h1 .accent {
-  color: transparent; background: linear-gradient(100deg, var(--mint), var(--gold-400));
-  background-clip: text; -webkit-background-clip: text;
 }
 .hero-lead { max-width: 540px; font-size: 15.5px; line-height: 1.8; color: rgba(255,255,255,0.55); }
 .hero-lead strong { color: rgba(255,255,255,0.85); }
@@ -317,8 +314,8 @@ img { max-width: 100%; display: block; }
 /* === SECTION SPACING === */
 .section { padding: 88px 0; position: relative; z-index: 1; }
 .section-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(24px, 3vw, 32px); font-weight: 800; letter-spacing: -0.02em;
+  font-family: 'Amiri', 'Plus Jakarta Sans', serif;
+  font-size: clamp(26px, 3.2vw, 34px); font-weight: 700; letter-spacing: 0;
   color: var(--white); max-width: 620px;
 }
 .section-lead { font-size: 13.5px; color: rgba(255,255,255,0.56); max-width: 480px; margin-top: 12px; line-height: 1.7; }
@@ -338,19 +335,38 @@ img { max-width: 100%; display: block; }
 .flow-step:first-child { flex: 1.15; }
 .flow-step:first-child .flow-icon { background: rgba(45,138,74,0.14); }
 
-/* === FEATURES === */
-.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-top: 40px; }
-.feature-card {
-  background: rgba(255,255,255,0.045); border: 1px solid rgba(201,168,76,0.18); border-radius: 16px;
-  padding: 22px 18px; backdrop-filter: blur(20px);
-  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+/* === FEATURES (1 unggulan besar + daftar, bukan 4 kartu sejajar) === */
+.feature-layout { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; margin-top: 40px; align-items: stretch; }
+.feature-featured {
+  background: linear-gradient(150deg, rgba(45,138,74,0.14), rgba(255,255,255,0.03));
+  border: 1px solid rgba(126,214,160,0.28); border-radius: 20px;
+  padding: 32px 28px; backdrop-filter: blur(20px);
+  display: flex; flex-direction: column; justify-content: center;
 }
-.feature-card:hover { transform: translateY(-5px); border-color: rgba(201,168,76,0.4); background: rgba(255,255,255,0.065); }
-.feature-card .icon-wrap { margin-bottom: 14px; transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
-.feature-card:hover .icon-wrap { transform: scale(1.1) rotate(-4deg); }
-.feature-title { font-size: 14.5px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
-.feature-desc { font-size: 12.5px; color: rgba(255,255,255,0.54); line-height: 1.55; }
-.icon-wrap { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.icon-wrap-lg {
+  width: 56px; height: 56px; border-radius: 15px; margin-bottom: 18px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(45,138,74,0.25); border: 1px solid rgba(126,214,160,0.35);
+}
+.feature-title-lg { font-family: 'Amiri', serif; font-size: 21px; font-weight: 700; color: var(--white); margin-bottom: 10px; }
+.feature-desc-lg { font-size: 13.5px; color: rgba(255,255,255,0.6); line-height: 1.7; max-width: 340px; }
+
+.feature-list {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,76,0.16); border-radius: 20px;
+  padding: 6px 22px;
+}
+.feature-row {
+  display: flex; align-items: flex-start; gap: 14px; text-align: left;
+  padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.feature-row:last-child { border-bottom: none; }
+.feature-title { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 5px; }
+.feature-desc { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.55; }
+.icon-wrap { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+@media (max-width: 800px) {
+  .feature-layout { grid-template-columns: 1fr; }
+}
 
 /* === ABOUT === */
 .about-text { font-size: 13.5px; color: rgba(255,255,255,0.5); line-height: 1.8; margin-top: 16px; }
@@ -369,16 +385,20 @@ img { max-width: 100%; display: block; }
 
 /* === FOOTER GLOBAL === */
 .site-footer {
-  position: relative; z-index: 1;
+  position: relative; z-index: 1; overflow: hidden;
   background: #030603;
   border-top: 1px solid rgba(201,168,76,0.18);
   padding: 0 0 22px;
+}
+.motif-footer {
+  position: absolute; top: -20%; left: -10%; right: auto; width: min(420px, 70vw); height: min(420px, 70vw);
+  transform: none; opacity: 0.05;
 }
 .footer-top {
   display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
   padding: 34px 0 28px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 40px;
 }
-.footer-top p { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); }
+.footer-top p { font-family: 'Amiri', 'Plus Jakarta Sans', serif; font-size: 18px; font-weight: 700; color: var(--white); }
 .footer-top span { display: block; margin-top: 4px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.52); }
 .footer-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; }
 .footer-brand { display: flex; align-items: center; gap: 10px; }
@@ -395,10 +415,14 @@ img { max-width: 100%; display: block; }
   font-size: 10px; color: rgba(255,255,255,0.56);
 }
 
-/* === MOTIF GEOMETRIS (elemen ciri khas halaman Pilih Aplikasi) === */
+/* === MOTIF GEOMETRIS (elemen ciri khas, dipakai di landing page & halaman Pilih Aplikasi) === */
 .motif {
   position: fixed; top: 50%; left: 50%; width: min(900px, 140vw); height: min(900px, 140vw);
   transform: translate(-50%, -50%); opacity: 0.07; pointer-events: none; z-index: 0;
+}
+.motif-hero {
+  position: absolute; top: 50%; right: -8%; left: auto; width: min(680px, 90vw); height: min(680px, 90vw);
+  transform: translateY(-50%); opacity: 0.05;
 }
 .motif-ring { transform-origin: 200px 200px; }
 .motif-ring-a { animation: motifSpin 120s linear infinite; }
@@ -437,7 +461,7 @@ img { max-width: 100%; display: block; }
 }
 .logo-ring img { width: 82px; height: 82px; border-radius: 50%; object-fit: contain; padding: 4px; }
 .logo-sub { font-size: 10px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold-500); margin-bottom: 5px; }
-.logo-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: var(--white); line-height: 1.2; letter-spacing: -0.01em; }
+.logo-title { font-family: 'Amiri', 'Plus Jakarta Sans', serif; font-size: 21px; font-weight: 700; color: var(--white); line-height: 1.25; letter-spacing: 0; }
 .logo-subtitle { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.56); margin-top: 2px; }
 
 .card {

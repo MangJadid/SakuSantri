@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="jadid-logo.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="landing.css"/>
   <script>document.documentElement.classList.add('js');</script>
 </head>
@@ -49,10 +49,26 @@
   <main>
     <!-- HERO -->
     <section class="hero" id="beranda">
+      <svg class="motif motif-hero" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="motifGradHero" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#e8c96a"/>
+            <stop offset="100%" stop-color="#7ed6a0"/>
+          </linearGradient>
+        </defs>
+        <g class="motif-ring motif-ring-a">
+          <rect x="60" y="60" width="280" height="280" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
+          <rect x="60" y="60" width="280" height="280" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
+        </g>
+        <g class="motif-ring motif-ring-b">
+          <rect x="120" y="120" width="160" height="160" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
+          <rect x="120" y="120" width="160" height="160" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
+        </g>
+      </svg>
       <div class="container hero-grid">
         <div class="hero-copy">
           <span class="hero-badge"><img src="logo-annur.png" alt=""/> Platform Terpadu &middot; Pesantren An-Nur</span>
-          <h1>Satu sistem untuk keuangan pesantren yang <span class="accent">lebih tertata.</span></h1>
+          <h1>Satu sistem untuk keuangan pesantren yang lebih tertata.</h1>
           <p class="hero-lead"><strong>Saku Santri</strong> menyatukan pencatatan saldo santri, transaksi harian, dan laporan kas pesantren dalam satu alur kerja yang transparan, rapi, dan mudah diakses kapan saja.</p>
           <div class="hero-actions">
             <a href="akses.html" class="btn btn-primary">Masuk ke Sistem
@@ -191,37 +207,43 @@
           <p class="section-lead">Dirancang khusus untuk kebutuhan pesantren, memudahkan santri, orang tua, dan bendahara memantau serta mengelola keuangan tanpa ribet.</p>
         </div>
 
-        <div class="feature-grid reveal-stagger">
-          <div class="feature-card">
-            <div class="icon-wrap" style="background:rgba(45,138,74,0.2);border:1px solid rgba(45,138,74,0.3);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="#7ed6a0" stroke-width="1.8"/></svg>
+        <div class="feature-layout reveal-stagger">
+          <div class="feature-featured">
+            <div class="icon-wrap-lg">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="#7ed6a0" stroke-width="1.8"/></svg>
             </div>
-            <div class="feature-title">Transparansi Real-time</div>
-            <div class="feature-desc">Santri dan orang tua bisa memantau saldo &amp; riwayat transaksi kapan saja, di mana saja.</div>
+            <div class="feature-title-lg">Transparansi Real-time</div>
+            <div class="feature-desc-lg">Santri dan orang tua bisa memantau saldo dan riwayat transaksi kapan saja, di mana saja, tanpa perlu menunggu laporan manual dari pengurus.</div>
           </div>
 
-          <div class="feature-card">
-            <div class="icon-wrap" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="feature-list">
+            <div class="feature-row">
+              <div class="icon-wrap" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="feature-title">Aman &amp; Terpercaya</div>
+                <div class="feature-desc">Akses dibatasi berdasarkan peran, data keuangan hanya dilihat pihak berwenang.</div>
+              </div>
             </div>
-            <div class="feature-title">Aman &amp; Terpercaya</div>
-            <div class="feature-desc">Akses dibatasi berdasarkan peran, sehingga data keuangan hanya dilihat oleh pihak yang berwenang.</div>
-          </div>
-
-          <div class="feature-card">
-            <div class="icon-wrap" style="background:rgba(45,138,74,0.2);border:1px solid rgba(45,138,74,0.3);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 20V10" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 20V4" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 20v-7" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="feature-row">
+              <div class="icon-wrap" style="background:rgba(45,138,74,0.2);border:1px solid rgba(45,138,74,0.3);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V10" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 20V4" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 20v-7" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="feature-title">Laporan Otomatis</div>
+                <div class="feature-desc">Bendahara bisa menyusun laporan keuangan pesantren dengan cepat dan rapi.</div>
+              </div>
             </div>
-            <div class="feature-title">Laporan Otomatis</div>
-            <div class="feature-desc">Bendahara dapat melihat dan menyusun laporan keuangan pesantren dengan cepat dan rapi.</div>
-          </div>
-
-          <div class="feature-card">
-            <div class="icon-wrap" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#e8c96a" stroke-width="1.8"/><path d="M3 12h18" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round"/><path d="M12 3c2.5 2.5 4 5.6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.6-4-9s1.5-6.5 4-9Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="feature-row">
+              <div class="icon-wrap" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#e8c96a" stroke-width="1.8"/><path d="M3 12h18" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round"/><path d="M12 3c2.5 2.5 4 5.6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.6-4-9s1.5-6.5 4-9Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="feature-title">Mudah Diakses</div>
+                <div class="feature-desc">Cukup buka lewat browser HP atau komputer, tanpa install aplikasi tambahan.</div>
+              </div>
             </div>
-            <div class="feature-title">Mudah Diakses</div>
-            <div class="feature-desc">Cukup buka lewat browser HP atau komputer, tanpa perlu install aplikasi tambahan.</div>
           </div>
         </div>
       </div>
@@ -270,6 +292,18 @@
 
   <!-- FOOTER GLOBAL -->
   <footer class="site-footer">
+    <svg class="motif motif-footer" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="motifGradFooter" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#e8c96a"/>
+          <stop offset="100%" stop-color="#7ed6a0"/>
+        </linearGradient>
+      </defs>
+      <g class="motif-ring motif-ring-a">
+        <rect x="60" y="60" width="280" height="280" fill="none" stroke="url(#motifGradFooter)" stroke-width="1"/>
+        <rect x="60" y="60" width="280" height="280" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradFooter)" stroke-width="1"/>
+      </g>
+    </svg>
     <div class="container">
       <div class="footer-top">
         <div>
