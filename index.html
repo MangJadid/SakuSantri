@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="landing.css"/>
+  <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
   <div class="orb orb-1"></div>
@@ -30,7 +31,10 @@
           <span>Pesantren An-Nur</span>
         </span>
       </a>
-      <div class="nav-links">
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Buka menu navigasi">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-links" id="nav-links">
         <a href="#fitur">Fitur</a>
         <a href="#cara-kerja">Cara Kerja</a>
         <a href="#tentang">Tentang</a>
@@ -107,8 +111,24 @@
       </div>
     </section>
 
+    <!-- SHORTCUT ORANG TUA -->
+    <div class="container">
+      <a href="santri/index.html" class="parent-shortcut reveal">
+        <div class="parent-shortcut-icon">👨‍👩‍👧</div>
+        <div class="parent-shortcut-text">
+          <div class="parent-shortcut-title">Orang Tua Santri?</div>
+          <div class="parent-shortcut-desc">Klik di sini untuk langsung cek saldo &amp; riwayat keuangan anak Anda — tidak perlu pilih-pilih menu.</div>
+        </div>
+        <div class="parent-shortcut-cta">
+          Cek Saldo Anak
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </a>
+      <p class="parent-shortcut-note">💡 Akun login <strong>dibuatkan oleh pengurus pesantren</strong>. Hubungi pengurus/admin asrama untuk mendapatkan username &amp; password.</p>
+    </div>
+
     <!-- PROOF STRIP -->
-    <div class="proof-strip container">
+    <div class="proof-strip container reveal">
       <div class="proof-grid">
         <div class="proof-item">
           <div class="icon-wrap" style="background:rgba(45,138,74,0.2);border:1px solid rgba(45,138,74,0.3);width:38px;height:38px;">
@@ -140,12 +160,12 @@
     <!-- CARA KERJA -->
     <section class="section" id="cara-kerja">
       <div class="container">
-        <div class="section-heading center">
+        <div class="section-heading center reveal">
           <p class="section-label">Cara Kerja</p>
           <h2 class="section-title">Tiga Langkah, Selesai</h2>
           <p class="section-lead">Tidak perlu proses rumit &mdash; cukup pilih peran, masuk, dan mulai kelola keuangan.</p>
         </div>
-        <div class="workflow-grid">
+        <div class="workflow-grid reveal-stagger">
           <div class="step-card">
             <span class="step-no">01</span>
             <h3>Pilih Peran Kamu</h3>
@@ -168,13 +188,13 @@
     <!-- FITUR UNGGULAN -->
     <section class="section" id="fitur">
       <div class="container">
-        <div class="section-heading center">
+        <div class="section-heading center reveal">
           <p class="section-label">Kenapa Saku Santri?</p>
           <h2 class="section-title">Kelola Keuangan Pesantren Lebih Mudah</h2>
           <p class="section-lead">Dirancang khusus untuk kebutuhan pesantren &mdash; memudahkan santri, orang tua, dan bendahara memantau serta mengelola keuangan tanpa ribet.</p>
         </div>
 
-        <div class="feature-grid">
+        <div class="feature-grid reveal-stagger">
           <div class="feature-card">
             <div class="icon-wrap" style="background:rgba(45,138,74,0.2);border:1px solid rgba(45,138,74,0.3);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="#7ed6a0" stroke-width="1.8"/></svg>
@@ -212,7 +232,7 @@
 
     <!-- TENTANG -->
     <section class="section" id="tentang">
-      <div class="container-narrow" style="text-align:center;">
+      <div class="container-narrow reveal" style="text-align:center;">
         <div class="section-heading center">
           <p class="section-label">Tentang</p>
           <h2 class="section-title">Tentang Saku Santri</h2>
@@ -224,12 +244,12 @@
     <!-- FAQ -->
     <section class="section" id="faq">
       <div class="container-narrow">
-        <div class="section-heading center">
+        <div class="section-heading center reveal">
           <p class="section-label">Pertanyaan Umum</p>
           <h2 class="section-title">Masih Ada Pertanyaan?</h2>
         </div>
 
-        <div class="faq-list">
+        <div class="faq-list reveal-stagger">
           <details class="faq-item">
             <summary>Bagaimana cara masuk ke sistem?</summary>
             <p class="faq-answer">Klik tombol &laquo;Masuk ke Sistem&raquo;, lalu pilih aplikasi sesuai peran kamu &mdash; Saku Santri untuk santri/orang tua, atau Bendahara untuk pengurus keuangan &mdash; dan login menggunakan akun yang diberikan pengurus pesantren.</p>
@@ -282,17 +302,50 @@
           <a href="#tentang">Tentang</a>
           <a href="#faq">FAQ</a>
         </div>
-        <div class="footer-col">
-          <h4>Kontak</h4>
-          <span>Malangbong, Garut</span>
-          <span>[Nomor WA/Telp]</span>
-          <span>[Email Pesantren]</span>
-        </div>
       </div>
       <div class="footer-bottom">
         <span>&copy; 2026 Saku Santri &mdash; Pondok Pesantren An-Nur. All Rights Reserved.</span>
       </div>
     </div>
   </footer>
+
+  <script>
+    (function(){
+      var els = document.querySelectorAll('.reveal, .reveal-stagger');
+      if(!('IntersectionObserver' in window)){
+        els.forEach(function(el){ el.classList.add('is-visible'); });
+        return;
+      }
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+      els.forEach(function(el){ io.observe(el); });
+    })();
+
+    (function(){
+      var toggle = document.getElementById('menu-toggle');
+      var links = document.getElementById('nav-links');
+      if(!toggle || !links) return;
+      function closeMenu(){
+        links.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+      toggle.addEventListener('click', function(){
+        var isOpen = links.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+      links.querySelectorAll('a').forEach(function(a){
+        a.addEventListener('click', closeMenu);
+      });
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape') closeMenu();
+      });
+    })();
+  </script>
 </body>
 </html>

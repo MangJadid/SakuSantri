@@ -509,6 +509,71 @@ create table if not exists konfigurasi_tagihan_asrama (
   created_at timestamptz default now()
 );
 alter table konfigurasi_tagihan_asrama enable row level security;
-create policy "allow_all" on konfigurasi_tagihan_asrama for all using (true) with check (true);`;
+create policy "allow_all" on konfigurasi_tagihan_asrama for all using (true) with check (true);
+
+-- ================================================================
+-- MIGRASI KEAMANAN (WAJIB): Login Aman untuk bendahara_users
+-- Saat ini siapa pun bisa membaca password (terenkripsi) semua akun
+-- bendahara langsung dari database tanpa login. SQL ini menutup celah
+-- itu. Login tetap berjalan seperti biasa setelah dijalankan.
+--
+-- CATATAN: aplikasi Saku Santri & Bendahara berbagi satu database
+-- Supabase yang sama. Kalau migrasi keamanan serupa sudah pernah
+-- dijalankan lewat panel Pengaturan di Saku Santri, bagian "settings"
+-- di bawah ini SUDAH tidak perlu diulang (fungsi login_super_check
+-- dan kunci tabel settings sudah ada) — cukup jalankan bagian
+-- bendahara_users-nya saja.
+-- ================================================================
+create extension if not exists pgcrypto;
+
+-- Cek login Pengelola/Bendahara di server, tidak pernah kirim password_hash ke browser
+create or replace function login_bendahara_check(p_username text, p_password text)
+returns jsonb
+language plpgsql security definer
+as $$
+declare v_row bendahara_users%rowtype;
+begin
+  select * into v_row from bendahara_users where username = p_username;
+  if not found then return null; end if;
+  if v_row.password_hash = encode(digest(p_password,'sha256'),'hex')
+     or v_row.password_hash = encode(convert_to(p_password,'UTF8'),'base64') then
+    return to_jsonb(v_row) - 'password_hash';
+  end if;
+  return null;
+end; $$;
+
+-- Kunci: tabel bendahara_users cuma boleh dibaca kalau sudah login
+drop policy if exists "allow_all" on bendahara_users;
+create policy "select_authenticated" on bendahara_users for select to authenticated using (true);
+create policy "insert_authenticated" on bendahara_users for insert to authenticated with check (true);
+create policy "update_authenticated" on bendahara_users for update to authenticated using (true);
+create policy "delete_authenticated" on bendahara_users for delete to authenticated using (true);
+
+-- Cek login Kang Admin di server (SAMA seperti login Admin di Saku Santri —
+-- aman dijalankan ulang meski sudah pernah dibuat lewat panel Saku Santri)
+create or replace function login_super_check(p_username text, p_password text)
+returns boolean
+language plpgsql security definer
+as $$
+declare v_stored text; v_user text;
+begin
+  select value into v_stored from settings where key='super_pass';
+  select coalesce(value,'superadmin') into v_user from settings where key='super_user';
+  if p_username <> v_user then return false; end if;
+  return v_stored = encode(digest(p_password,'sha256'),'hex')
+      or v_stored = encode(convert_to(p_password,'UTF8'),'base64');
+end; $$;
+
+-- Kunci tabel settings (lewati bagian ini kalau sudah dijalankan dari Saku Santri)
+drop policy if exists "allow_all" on settings;
+drop policy if exists "select_public_settings" on settings;
+drop policy if exists "select_secrets_authenticated" on settings;
+drop policy if exists "insert_authenticated" on settings;
+drop policy if exists "update_authenticated" on settings;
+create policy "select_public_settings" on settings for select
+  using (key not in ('super_pass','super_user'));
+create policy "select_secrets_authenticated" on settings for select to authenticated using (true);
+create policy "insert_authenticated" on settings for insert to authenticated with check (true);
+create policy "update_authenticated" on settings for update to authenticated using (true);`;
 }
 

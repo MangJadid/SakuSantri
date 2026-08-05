@@ -119,10 +119,15 @@ async function ensureSuperAccount(){
   try {
     const {data,error} = await SB.from('bendahara_users').select('id').eq('role','super').limit(1);
     if(error || !data || !data.length){
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+      const bytes = new Uint8Array(12);
+      crypto.getRandomValues(bytes);
+      const randomPass = Array.from(bytes, b => chars[b % chars.length]).join('');
       await SB.from('bendahara_users').upsert({
-        username:'admin', password_hash:await sha256('admin123'),
+        username:'admin', password_hash:await sha256(randomPass),
         nama_tampilan:'Kang Admin / Bendahara Utama', role:'super', dapur_id:null
       },{onConflict:'username'});
+      alert('🔑 Akun Admin pertama dibuat otomatis:\n\nUsername: admin\nPassword: '+randomPass+'\n\nCatat password ini SEKARANG — pesan ini hanya muncul sekali. Segera login lalu ganti password lewat menu Ganti Password.');
     }
   } catch(e){}
 }
@@ -165,20 +170,22 @@ async function doLogin(){
   if(!user||!pass){ showLoginErr('⚠️ Isi username dan password!'); return; }
   showLoginOverlay('Memverifikasi akun...');
   try {
-    // Ambil data dari tabel dulu untuk validasi is_blocked
-    const {data,error} = await SB.from('bendahara_users').select('*').eq('username',user).single();
-    if(error||!data){ hideLoginOverlay(); showLoginErr('❌ Username tidak ditemukan!'); return; }
-    if(data.is_blocked){ hideLoginOverlay(); showLoginErr('⛔ Akun diblokir. Hubungi Kang Admin.'); return; }
-
-    // Coba login via Supabase Auth
+    let data;
+    // Coba login via Supabase Auth dulu (tidak perlu baca tabel bendahara_users sama sekali)
     const email = user + '@annur.internal';
     const { data: authData, error: authErr } = await SB.auth.signInWithPassword({ email, password: pass });
 
-    if(authErr){
-      // Fallback: cek password lama SHA-256
-      const passHash = await sha256(pass);
-      if(data.password_hash !== passHash){ hideLoginOverlay(); showLoginErr('❌ Password salah!'); return; }
-      // Password lama cocok - otomatis daftarkan ke Supabase Auth
+    if(!authErr && authData?.user){
+      const res = await SB.from('bendahara_users').select('*').eq('username',user).single();
+      data = res.data;
+      if(!data){ hideLoginOverlay(); showLoginErr('❌ Username tidak ditemukan!'); return; }
+    } else {
+      // Fallback (belum migrasi ke Supabase Auth): cek password lewat RPC,
+      // aman di server — password_hash tidak pernah dikirim ke browser
+      const {data: rpcData, error: rpcErr} = await SB.rpc('login_bendahara_check', {p_username: user, p_password: pass});
+      if(rpcErr || !rpcData){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
+      data = rpcData;
+      // Password cocok - otomatis daftarkan ke Supabase Auth
       try{
         await SB.auth.signUp({ email, password: pass,
           options: { data: { username: user, nama: data.nama_tampilan, role: data.role } }
@@ -186,6 +193,8 @@ async function doLogin(){
         await SB.auth.signInWithPassword({ email, password: pass });
       } catch(e){}
     }
+
+    if(data.is_blocked){ hideLoginOverlay(); showLoginErr('⛔ Akun diblokir. Hubungi Kang Admin.'); return; }
 
     if(data.force_logout){ await SB.from('bendahara_users').update({force_logout:false}).eq('id',data.id); }
     const {data:akses} = await SB.from('bendahara_akses').select('*').eq('bendahara_id',data.id);
@@ -227,19 +236,15 @@ async function doLoginAdmin(){
   if(!user||!pass){ showLoginErr('⚠️ Isi username dan password!'); return; }
   showLoginOverlay('Memverifikasi Kang Admin...');
   try {
-    const {data:dp} = await SB.from('settings').select('value').eq('key','super_pass').single();
-    const {data:du} = await SB.from('settings').select('value').eq('key','super_user').single();
-    const storedPass = dp?.value||''; const storedUser = du?.value||'superadmin';
-    if(user!==storedUser){ hideLoginOverlay(); showLoginErr('❌ Username salah!'); return; }
-
-    // Coba login via Supabase Auth dulu
+    // Coba login via Supabase Auth dulu (tidak perlu baca tabel settings sama sekali)
     const email = user + '@annur.internal';
     const { data: authData, error: authErr } = await SB.auth.signInWithPassword({ email, password: pass });
 
-    if(authErr){
-      // Fallback: cek password SHA-256
-      const ok = await sha256(pass) === storedPass;
-      if(!ok){ hideLoginOverlay(); showLoginErr('❌ Password salah!'); return; }
+    if(authErr || !authData?.user){
+      // Fallback (belum migrasi ke Supabase Auth): cek password lewat RPC,
+      // aman di server — password Kang Admin tidak pernah dikirim ke browser
+      const {data: cocok, error: rpcErr} = await SB.rpc('login_super_check', {p_username: user, p_password: pass});
+      if(rpcErr || !cocok){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
       // Daftarkan ke Supabase Auth
       try{
         await SB.auth.signUp({ email, password: pass,
@@ -249,7 +254,7 @@ async function doLoginAdmin(){
       } catch(e){}
     }
 
-    SESSION = {role:'kangadmin', nama:'Kang Admin', username:storedUser, dapur_id:null, akses_asrama:[]};
+    SESSION = {role:'kangadmin', nama:'Kang Admin', username:user, dapur_id:null, akses_asrama:[]};
     saveSession(); trackActivity();
     MONITOR_INTERVAL = setInterval(async()=>{
       await trackActivity();
