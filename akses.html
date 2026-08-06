@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Masuk ke Sistem: Saku Santri Pesantren An-Nur</title>
   <meta name="description" content="Pilih aplikasi Saku Santri sesuai peran kamu: Saku Santri untuk santri &amp; orang tua, atau Bendahara untuk pengurus keuangan Pondok Pesantren An-Nur."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="Masuk ke Sistem: Saku Santri Pesantren An-Nur"/>
+  <meta property="og:description" content="Pilih aplikasi sesuai peran kamu: Saku Santri untuk santri &amp; orang tua, atau Bendahara untuk pengurus keuangan."/>
+  <meta property="og:image" content="jadid-logo.png"/>
   <meta name="theme-color" content="#0d2818"/>
   <link rel="icon" type="image/png" href="jadid-logo.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -13,6 +17,10 @@
   <link rel="stylesheet" href="landing.css"/>
 </head>
 <body class="access-page">
+  <a href="#konten-akses" class="skip-link">Langsung ke konten</a>
+  <div class="access-bg">
+    <img src="masjid-annur-2.jpg" alt="" role="presentation" onload="this.classList.add('is-loaded')"/>
+  </div>
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
 
@@ -33,7 +41,41 @@
     </g>
   </svg>
 
-  <div class="access-hero">
+  <svg class="motif motif-left" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="motifGradLeft" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#e8c96a"/>
+        <stop offset="100%" stop-color="#7ed6a0"/>
+      </linearGradient>
+    </defs>
+    <g class="motif-ring motif-ring-a">
+      <rect x="60" y="60" width="280" height="280" fill="none" stroke="url(#motifGradLeft)" stroke-width="1"/>
+      <rect x="60" y="60" width="280" height="280" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradLeft)" stroke-width="1"/>
+    </g>
+    <g class="motif-ring motif-ring-b">
+      <rect x="120" y="120" width="160" height="160" fill="none" stroke="url(#motifGradLeft)" stroke-width="1"/>
+      <rect x="120" y="120" width="160" height="160" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradLeft)" stroke-width="1"/>
+    </g>
+  </svg>
+
+  <svg class="motif motif-right" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="motifGradRight" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#e8c96a"/>
+        <stop offset="100%" stop-color="#7ed6a0"/>
+      </linearGradient>
+    </defs>
+    <g class="motif-ring motif-ring-a">
+      <rect x="60" y="60" width="280" height="280" fill="none" stroke="url(#motifGradRight)" stroke-width="1"/>
+      <rect x="60" y="60" width="280" height="280" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradRight)" stroke-width="1"/>
+    </g>
+    <g class="motif-ring motif-ring-b">
+      <rect x="120" y="120" width="160" height="160" fill="none" stroke="url(#motifGradRight)" stroke-width="1"/>
+      <rect x="120" y="120" width="160" height="160" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradRight)" stroke-width="1"/>
+    </g>
+  </svg>
+
+  <div class="access-hero" id="konten-akses">
     <a href="index.html" class="back-link">
       <svg viewBox="0 0 24 24" fill="none"><path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Kembali ke Beranda
@@ -62,23 +104,23 @@
             <span class="badge badge-green"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:3px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#7ed6a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="#7ed6a0" stroke-width="2.2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#7ed6a0" stroke-width="2.2" stroke-linecap="round"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#7ed6a0" stroke-width="2.2" stroke-linecap="round"/></svg>Orang Tua &amp; Pengurus</span>
             <div class="role-title">Saku Santri</div>
             <div class="role-desc">Untuk orang tua dan pengurus asrama. Cek saldo dan riwayat keuangan santri.</div>
-            <div class="role-cta">Masuk sebagai Orang Tua &amp; Pengurus
+            <div class="role-cta">Masuk ke Saku Santri
               <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
           </a>
 
           <a href="bendahara/index.html" class="role-card card-bendahara">
             <div class="icon-wrap"><img src="bendahara/icon-192.png" alt="" width="54" height="54"/></div>
-            <span class="badge badge-gold">&#128274; Khusus Bendahara</span>
+            <span class="badge badge-gold"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:3px"><rect x="5" y="11" width="14" height="10" rx="2" stroke="#e8c96a" stroke-width="2.2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#e8c96a" stroke-width="2.2" stroke-linecap="round"/></svg>Khusus Bendahara</span>
             <div class="role-title">Bendahara</div>
             <div class="role-desc">Untuk pengurus keuangan pesantren. Kelola transaksi dan laporan kas.</div>
-            <div class="role-cta">Masuk sebagai Bendahara
+            <div class="role-cta">Masuk ke Bendahara
               <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
           </a>
         </div>
 
-        <p class="trust-badge">&#128274; Data keuangan tersimpan aman &amp; hanya bisa diakses oleh pihak berwenang</p>
+        <p class="trust-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2.2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Data keuangan tersimpan aman &amp; hanya bisa diakses oleh pihak berwenang</p>
 
         <div class="divider"></div>
 

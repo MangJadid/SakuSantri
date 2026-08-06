@@ -15,9 +15,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="landing.css"/>
+  <link rel="preload" as="image" href="masjid-annur.jpg" fetchpriority="high"/>
   <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
+  <a href="#konten-utama" class="skip-link">Langsung ke konten</a>
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
 
@@ -46,25 +48,30 @@
     </nav>
   </header>
 
-  <main>
+  <main id="konten-utama">
     <!-- HERO -->
     <section class="hero" id="beranda">
-      <svg class="motif motif-hero" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id="motifGradHero" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#e8c96a"/>
-            <stop offset="100%" stop-color="#7ed6a0"/>
-          </linearGradient>
-        </defs>
-        <g class="motif-ring motif-ring-a">
-          <rect x="60" y="60" width="280" height="280" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
-          <rect x="60" y="60" width="280" height="280" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
-        </g>
-        <g class="motif-ring motif-ring-b">
-          <rect x="120" y="120" width="160" height="160" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
-          <rect x="120" y="120" width="160" height="160" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
-        </g>
-      </svg>
+      <div class="hero-bg">
+        <img src="masjid-annur.jpg" alt="Bangunan Pondok Pesantren An-Nur pada malam hari"/>
+      </div>
+      <div class="motif motif-hero" id="hero-3d">
+        <svg class="motif-svg" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="motifGradHero" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#e8c96a"/>
+              <stop offset="100%" stop-color="#7ed6a0"/>
+            </linearGradient>
+          </defs>
+          <g class="motif-ring motif-ring-a">
+            <rect x="60" y="60" width="280" height="280" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
+            <rect x="60" y="60" width="280" height="280" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
+          </g>
+          <g class="motif-ring motif-ring-b">
+            <rect x="120" y="120" width="160" height="160" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
+            <rect x="120" y="120" width="160" height="160" transform="rotate(45 200 200)" fill="none" stroke="url(#motifGradHero)" stroke-width="1"/>
+          </g>
+        </svg>
+      </div>
       <div class="container hero-grid">
         <div class="hero-copy">
           <span class="hero-badge"><img src="logo-annur.png" alt=""/> Platform Terpadu &middot; Pesantren An-Nur</span>
@@ -137,25 +144,25 @@
     <div class="proof-strip container reveal">
       <div class="proof-grid">
         <div class="proof-item">
-          <div class="icon-wrap" style="background:rgba(45,138,74,0.2);border:1px solid rgba(45,138,74,0.3);width:38px;height:38px;">
+          <div class="icon-wrap icon-wrap--sm icon-wrap--mint">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div><b>2 Peran Akses</b><span>Santri &amp; Bendahara</span></div>
         </div>
         <div class="proof-item">
-          <div class="icon-wrap" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);width:38px;height:38px;">
+          <div class="icon-wrap icon-wrap--sm icon-wrap--gold">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#e8c96a" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div><b>Real-time</b><span>Saldo &amp; transaksi terkini</span></div>
         </div>
         <div class="proof-item">
-          <div class="icon-wrap" style="background:rgba(45,138,74,0.2);border:1px solid rgba(45,138,74,0.3);width:38px;height:38px;">
+          <div class="icon-wrap icon-wrap--sm icon-wrap--mint">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#7ed6a0" stroke-width="1.8"/><path d="M3 12h18" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round"/><path d="M12 3c2.5 2.5 4 5.6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.6-4-9s1.5-6.5 4-9Z" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div><b>Berbasis Web</b><span>Tanpa perlu instal</span></div>
         </div>
-        <div class="proof-item" style="border-right:none;">
-          <div class="icon-wrap" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);width:38px;height:38px;">
+        <div class="proof-item proof-item--last">
+          <div class="icon-wrap icon-wrap--sm icon-wrap--gold">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div><b>Akses Terbatas</b><span>Berdasarkan peran pengguna</span></div>
@@ -218,7 +225,7 @@
 
           <div class="feature-list">
             <div class="feature-row">
-              <div class="icon-wrap" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);">
+              <div class="icon-wrap icon-wrap--gold">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
               <div>
@@ -227,7 +234,7 @@
               </div>
             </div>
             <div class="feature-row">
-              <div class="icon-wrap" style="background:rgba(45,138,74,0.2);border:1px solid rgba(45,138,74,0.3);">
+              <div class="icon-wrap icon-wrap--mint">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V10" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 20V4" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 20v-7" stroke="#7ed6a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
               <div>
@@ -236,7 +243,7 @@
               </div>
             </div>
             <div class="feature-row">
-              <div class="icon-wrap" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);">
+              <div class="icon-wrap icon-wrap--gold">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#e8c96a" stroke-width="1.8"/><path d="M3 12h18" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round"/><path d="M12 3c2.5 2.5 4 5.6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.6-4-9s1.5-6.5 4-9Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
               <div>
@@ -251,7 +258,7 @@
 
     <!-- TENTANG -->
     <section class="section" id="tentang">
-      <div class="container-narrow reveal" style="text-align:center;">
+      <div class="container-narrow reveal text-center">
         <div class="section-heading center">
           <h2 class="section-title">Apa Itu Saku Santri?</h2>
         </div>
@@ -305,7 +312,7 @@
       </g>
     </svg>
     <div class="container">
-      <div class="footer-top">
+      <div class="footer-top reveal">
         <div>
           <p>Siap kelola keuangan pesantren lebih mudah?</p>
           <span>Pilih aplikasi sesuai peran kamu dan mulai pantau keuangan secara real-time.</span>
@@ -400,17 +407,39 @@
       });
     })();
 
-    // Parallax halus: orb latar bergerak lebih lambat dari konten saat scroll (kedalaman)
+    // Parallax halus: orb latar bergerak lebih lambat dari konten saat scroll (kedalaman).
+    // Diperluas juga untuk hero (menjauh halus saat mulai scroll) dan motif footer,
+    // supaya gerakan terasa nyambung dari atas sampai footer, bukan cuma efek sekali muncul.
     (function(){
       if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       var orb1 = document.querySelector('.orb-1');
       var orb2 = document.querySelector('.orb-2');
-      if(!orb1 && !orb2) return;
+      var heroCopy = document.querySelector('.hero-copy');
+      var heroVisual = document.querySelector('.hero-visual');
+      var motifFooter = document.querySelector('.motif-footer');
+      if(!orb1 && !orb2 && !heroCopy && !motifFooter) return;
       var ticking = false;
       function update(){
         var y = window.scrollY;
         if(orb1) orb1.style.transform = 'translateY(' + (y * 0.12).toFixed(1) + 'px)';
         if(orb2) orb2.style.transform = 'translateY(' + (y * -0.08).toFixed(1) + 'px)';
+
+        // Hero: menjauh halus (naik + memudar) dalam 320px scroll pertama, tidak sampai hilang total
+        var p = Math.min(y / 320, 1);
+        if(heroCopy){
+          heroCopy.style.transform = 'translateY(' + (-p * 34).toFixed(1) + 'px)';
+          heroCopy.style.opacity = (1 - p * 0.65).toFixed(2);
+        }
+        if(heroVisual){
+          heroVisual.style.transform = 'translateY(' + (-p * 20).toFixed(1) + 'px)';
+          heroVisual.style.opacity = (1 - p * 0.5).toFixed(2);
+        }
+
+        if(motifFooter){
+          var footerRect = motifFooter.getBoundingClientRect();
+          var footerProgress = 1 - Math.min(Math.max(footerRect.top / window.innerHeight, 0), 1);
+          motifFooter.style.transform = 'translateY(' + (-footerProgress * 30).toFixed(1) + 'px)';
+        }
         ticking = false;
       }
       window.addEventListener('scroll', function(){
@@ -418,5 +447,6 @@
       }, { passive: true });
     })();
   </script>
+  <script src="hero-3d.js"></script>
 </body>
 </html>

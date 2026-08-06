@@ -10,6 +10,7 @@
   --mint:      #7ed6a0;
   --white:     #ffffff;
   --container: min(1100px, calc(100% - 40px));
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 html { scroll-behavior: smooth; }
@@ -25,6 +26,15 @@ img { max-width: 100%; display: block; }
 :focus-visible {
   outline: 2.5px solid var(--gold-400); outline-offset: 3px; border-radius: 4px;
 }
+
+.skip-link {
+  position: absolute; top: -60px; left: 16px; z-index: 100;
+  padding: 12px 20px; border-radius: 10px;
+  background: var(--gold-400); color: var(--green-950);
+  font-size: 13px; font-weight: 700; text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-link:focus { top: 16px; }
 
 .orb { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; will-change: transform; }
 .orb-1 { width: 350px; height: 350px; background: var(--green-700); top: -80px; left: -80px; opacity: 0.35; animation: orbDrift1 19s ease-in-out infinite; }
@@ -43,6 +53,7 @@ img { max-width: 100%; display: block; }
 
 .container { width: var(--container); margin: 0 auto; position: relative; z-index: 1; }
 .container-narrow { width: min(680px, calc(100% - 40px)); margin: 0 auto; position: relative; z-index: 1; }
+.text-center { text-align: center; }
 
 /* === SCROLL REVEAL (only active once JS confirms + tags <html class="js">) === */
 .js .reveal {
@@ -95,12 +106,13 @@ img { max-width: 100%; display: block; }
   text-decoration: none; transition: color 0.2s; padding-bottom: 2px;
 }
 .nav-links a:not(.nav-cta)::after {
-  content: ''; position: absolute; left: 0; right: 100%; bottom: -2px; height: 1.5px;
+  content: ''; position: absolute; left: 0; right: 0; bottom: -2px; height: 1.5px;
   background: linear-gradient(90deg, var(--mint), var(--gold-400));
-  transition: right 0.25s cubic-bezier(0.22,1,0.36,1);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.25s var(--ease-out);
 }
 .nav-links a:not(.nav-cta):hover { color: var(--white); }
-.nav-links a:not(.nav-cta):hover::after { right: 0; }
+.nav-links a:not(.nav-cta):hover::after { transform: scaleX(1); }
 .nav-cta {
   display: inline-flex; align-items: center; gap: 7px;
   font-size: 12px; font-weight: 700; color: var(--green-950);
@@ -131,7 +143,7 @@ img { max-width: 100%; display: block; }
     position: absolute; left: 20px; right: 20px; top: calc(100% + 8px);
     flex-direction: column; align-items: stretch; gap: 2px;
     background: rgba(9,31,20,0.98); border: 1px solid rgba(201,168,76,0.2);
-    border-radius: 16px; padding: 10px; box-shadow: 0 20px 44px rgba(0,0,0,0.4);
+    border-radius: 16px; padding: 10px; box-shadow: 0 20px 44px rgba(7,26,15,0.45);
     backdrop-filter: blur(16px);
     opacity: 0; visibility: hidden; transform: translateY(-8px);
     transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
@@ -171,9 +183,33 @@ img { max-width: 100%; display: block; }
   border-color: rgba(255,255,255,0.16);
 }
 .btn-secondary:hover { border-color: rgba(255,255,255,0.5); transform: translateY(-2px); }
+.btn:active { transform: scale(0.97); }
 
 /* === HERO === */
 .hero { position: relative; z-index: 1; padding: 84px 0 70px; }
+
+/* Foto asli bangunan pesantren, digelapkan asimetris (gelap di sisi teks, lebih
+   terlihat di sisi mockup) supaya jadi suasana latar, bukan foto mentah ditempel. */
+.hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.hero-bg img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center 68%;
+  filter: saturate(0.8) sepia(0.08) brightness(0.5) contrast(1.08);
+  transform: scale(1.04); transform-origin: 62% 42%;
+  animation: heroPan 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.hero-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    linear-gradient(to bottom, transparent 58%, var(--green-950) 100%),
+    linear-gradient(100deg,
+      var(--green-950) 0%, rgba(7,26,15,0.96) 26%, rgba(7,26,15,0.74) 50%,
+      rgba(7,26,15,0.48) 75%, rgba(7,26,15,0.7) 100%);
+}
+@keyframes heroPan {
+  from { transform: scale(1.04) translate(0, 0); }
+  to   { transform: scale(1.12) translate(-1.5%, -1%); }
+}
 .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
 .hero-badge {
   display: inline-flex; align-items: center; gap: 9px;
@@ -188,10 +224,21 @@ img { max-width: 100%; display: block; }
   font-weight: 700;
   font-size: clamp(34px, 4.6vw, 54px); line-height: 1.18; letter-spacing: -0.005em;
   color: var(--white); margin: 20px 0 18px; max-width: 620px;
+  text-wrap: balance;
 }
 .hero-lead { max-width: 540px; font-size: 15.5px; line-height: 1.8; color: rgba(255,255,255,0.55); }
 .hero-lead strong { color: rgba(255,255,255,0.85); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+
+.hero-badge, .hero h1, .hero-lead, .hero-actions {
+  opacity: 0; transform: translateY(16px);
+  animation: heroEnter 700ms var(--ease-out) forwards;
+}
+.hero-badge { animation-delay: 0ms; }
+.hero h1 { animation-delay: 80ms; }
+.hero-lead { animation-delay: 160ms; }
+.hero-actions { animation-delay: 240ms; }
+@keyframes heroEnter { to { opacity: 1; transform: translateY(0); } }
 .hero-points { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 26px 0 0; list-style: none; }
 .hero-points li { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); }
 .hero-points svg { width: 15px; height: 15px; color: var(--mint); flex-shrink: 0; }
@@ -201,7 +248,7 @@ img { max-width: 100%; display: block; }
 .mockup {
   position: relative; border: 1px solid rgba(201,168,76,0.22); border-radius: 24px;
   padding: 8px; background: rgba(255,255,255,0.035); backdrop-filter: blur(16px);
-  box-shadow: 0 40px 90px rgba(0,0,0,0.5), 0 10px 24px rgba(0,0,0,0.3);
+  box-shadow: 0 40px 90px rgba(7,26,15,0.55), 0 10px 24px rgba(7,26,15,0.35);
   animation: slideUpFade 1s cubic-bezier(0.22,1,0.36,1) 0.15s both;
   transform-style: preserve-3d;
   transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), box-shadow 0.5s ease;
@@ -242,7 +289,7 @@ img { max-width: 100%; display: block; }
 .float-card {
   position: absolute; z-index: 4; display: flex; align-items: center; gap: 10px;
   padding: 11px 14px; border: 1px solid rgba(201,168,76,0.25); border-radius: 14px;
-  background: rgba(13,40,24,0.92); box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  background: rgba(13,40,24,0.92); box-shadow: 0 18px 40px rgba(7,26,15,0.4);
   backdrop-filter: blur(10px); animation: float 5s ease-in-out infinite;
 }
 .float-card svg { width: 18px; height: 18px; color: var(--gold-400); flex-shrink: 0; }
@@ -307,16 +354,18 @@ img { max-width: 100%; display: block; }
   transition: background 0.25s ease;
 }
 .proof-item:hover { background: rgba(255,255,255,0.03); }
+.proof-item--last { border-right: none; }
 .proof-item:hover .icon-wrap { transform: scale(1.08); }
 .proof-item b { display: block; font-size: 12.5px; color: var(--white); }
 .proof-item span { display: block; margin-top: 2px; font-size: 10.5px; color: rgba(255,255,255,0.52); }
 
 /* === SECTION SPACING === */
-.section { padding: 88px 0; position: relative; z-index: 1; }
+.section { padding: 104px 0; position: relative; z-index: 1; }
 .section-title {
   font-family: 'Amiri', 'Plus Jakarta Sans', serif;
   font-size: clamp(26px, 3.2vw, 34px); font-weight: 700; letter-spacing: 0;
   color: var(--white); max-width: 620px;
+  text-wrap: balance;
 }
 .section-lead { font-size: 13.5px; color: rgba(255,255,255,0.56); max-width: 480px; margin-top: 12px; line-height: 1.7; }
 .section-heading.center .section-title, .section-heading.center .section-lead { margin-inline: auto; }
@@ -363,6 +412,9 @@ img { max-width: 100%; display: block; }
 .feature-title { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 5px; }
 .feature-desc { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.55; }
 .icon-wrap { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.icon-wrap--sm { width: 38px; height: 38px; }
+.icon-wrap--mint { background: rgba(45,138,74,0.2); border: 1px solid rgba(45,138,74,0.3); }
+.icon-wrap--gold { background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.25); }
 
 @media (max-width: 800px) {
   .feature-layout { grid-template-columns: 1fr; }
@@ -424,13 +476,42 @@ img { max-width: 100%; display: block; }
   position: absolute; top: 50%; right: -8%; left: auto; width: min(680px, 90vw); height: min(680px, 90vw);
   transform: translateY(-50%); opacity: 0.05;
 }
+/* Dua motif kecil di kiri-kanan (halaman Pilih Aplikasi) -- pendamping motif utama
+   di tengah, ukuran ~40% dan lebih redup supaya tidak bersaing jadi fokus utama. */
+.motif-left, .motif-right {
+  top: 50%; width: min(360px, 55vw); height: min(360px, 55vw);
+  transform: translateY(-50%); opacity: 0.045;
+}
+.motif-left { left: 4%; right: auto; }
+.motif-right { right: 4%; left: auto; }
 .motif-ring { transform-origin: 200px 200px; }
 .motif-ring-a { animation: motifSpin 120s linear infinite; }
 .motif-ring-b { animation: motifSpin 90s linear infinite reverse; }
 @keyframes motifSpin { to { transform: rotate(360deg); } }
 
+/* Wadah crossfade: motif SVG 2D (fallback/default) <-> canvas 3D (progressive enhancement) */
+#hero-3d { overflow: visible; }
+#hero-3d .motif-svg { display: block; width: 100%; height: 100%; transition: opacity 0.5s ease; }
+#hero-3d canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+#hero-3d.is-ready .motif-svg { opacity: 0; }
+
 /* === ACCESS PAGE (Pilih Aplikasi) === */
 .access-page { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Foto bangunan pesantren sebagai suasana latar, statis (halaman ini task-oriented,
+   bukan momen pemasaran, jadi tidak perlu gerakan Ken Burns seperti di hero). */
+.access-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+.access-bg img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center 60%;
+  filter: saturate(0.85) sepia(0.06) brightness(0.62) contrast(1.08);
+  opacity: 0; transition: opacity 0.8s ease-out;
+}
+.access-bg img.is-loaded { opacity: 1; }
+.access-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 90% 70% at 50% 30%,
+    rgba(7,26,15,0.4) 0%, rgba(7,26,15,0.68) 60%, var(--green-950) 100%);
+}
 .access-hero {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 40px 16px; position: relative; z-index: 1;
@@ -447,7 +528,7 @@ img { max-width: 100%; display: block; }
   position: relative; width: 96px; height: 96px; border-radius: 50%;
   background: radial-gradient(circle, rgba(201,168,76,0.12), transparent 70%);
   border: 2px solid rgba(201,168,76,0.35);
-  box-shadow: 0 0 0 6px rgba(201,168,76,0.06), 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 0 0 6px rgba(201,168,76,0.06), 0 8px 32px rgba(7,26,15,0.55);
   display: flex; align-items: center; justify-content: center;
 }
 .logo-ring::after {
@@ -468,7 +549,7 @@ img { max-width: 100%; display: block; }
   width: 100%; max-width: 720px;
   background: rgba(255,255,255,0.045); border: 1px solid rgba(201,168,76,0.2);
   border-radius: 22px; overflow: hidden; backdrop-filter: blur(20px);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative;
+  box-shadow: 0 20px 50px rgba(7,26,15,0.55); position: relative;
   animation: slideUpFade 1s cubic-bezier(0.22,1,0.36,1) 0.2s both;
 }
 .card::before { content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1.5px; background: linear-gradient(90deg, transparent, var(--gold-500), transparent); }
