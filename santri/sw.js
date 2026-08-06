@@ -1,4 +1,4 @@
-const CACHE_NAME = 'saku-santri-v1';
+const CACHE_NAME = 'saku-santri-v2';
 
 self.addEventListener('install', function(event) {
   self.skipWaiting();
@@ -8,9 +8,10 @@ self.addEventListener('activate', function(event) {
   event.waitUntil(clients.claim());
 });
 
-self.addEventListener('fetch', function(event) {
-  event.respondWith(fetch(event.request));
-});
+// Sengaja TANPA fetch handler: SW ini cuma dipakai buat push notification,
+// bukan offline caching. Fetch handler pass-through sebelumnya justru bikin
+// browser salah kira ada cache tersendiri di lapisan SW -- hard refresh biasa
+// jadi gak mempan. Tanpa handler ini, browser langsung ke jaringan seperti normal.
 
 // Handle push notification
 self.addEventListener('push', function(event) {

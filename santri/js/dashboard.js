@@ -135,10 +135,8 @@ function resetAllFilters(){
   const dashCari = document.getElementById('dash-cari'); if(dashCari) dashCari.value='';
   resetFPanel('santri', SANTRI_FILTER_IDS, ()=>{});
   const santriCari = document.getElementById('santri-cari'); if(santriCari) santriCari.value='';
-  santriPage = 1;
   resetFPanel('riw', RIW_FILTER_IDS, ()=>{});
   const riwCari = document.getElementById('riw-cari'); if(riwCari) riwCari.value='';
-  riwPage = 1;
 }
 function toggleFPanel(ctx){
   const panel = document.getElementById('fpanel-'+ctx);
@@ -234,10 +232,7 @@ function renderDashboard(){
     const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const sc = s.saldo<0?'s-minus':s.saldo===0?'s-nol':s.saldo<kritis?'s-warn':'s-ok';
     const isKritis = s.saldo>=0 && s.saldo<kritis || s.saldo<0;
-    const waBtn = s.no_wa
-      ? `<button class="btn btn-wa btn-sm" onclick="kirimWASantri(${s.id})" title="Kirim WA ke ${s.no_wa}">📲</button>`
-      : `<button class="btn btn-o btn-sm" style="opacity:.4;cursor:not-allowed" title="No WA tidak ada">📵</button>`;
-    html+=`<tr>
+    html+=`<tr class="row-reveal">
       <td style="color:var(--text-l);font-size:12px">${i+1}</td>
       <td><div style="display:flex;align-items:center;gap:9px">
         <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};overflow:hidden">${s.foto_url?'<img data-src="'+s.foto_url+'" class="lazy-img" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
@@ -247,17 +242,13 @@ function renderDashboard(){
       <td class="s-ok">${rp(ALL_TX.filter(t=>t.santri_id===s.id&&t.jenis==='masuk').reduce((a,t)=>a+t.nominal,0))}</td>
       <td style="color:var(--red)">${rp(ALL_TX.filter(t=>t.santri_id===s.id&&t.jenis==='keluar').reduce((a,t)=>a+t.nominal,0))}</td>
       <td><strong class="${sc}">${s.saldo<0?'− ':''} ${rp(s.saldo)}</strong></td>
-      <td><div style="display:flex;gap:5px">${waBtn}<button class="btn btn-o btn-sm" onclick="openDetailModal(${s.id})">📋 Detail</button></div></td>
+      <td><button class="btn btn-o btn-sm" onclick="openDetailModal(${s.id})">📋 Detail</button></td>
     </tr>`;
   });
   document.getElementById('dash-tbl').innerHTML = html||`<tr><td colspan="7"><div class="empty"><span class="ei">🔍</span><p>Tidak ada data</p></div></td></tr>`;
 
-  // Tampilkan/sembunyikan tombol WA Semua Kritis
-  const kritisAdaWA = scopeSantri.filter(s=>(s.saldo<kritis)&&s.no_wa).length;
-  const btnWaSemua = document.getElementById('btn-wa-semua');
-  if(btnWaSemua) btnWaSemua.style.display = kritisAdaWA>0 ? 'inline-flex' : 'none';
-
   setTimeout(activateLazyLoad, 50);
+  setTimeout(activateRowReveal, 50);
 }
 
 function getKobongNama(id){ const k=ALL_KOBONG.find(k=>k.id===id); return k?.nama||''; }

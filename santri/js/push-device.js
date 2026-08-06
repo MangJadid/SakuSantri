@@ -150,6 +150,21 @@ function activateLazyLoad(){
   document.querySelectorAll('img.lazy-img').forEach(img=>lazyObserver.observe(img));
 }
 
+// ===== FADE-RISE BARIS TABEL SAAT DISCROLL KE PANDANGAN =====
+const rowRevealObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('is-visible');
+      rowRevealObserver.unobserve(entry.target);
+    }
+  });
+}, {threshold:.1, rootMargin:'0px 0px -30px 0px'});
+
+function activateRowReveal(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('tr.row-reveal:not(.is-visible)').forEach(tr=>rowRevealObserver.observe(tr));
+}
+
 // Panggil activateLazyLoad setelah setiap render tabel
 const _origRenderTabelSantri = renderTabelSantri;
 // Patch: panggil activateLazyLoad setelah render selesai

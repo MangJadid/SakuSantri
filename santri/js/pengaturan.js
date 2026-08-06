@@ -28,7 +28,8 @@ async function simpanPengaturan(){
   await SB.from('settings').upsert({key:'kritis_batas',value:String(kritis)});
   CONFIG.pesantren_nama=nama; CONFIG.bulan_aktif=bulan; CONFIG.kritis_batas=kritis;
   localStorage.setItem('siujang_cfg',JSON.stringify(CONFIG));
-  document.getElementById('hdr-bulan').textContent=bulan;
+  const hdrBulanEl2 = document.getElementById('hdr-bulan');
+  if(hdrBulanEl2) hdrBulanEl2.textContent=bulan;
   document.getElementById('hdr-sub').textContent=nama;
   toast('Pengaturan disimpan!');
 

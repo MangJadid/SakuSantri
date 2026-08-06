@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="landing.css"/>
+  <link rel="stylesheet" href="landing.css?v=14"/>
   <link rel="preload" as="image" href="masjid-annur.jpg" fetchpriority="high"/>
   <script>document.documentElement.classList.add('js');</script>
 </head>
@@ -86,32 +86,36 @@
         </div>
 
         <div class="hero-visual">
-          <div class="mockup">
-            <div class="mockup-inner">
-              <div class="mockup-body">
-                <div class="mockup-welcome">
-                  <div>
-                    <small>Saldo Santri <span class="mockup-status">Real-time</span></small>
-                    <b>Rp 250.000</b>
-                  </div>
-                  <div class="mockup-welcome-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3H8L6 7h12L16 3Z" stroke="#e8c96a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </div>
+          <div class="mockup mockup-duo">
+            <!-- DESKTOP: alur akses (Landing -> Pilih Aplikasi -> Login Bendahara) -->
+            <div class="device device-tablet">
+              <img src="bingkaidkestop-clean.png" alt="" class="tablet-frame-img"/>
+              <div class="tablet-inner">
+                <div class="device-screen" id="tablet-screens" data-screen="0">
+                  <img class="device-slide is-active" src="slide-desktop-3.jpg" alt="Tampilan landing page Saku Santri di desktop"/>
+                  <img class="device-slide" src="slide-desktop-2.jpg" alt="Tampilan halaman pilih aplikasi"/>
+                  <img class="device-slide" src="slide-desktop-1.jpg" alt="Tampilan login Bendahara"/>
                 </div>
-                <div class="mockup-stats">
-                  <div class="mockup-stat">
-                    <i><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#7ed6a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></i>
-                    <b>Pemasukan</b><span>Rp 500rb</span>
+              </div>
+
+              <!-- HP: pengalaman dalam aplikasi (Dashboard -> Panel Akun) -- dianggap
+                   nempel di tablet biar posisi % konsisten sama 1 kotak referensi -->
+              <div class="device device-phone">
+                <img src="bingkaihp-clean.png" alt="" class="phone-frame-img"/>
+                <div class="mockup-inner">
+                  <div class="phone-statusbar">
+                    <span>9:41</span>
+                    <span class="phone-statusbar-icons">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M2 8.5c6-5 14-5 20 0M5.5 12c4-3.3 9-3.3 13 0M9 15.5c2-1.7 4-1.7 6 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19" r="1.2" fill="#fff"/></svg>
+                      <svg width="17" height="10" viewBox="0 0 24 14" fill="none"><rect x="1" y="1" width="19" height="12" rx="3" stroke="#fff" stroke-width="1.5"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="#fff"/><path d="M22 5v4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </span>
                   </div>
-                  <div class="mockup-stat">
-                    <i><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="#e8c96a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></i>
-                    <b>Pengeluaran</b><span>Rp 250rb</span>
+                  <div class="device-screen" id="phone-screens" data-screen="0">
+                    <img class="device-slide is-active" src="slide-phone-1.jpg" alt="Tampilan login Data Uang Jajan Santri di HP"/>
+                    <img class="device-slide" src="slide-phone-2.jpg" alt="Tampilan dashboard mobile Saku Santri"/>
+                    <img class="device-slide" src="slide-phone-3.jpg" alt="Tampilan panel akun di HP"/>
                   </div>
-                </div>
-                <div class="mockup-list">
-                  <div class="mockup-row"><i></i><span>Kiriman Orang Tua</span><b class="pos">+Rp 200.000</b></div>
-                  <div class="mockup-row"><i></i><span>Uang Jajan Mingguan</span><b class="pos">+Rp 50.000</b></div>
-                  <div class="mockup-row"><i></i><span>Beli Alat Tulis</span><b class="neg">&minus;Rp 15.000</b></div>
+                  <div class="phone-home-indicator"></div>
                 </div>
               </div>
             </div>
@@ -384,6 +388,34 @@
       });
     })();
 
+    // Demo layar duo mockup: tablet siklus alur akses (Landing -> Pilih Aplikasi ->
+    // Login Bendahara), HP siklus pengalaman dalam-aplikasi (Dashboard -> Panel Akun) --
+    // biar terasa produk beneran jalan, bukan cuma foto diam. Arah geser selalu
+    // konsisten ke kiri (layar sebelumnya "is-prev" di kiri) supaya loop mulus.
+    // Interval & delay start beda antar device (bukan disengaja disamakan) supaya
+    // dua device kerasa hidup masing-masing, bukan "flip" bareng kayak robot.
+    // Berhenti kalau browser minta kurangi animasi -- tetap tampil layar 1 statis.
+    function startDeviceCycle(wrapId, intervalMs, startDelayMs){
+      var wrap = document.getElementById(wrapId);
+      if(!wrap) return;
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var slides = [].slice.call(wrap.querySelectorAll('.device-slide'));
+      if(slides.length < 2) return;
+      var current = 0;
+      setTimeout(function(){
+        setInterval(function(){
+          current = (current + 1) % slides.length;
+          slides.forEach(function(el, i){
+            el.classList.remove('is-active', 'is-prev');
+            if(i === current) el.classList.add('is-active');
+            else if(i === (current + slides.length - 1) % slides.length) el.classList.add('is-prev');
+          });
+        }, intervalMs);
+      }, startDelayMs);
+    }
+    startDeviceCycle('tablet-screens', 4200, 0);
+    startDeviceCycle('phone-screens', 3600, 1500);
+
     // 3D tilt: kartu mockup di hero mengikuti gerakan kursor (nonaktif di HP / reduced-motion)
     (function(){
       var wrap = document.querySelector('.hero-visual');
@@ -393,17 +425,18 @@
       var canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
       if(reduceMotion || !canHover) return;
 
-      var maxTilt = 7;
+      var maxTilt = 10;
+      var restX = 4, restY = -8; // pose diam, senada dengan .mockup di CSS
       wrap.addEventListener('mousemove', function(e){
         var rect = wrap.getBoundingClientRect();
         var x = (e.clientX - rect.left) / rect.width;
         var y = (e.clientY - rect.top) / rect.height;
-        var rotateY = (x - 0.5) * maxTilt * 2;
-        var rotateX = (0.5 - y) * maxTilt * 2;
+        var rotateY = restY + (x - 0.5) * maxTilt * 2;
+        var rotateX = restX + (0.5 - y) * maxTilt * 2;
         card.style.transform = 'rotateX(' + rotateX.toFixed(2) + 'deg) rotateY(' + rotateY.toFixed(2) + 'deg)';
       });
       wrap.addEventListener('mouseleave', function(){
-        card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+        card.style.transform = 'rotateX(' + restX + 'deg) rotateY(' + restY + 'deg)';
       });
     })();
 
@@ -447,6 +480,6 @@
       }, { passive: true });
     })();
   </script>
-  <script src="hero-3d.js"></script>
+  <script src="hero-3d.js?v=3"></script>
 </body>
 </html>

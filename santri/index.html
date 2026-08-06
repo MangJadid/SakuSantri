@@ -8,21 +8,30 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Saku Santri">
-<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="./css/style.css?v=13">
 <meta name="theme-color" content="#1a5c3a">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Localhost (XAMPP) -> shim lokal; domain publik -> SDK Supabase asli.
+  // document.write dipakai sengaja di sini: satu-satunya cara muat script secara
+  // sinkron (blocking) sebelum script lain di bawahnya jalan & butuh window.supabase.
+  document.write(
+    ['localhost','127.0.0.1'].includes(location.hostname)
+      ? '<script src="../shared/supabase-client.js"><\/script>'
+      : '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'
+  );
+</script>
 </head>
 <body>
 <div id="offline-screen">
   <h2>📵 Anda Sedang Offline</h2>
   <p>Periksa koneksi internet Anda,<br>lalu coba lagi.</p>
 </div>
-<script src="./js/bootstrap-offline-screen.js"></script>
+<script src="./js/bootstrap-offline-screen.js?v=11"></script>
 
 <div id="offline-banner">
   <div class="offl-dot"></div>
@@ -47,7 +56,7 @@
 
 
 
-<script src="./js/bootstrap-anti-plagiarism.js"></script>
+<script src="./js/bootstrap-anti-plagiarism.js?v=11"></script>
 
 <!-- LOADING -->
 <div id="pg-loading">
@@ -183,14 +192,9 @@
       </div>
     </div>
     <div class="hdr-right">
-      <span id="cloud-ind" style="font-size:11.5px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:3px"><span class="cloud-dot ok"></span>Online</span>
-      <span class="hchip" id="hdr-bulan">—</span>
-      <span class="hchip gold" id="hdr-role">—</span>
-      <button class="hbtn" id="btn-profil-hdr" onclick="openProfilPengurus()" style="display:none;align-items:center;gap:6px;padding:4px 12px 4px 4px">
-        <span id="hdr-profil-av" style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.2);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;flex-shrink:0">👤</span>
-        <span>Profil</span>
+      <button class="hbtn acc-trigger" id="btn-profil-hdr" onclick="openAccountDrawer()" title="Akun & Menu" aria-label="Buka menu akun" style="display:none;align-items:center;justify-content:center;padding:7px 9px">
+        <span class="acc-trigger-ic"><i></i><i></i><i></i></span>
       </button>
-      <button class="hbtn" onclick="doLogout()">← Keluar</button>
     </div>
   </header>
 
@@ -218,13 +222,15 @@
         </div>
       </div>
       <div class="sgrid" id="dash-stats"></div>
-      <div class="panel">
+
+      <!-- Grid akses cepat -- HP saja, gantiin tab atas yang harus discroll -->
+      <div class="mnav-grid" id="mnav-grid"></div>
+
+      <div class="panel" id="dash-ringkasan-panel">
         <div class="ph">
           <h2>📋 Ringkasan Santri</h2>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-sm btn-wa-all" onclick="kirimWASemuaKritis()" id="btn-wa-semua" style="display:none">📲 WA Semua Kritis</button>
             <button class="btn btn-p btn-sm" onclick="exportLengkap()">📦 Backup Lengkap</button>
-
           </div>
         </div>
         <div class="pb">
@@ -272,6 +278,7 @@
         <div class="ph">
           <h2>👥 Data Santri</h2>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-wa-all" onclick="kirimWASemuaKritis()" id="btn-wa-semua" style="display:none">📲 WA Semua Kritis</button>
             <button class="btn btn-p btn-sm non-pengurus-only" onclick="openModalTambahSantri()">➕ Tambah</button>
             <button class="btn btn-o btn-sm non-pengurus-only" onclick="openModalImport()">📊 Import Excel</button>
             <button class="btn btn-b btn-sm" onclick="downloadTemplateExcel()">⬇️ Template</button>
@@ -540,6 +547,36 @@
     <div class="sec" id="sec-naikkelas"></div>
 
   </main>
+
+  <!-- Bottom nav -- HP saja, 4 menu paling sering dipakai -->
+  <nav class="bnav" id="bottom-nav"></nav>
+</div>
+
+<!-- PANEL AKUN (geser dari kanan) -->
+<div class="acc-overlay" id="acc-overlay" onclick="closeAccountDrawer(event)">
+  <aside class="acc-panel" onclick="event.stopPropagation()">
+    <div class="acc-head">
+      <button class="acc-close" onclick="closeAccountDrawer()" aria-label="Tutup">✕</button>
+      <div class="acc-av" id="acc-av"></div>
+      <div class="acc-name" id="acc-name">—</div>
+      <div class="acc-user" id="acc-user">—</div>
+      <span class="acc-badge" id="acc-role-badge">—</span>
+    </div>
+    <div class="acc-body">
+      <div class="acc-section-label">Info Akun</div>
+      <div class="acc-info">
+        <div class="acc-info-row"><span class="acc-info-ic">🏫</span><div><small>Pondok</small><b id="acc-pondok">—</b></div></div>
+        <div class="acc-info-row"><span class="acc-info-ic">📅</span><div><small>Periode</small><b id="acc-periode">—</b></div></div>
+        <div class="acc-info-row"><span class="acc-info-ic">🟢</span><div><small>Status</small><b>Online</b></div></div>
+      </div>
+
+      <div class="acc-section-label">Menu</div>
+      <div class="acc-menu" id="acc-menu"></div>
+    </div>
+    <div class="acc-foot">
+      <button class="acc-logout" onclick="closeAccountDrawer();doLogout()">🚪 Keluar dari Akun</button>
+    </div>
+  </aside>
 </div>
 
 <!-- MODAL TAMBAH/EDIT SANTRI -->
@@ -1004,34 +1041,34 @@
   </div>
 </div>
 
-<script src="./js/core.js"></script>
-<script src="./js/init-setup.js"></script>
-<script src="./js/auth.js"></script>
-<script src="./js/navigation.js"></script>
-<script src="./js/dashboard.js"></script>
-<script src="./js/santri-helpers.js"></script>
-<script src="./js/santri-table.js"></script>
-<script src="./js/santri-detail.js"></script>
-<script src="./js/transaksi.js"></script>
-<script src="./js/santri-crud.js"></script>
-<script src="./js/persetujuan.js"></script>
-<script src="./js/massal.js"></script>
-<script src="./js/riwayat.js"></script>
-<script src="./js/kobong-asrama.js"></script>
-<script src="./js/pengurus.js"></script>
-<script src="./js/profil.js"></script>
-<script src="./js/import.js"></script>
-<script src="./js/ortu.js"></script>
-<script src="./js/pengaturan.js"></script>
-<script src="./js/export-backup.js"></script>
-<script src="./js/rekening-wa.js"></script>
-<script src="./js/tutup-bulan.js"></script>
-<script src="./js/notifikasi.js"></script>
-<script src="./js/push-device.js"></script>
-<script src="./js/session-tracking.js"></script>
-<script src="./js/naik-kelas.js"></script>
-<script src="./js/keuangan-monitor.js"></script>
-<script src="./js/massal-kobong.js"></script>
+<script src="./js/core.js?v=11"></script>
+<script src="./js/init-setup.js?v=11"></script>
+<script src="./js/auth.js?v=11"></script>
+<script src="./js/navigation.js?v=11"></script>
+<script src="./js/dashboard.js?v=11"></script>
+<script src="./js/santri-helpers.js?v=11"></script>
+<script src="./js/santri-table.js?v=11"></script>
+<script src="./js/santri-detail.js?v=11"></script>
+<script src="./js/transaksi.js?v=11"></script>
+<script src="./js/santri-crud.js?v=11"></script>
+<script src="./js/persetujuan.js?v=11"></script>
+<script src="./js/massal.js?v=11"></script>
+<script src="./js/riwayat.js?v=11"></script>
+<script src="./js/kobong-asrama.js?v=11"></script>
+<script src="./js/pengurus.js?v=11"></script>
+<script src="./js/profil.js?v=11"></script>
+<script src="./js/import.js?v=11"></script>
+<script src="./js/ortu.js?v=11"></script>
+<script src="./js/pengaturan.js?v=11"></script>
+<script src="./js/export-backup.js?v=11"></script>
+<script src="./js/rekening-wa.js?v=11"></script>
+<script src="./js/tutup-bulan.js?v=11"></script>
+<script src="./js/notifikasi.js?v=11"></script>
+<script src="./js/push-device.js?v=11"></script>
+<script src="./js/session-tracking.js?v=11"></script>
+<script src="./js/naik-kelas.js?v=11"></script>
+<script src="./js/keuangan-monitor.js?v=11"></script>
+<script src="./js/massal-kobong.js?v=11"></script>
 
   <!-- LOADING OVERLAY -->
   <div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:14px">
@@ -1052,11 +1089,11 @@
   <button class="pwa-close" id="pwa-close">✕</button>
 </div>
 
-<script src="./js/pwa-install.js"></script>
+<script src="./js/pwa-install.js?v=11"></script>
 
 <!-- Service Worker Register + Auto Update -->
-<script src="./js/sw-register.js"></script>
+<script src="./js/sw-register.js?v=11"></script>
 
-<script src="./js/offline-detection.js"></script>
+<script src="./js/offline-detection.js?v=11"></script>
 </body>
 </html>

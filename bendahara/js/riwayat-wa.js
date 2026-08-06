@@ -10,14 +10,10 @@ function renderRiwayat(){
     return t.status==='lunas'||t.status==='cicil';
   }).sort((a,b)=>(b.tgl_bayar||'').localeCompare(a.tgl_bayar||''));
 
-  const pages=Math.ceil(filtered.length/PAGE_SIZE);
-  if(riwayatPage>pages) riwayatPage=1;
-  const slice=filtered.slice((riwayatPage-1)*PAGE_SIZE, riwayatPage*PAGE_SIZE);
-
-  const rows=slice.map((t,i)=>{
+  const rows=filtered.map((t,i)=>{
     const s=getSantriById(t.santri_id)||{};
     return `<tr>
-      <td style="color:var(--text-l)">${(riwayatPage-1)*PAGE_SIZE+i+1}</td>
+      <td style="color:var(--text-l)">${i+1}</td>
       <td style="color:var(--text-l);font-size:12px">${fmtTgl(t.tgl_bayar)||'—'}</td>
       <td><button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${s.nama||t.santri_nama||'—'}</button></td>
       <td><span class="badge badge-dapur">${getDapurEmoji(t.dapur_id)} ${getDapurNama(t.dapur_id)}</span></td>
@@ -30,9 +26,8 @@ function renderRiwayat(){
 
   document.getElementById('riwayat-tbody').innerHTML=rows||'';
   document.getElementById('riwayat-empty').style.display=rows?'none':'block';
-  let pg='';
-  for(let i=1;i<=pages;i++) pg+=`<button class="pg-btn ${i===riwayatPage?'act':''}" onclick="riwayatPage=${i};renderRiwayat()">${i}</button>`;
-  document.getElementById('riwayat-pagination').innerHTML=pg;
+  const pgEl=document.getElementById('riwayat-pagination');
+  if(pgEl) pgEl.innerHTML='';
 }
 
 // ===== WA =====

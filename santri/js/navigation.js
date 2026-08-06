@@ -1,3 +1,15 @@
+// Menu selain dashboard/santri/massal/riwayat (4 itu masuk bottom nav di HP).
+// Dipakai buat grid "Fitur Lainnya" di dashboard -- icon + warna sesuai referensi.
+const MENU_LAINNYA = [
+  {id:'kobong', label:'Kobong', icon:'🏠', c:'b'},
+  {id:'naikkelas', label:'Naik Kelas', icon:'🎓', c:'p'},
+  {id:'pengurus', label:'Pengurus', icon:'👨‍💼', c:'g'},
+  {id:'persetujuan', label:'Persetujuan', icon:'✅', c:'g'},
+  {id:'notifikasi', label:'Notifikasi', icon:'🔔', c:'gg'},
+  {id:'monitor', label:'Monitor', icon:'👁️', c:'b'},
+  {id:'pengaturan', label:'Pengaturan', icon:'⚙️', c:'r'},
+];
+
 function buildTabs(){
   const tabs = document.getElementById('main-tabs');
   let t = '';
@@ -31,6 +43,57 @@ function buildTabs(){
     }
   }
   tabs.innerHTML = t;
+  buildMobileNav();
+}
+
+// Bottom nav (4 utama) + grid "Fitur Lainnya" di dashboard -- HP saja.
+// Dibangun dari tab yang SUDAH ada di #main-tabs, jadi otomatis ikut aturan role.
+function buildMobileNav(){
+  const bnav = document.getElementById('bottom-nav');
+  const grid = document.getElementById('mnav-grid');
+  if(!bnav || !grid) return;
+
+  if(SESSION.role==='ortu'){
+    bnav.innerHTML=''; grid.innerHTML='';
+    document.body.classList.remove('has-bnav');
+    return;
+  }
+  document.body.classList.add('has-bnav');
+
+  const primer = [
+    {id:'dashboard', label:'Beranda', icon:'🏠'},
+    {id:'santri', label:'Santri', icon:'👥'},
+    {id:'massal', label:'Massal', icon:'💸'},
+    {id:'riwayat', label:'Riwayat', icon:'📜'},
+  ].filter(m => document.getElementById('tab-'+m.id));
+
+  bnav.innerHTML = '<span class="bnav-highlight" id="bnav-highlight"></span>' + primer.map(m => `
+    <button class="bnav-item" id="bnav-${m.id}" onclick="showTab('${m.id}')">
+      <span class="bnav-ic">${m.icon}</span><span>${m.label}</span>
+    </button>`).join('');
+  requestAnimationFrame(moveBnavHighlight);
+  window.addEventListener('resize', moveBnavHighlight);
+
+  const lainnya = MENU_LAINNYA.filter(m => document.getElementById('tab-'+m.id));
+  grid.innerHTML = lainnya.length ? `
+    <div class="mnav-label"><i></i>Fitur Lainnya</div>
+    <div class="mnav-items">
+      ${lainnya.map(m => `
+        <button class="mnav-item" onclick="showTab('${m.id}')">
+          <span class="sci ${m.c}">${m.icon}</span><span>${m.label}</span>
+        </button>`).join('')}
+    </div>` : '';
+}
+
+// Geser pill highlight ke tombol bottom-nav yang lagi aktif (ukur posisi asli,
+// bukan pecahan persen tetap -- jumlah tombol bisa beda-beda per role).
+function moveBnavHighlight(){
+  const hl = document.getElementById('bnav-highlight');
+  const active = document.querySelector('.bnav-item.act');
+  if(!hl || !active) { if(hl) hl.style.opacity = '0'; return; }
+  hl.style.opacity = '1';
+  hl.style.width = active.offsetWidth - 12 + 'px';
+  hl.style.transform = 'translateX(' + (active.offsetLeft + 6) + 'px)';
 }
 
 function tab(id, label){
@@ -50,9 +113,12 @@ function showTab(id){
 
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));
   document.querySelectorAll('.tb').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('act'));
   const s=document.getElementById('sec-'+id), t=document.getElementById('tab-'+id);
   if(s) s.classList.add('act');
   if(t) t.classList.add('act');
+  document.getElementById('bnav-'+id)?.classList.add('act');
+  moveBnavHighlight();
   if(id==='dashboard') renderDashboard();
   if(id==='santri') renderTabelSantri();
   if(id==='massal') renderMassal();

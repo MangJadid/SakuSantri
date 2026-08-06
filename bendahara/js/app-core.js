@@ -19,7 +19,7 @@ function setLoading(loading, btnEl, title='Memproses...', subtitle=''){
     if(t) t.textContent=title;
     if(s) s.textContent=subtitle;
     if(pw) pw.style.display='none';
-    if(pb) pb.style.width='0%';
+    if(pb) pb.style.transform='scaleX(0)';
     if(pt) pt.textContent='';
   }
   if(btnEl){
@@ -45,7 +45,7 @@ function setLoadingProgress(current, total, subtitle=''){
   const pt=document.getElementById('loading-progress-text');
   const s=document.getElementById('loading-subtitle');
   if(pw) pw.style.display='block';
-  if(pb) pb.style.width=`${Math.round((current/total)*100)}%`;
+  if(pb) pb.style.transform=`scaleX(${total?current/total:0})`;
   if(pt) pt.textContent=`${current} / ${total}`;
   if(s&&subtitle) s.textContent=subtitle;
 }
@@ -58,8 +58,6 @@ let MONITOR_INTERVAL = null;
 let IMPORT_PARSED = [];
 let BAYAR_TAG_ID = null;
 let MULTI_SANTRI_ID = null;
-let santriPage = 1, tagihanPage = 1, riwayatPage = 1;
-const PAGE_SIZE = 20;
 let fotoBase64 = null, fotoFile = null;
 
 // ===== KONFIGURASI =====
@@ -77,8 +75,14 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
 
 // ===== INIT =====
 (async function init(){
-  const SB_URL = 'https://tajdid.jadidsaepul0.workers.dev';
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
+  // Deteksi otomatis lingkungan: di localhost (XAMPP) pakai API lokal (lihat api/
+  // dan shared/supabase-client.js), di domain publik pakai Supabase asli -- satu
+  // kode buat dua tempat, gak perlu diubah manual tiap mau push/deploy.
+  const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
+  const SB_URL = isLocalDev ? '../api' : 'https://tajdid.jadidsaepul0.workers.dev';
+  const SB_KEY = isLocalDev
+    ? 'e3d37d584dce22eba5836211744f18ffab5a7c663ef2fe48f5c2447fa3e8ac0e'
+    : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
   SB = createClient(SB_URL, SB_KEY);
 
   try {

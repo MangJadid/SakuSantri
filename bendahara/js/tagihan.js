@@ -65,16 +65,12 @@ function renderTagihanTable(){
     return true;
   });
 
-  const pages=Math.ceil(filtered.length/PAGE_SIZE);
-  if(tagihanPage>pages) tagihanPage=1;
-  const slice=filtered.slice((tagihanPage-1)*PAGE_SIZE, tagihanPage*PAGE_SIZE);
-
-  const rows=slice.map((t,i)=>{
+  const rows=filtered.map((t,i)=>{
     const s=getSantriById(t.santri_id)||{};
     const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const statusBadge=t.status==='lunas'?`<span class="badge badge-lunas">✅ Lunas</span>`:t.status==='cicil'?`<span class="badge badge-cicil">⏳ Cicilan</span>`:`<span class="badge badge-belum">❌ Belum</span>`;
     return `<tr>
-      <td style="color:var(--text-l)">${(tagihanPage-1)*PAGE_SIZE+i+1}</td>
+      <td style="color:var(--text-l)">${i+1}</td>
       <td><div style="display:flex;align-items:center;gap:8px">
         <div class="av" style="background:${avColor(s.nama||'')}22;color:${avColor(s.nama||'')}">${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama||'?')}</div>
         <button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;text-align:left;color:var(--text);padding:0">${s.nama||t.santri_nama||'—'}</button>
@@ -137,10 +133,8 @@ function renderTagihanTable(){
       </div>
     </div>`;
 
-  // Pagination
-  let pg='';
-  for(let i=1;i<=pages;i++) pg+=`<button class="pg-btn ${i===tagihanPage?'act':''}" onclick="tagihanPage=${i};renderTagihanTable()">${i}</button>`;
-  document.getElementById('tagihan-pagination').innerHTML=pg;
+  const tagihanPgEl=document.getElementById('tagihan-pagination');
+  if(tagihanPgEl) tagihanPgEl.innerHTML='';
 }
 
 // ===== SANTRI TABLE =====
@@ -161,19 +155,15 @@ function renderSantri(){
     return true;
   });
 
-  const pages=Math.ceil(filtered.length/PAGE_SIZE)||1;
-  if(santriPage>pages) santriPage=1;
-  const slice=filtered.slice((santriPage-1)*PAGE_SIZE, santriPage*PAGE_SIZE);
-
   const grid=document.getElementById('santri-grid');
   const empty=document.getElementById('santri-empty');
 
-  if(!slice.length){
+  if(!filtered.length){
     grid.innerHTML=''; empty.style.display='block'; return;
   }
   empty.style.display='none';
 
-  const rows=slice.map((s,i)=>{
+  const rows=filtered.map((s,i)=>{
     const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const tagSantri=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(s.id));
     const totalTagihan=tagSantri.reduce((a,t)=>a+Number(t.nominal),0);
@@ -184,7 +174,7 @@ function renderSantri(){
       ?`<span class="badge badge-belum">❌ ${fmtRp(totalTunggak)}</span>`
       :`<span class="badge badge-lunas">✅ Lunas</span>`;
     return `<tr>
-      <td style="color:var(--text-l);font-size:12px">${(santriPage-1)*PAGE_SIZE+i+1}</td>
+      <td style="color:var(--text-l);font-size:12px">${i+1}</td>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
           <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};width:38px;height:38px;flex-shrink:0">
@@ -219,9 +209,8 @@ function renderSantri(){
     <tbody>${rows}</tbody>
   </table></div>`;
 
-  let pg='';
-  for(let i=1;i<=pages;i++) pg+=`<button class="pg-btn ${i===santriPage?'act':''}" onclick="santriPage=${i};renderSantri()">${i}</button>`;
-  document.getElementById('santri-pagination').innerHTML=pg;
+  const santriPgEl=document.getElementById('santri-pagination');
+  if(santriPgEl) santriPgEl.innerHTML='';
 }
 
 // ===== DETAIL SANTRI MODAL (Universal) =====
@@ -351,7 +340,6 @@ async function openDetailModal(santriId){
   document.getElementById('mo-detail-body').innerHTML=`
     <!-- HEADER CARD — Stacked Glass -->
     <div style="background:linear-gradient(135deg,#064e29 0%,#0a6b38 40%,#0d5c30 100%);border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 8px 24px rgba(6,78,41,.4);position:relative">
-      <div style="position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.055) 1px,transparent 1px);background-size:18px 18px;z-index:0"></div>
       <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(212,175,55,.12);filter:blur(40px);pointer-events:none;z-index:0"></div>
       <div style="position:absolute;bottom:-20px;left:-20px;width:120px;height:120px;border-radius:50%;background:rgba(${hasTunggak?'220,38,38':'74,222,128'},.08);filter:blur(30px);pointer-events:none;z-index:0"></div>
       <div style="display:flex;flex-direction:column;align-items:center;padding:22px 20px 16px;position:relative;z-index:1">

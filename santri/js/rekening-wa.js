@@ -88,7 +88,7 @@ let _waIndex = 0;
 
 function kirimWASemuaKritis(){
   const kritis = parseInt(CONFIG.kritis_batas)||50000;
-  const af = document.getElementById('dash-asrama')?.value||'';
+  const af = document.getElementById('santri-asrama')?.value||'';
   const scope = af ? ALL_SANTRI.filter(s=>String(getAsramaIdBySantri(s))===af) : ALL_SANTRI;
   const kritisAdaWA = scope.filter(s=>s.saldo<kritis && s.no_wa);
   const tanpaWA = scope.filter(s=>s.saldo<kritis && !s.no_wa).length;

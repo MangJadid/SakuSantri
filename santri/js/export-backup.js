@@ -31,14 +31,26 @@ async function exportLengkap(){
       const bulanMap = {Januari:'01',Februari:'02',Maret:'03',April:'04',Mei:'05',Juni:'06',
         Juli:'07',Agustus:'08',September:'09',Oktober:'10',November:'11',Desember:'12'};
       const mm = bulanMap[bulanParts[0]]||'';
-      const yy = bulanParts[1]||new Date().getFullYear();
+      const yy = parseInt(bulanParts[1])||new Date().getFullYear();
       const tglStart = mm ? `${yy}-${mm}-01` : null;
-      const tglEnd = mm ? `${yy}-${mm}-31` : null;
+      const lastDay = mm ? new Date(yy, parseInt(mm), 0).getDate() : 31;
+      const tglEnd = mm ? `${yy}-${mm}-${String(lastDay).padStart(2,'0')}` : null;
 
-      let q = SB.from('transaksi').select('*,santri(nama,kobong(nama))').in('santri_id',sids).order('tanggal').order('created_at');
-      if(tglStart) q = q.gte('tanggal',tglStart).lte('tanggal',tglEnd);
-      const {data} = await q;
-      txsBulan = data||[];
+      // Ambil SEMUA transaksi bulan ini pakai pagination — Supabase batasi 1000 baris
+      // per request, kalau gak di-paging data akhir bulan bisa kepotong diam-diam
+      // (mis. bulan dengan >1000 transaksi keseluruhan cuma kebawa sampai tanggal tertentu).
+      txsBulan = [];
+      const PAGE = 1000;
+      let from = 0;
+      while(true){
+        let q = SB.from('transaksi').select('*,santri(nama,kobong(nama))').in('santri_id',sids).order('tanggal').order('created_at').range(from, from+PAGE-1);
+        if(tglStart) q = q.gte('tanggal',tglStart).lte('tanggal',tglEnd);
+        const {data, error} = await q;
+        if(error) throw error;
+        txsBulan = txsBulan.concat(data||[]);
+        if(!data || data.length < PAGE) break;
+        from += PAGE;
+      }
     }
 
     const wb = XLSX.utils.book_new();
@@ -125,29 +137,29 @@ async function exportLengkap(){
       isSuper?[5,12,25,18,15,25,15,15,15]:[5,12,25,15,25,15,15,15]);
     XLSX.utils.book_append_sheet(wb, ws3, '📜 Riwayat Transaksi');
 
-    // ===== SHEET PER SANTRI (hanya untuk Pengurus) =====
-    if(!isSuper){
-      ALL_SANTRI.forEach(s=>{
-        const txSantri = txsBulan.filter(t=>t.santri_id===s.id);
-        let running = s.saldo - txSantri.filter(t=>t.jenis==='masuk').reduce((a,t)=>a+t.nominal,0)
-                                + txSantri.filter(t=>t.jenis==='keluar').reduce((a,t)=>a+t.nominal,0);
-        const rows = txSantri.map(t=>{
-          running += t.jenis==='masuk'?t.nominal:-t.nominal;
-          return {
-            'Tanggal': t.tanggal,
-            'Keterangan': t.keterangan||'—',
-            'Pemasukan (Rp)': t.jenis==='masuk'?t.nominal:0,
-            'Pengeluaran (Rp)': t.jenis==='keluar'?t.nominal:0,
-            'Saldo (Rp)': running,
-            'Dicatat oleh': t.oleh||'—'
-          };
-        });
-        rows.push({'Tanggal':'','Keterangan':'SALDO AKHIR','Pemasukan (Rp)':'','Pengeluaran (Rp)':'','Saldo (Rp)':s.saldo,'Dicatat oleh':''});
-        const sheetName = s.nama.substring(0,28).replace(/[:\\\/\?\*\[\]]/g,'');
-        const wsS = styleSheet(XLSX.utils.json_to_sheet(rows.length>1?rows:[{'Keterangan':'Tidak ada transaksi'}]),[12,25,15,15,12,15]);
-        XLSX.utils.book_append_sheet(wb, wsS, sheetName);
+    // ===== SHEET PER SANTRI — hanya santri yang menitipkan uang jajan bulan ini =====
+    // (punya minimal 1 transaksi di bulan aktif, walau saldonya udah habis/0 sebelum akhir bulan)
+    const santriNitip = ALL_SANTRI.filter(s => txsBulan.some(t=>t.santri_id===s.id));
+    santriNitip.forEach(s=>{
+      const txSantri = txsBulan.filter(t=>t.santri_id===s.id);
+      let running = s.saldo - txSantri.filter(t=>t.jenis==='masuk').reduce((a,t)=>a+t.nominal,0)
+                              + txSantri.filter(t=>t.jenis==='keluar').reduce((a,t)=>a+t.nominal,0);
+      const rows = txSantri.map(t=>{
+        running += t.jenis==='masuk'?t.nominal:-t.nominal;
+        return {
+          'Tanggal': t.tanggal,
+          'Keterangan': t.keterangan||'—',
+          'Pemasukan (Rp)': t.jenis==='masuk'?t.nominal:0,
+          'Pengeluaran (Rp)': t.jenis==='keluar'?t.nominal:0,
+          'Saldo (Rp)': running,
+          'Dicatat oleh': t.oleh||'—'
+        };
       });
-    }
+      rows.push({'Tanggal':'','Keterangan':'SALDO AKHIR','Pemasukan (Rp)':'','Pengeluaran (Rp)':'','Saldo (Rp)':s.saldo,'Dicatat oleh':''});
+      const sheetName = s.nama.substring(0,28).replace(/[:\\\/\?\*\[\]]/g,'');
+      const wsS = styleSheet(XLSX.utils.json_to_sheet(rows), [12,25,15,15,12,15]);
+      XLSX.utils.book_append_sheet(wb, wsS, sheetName);
+    });
 
     // ===== SHEET PER ASRAMA (hanya untuk Admin) =====
     if(isSuper){

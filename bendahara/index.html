@@ -17,7 +17,16 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Amiri:wght@400;700&family=DM+Mono&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Localhost (XAMPP) -> shim lokal; domain publik -> SDK Supabase asli.
+  // document.write dipakai sengaja di sini: satu-satunya cara muat script secara
+  // sinkron (blocking) sebelum script lain di bawahnya jalan & butuh window.supabase.
+  document.write(
+    ['localhost','127.0.0.1'].includes(location.hostname)
+      ? '<script src="../shared/supabase-client.js"><\/script>'
+      : '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'
+  );
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -25,8 +34,8 @@
   <h2>📵 Anda Sedang Offline</h2>
   <p>Periksa koneksi internet Anda,<br>lalu coba lagi.</p>
 </div>
-<script src="./js/bootstrap-offline-screen.js"></script>
-<div id="debug-error-box" style="display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:999999;background:#fff;color:#374151;padding:12px 18px;font-size:13px;font-family:'DM Sans',sans-serif;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border-left:4px solid #F59E0B;max-width:90%;display:none;align-items:center;gap:10px;white-space:normal">
+<script src="./js/bootstrap-offline-screen.js?v=2"></script>
+<div id="debug-error-box" style="display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:999999;background:#FFFBEB;color:#374151;padding:12px 18px;font-size:13px;font-family:'DM Sans',sans-serif;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #FDE68A;max-width:90%;display:none;align-items:center;gap:10px;white-space:normal">
   <span style="font-size:18px">⚠️</span>
   <div>
     <div style="font-weight:700;color:#111827;margin-bottom:2px">Koneksi bermasalah</div>
@@ -34,7 +43,7 @@
   </div>
   <button onclick="document.getElementById('debug-error-box').style.display='none'" style="margin-left:8px;background:none;border:none;font-size:18px;cursor:pointer;color:#9CA3AF;flex-shrink:0">✕</button>
 </div>
-<script src="./js/bootstrap-debug-error-box.js"></script>
+<script src="./js/bootstrap-debug-error-box.js?v=2"></script>
 
 <!-- OFFLINE BANNER -->
 <div id="offline-banner">
@@ -62,7 +71,7 @@
   </div>
 </div>
 
-<script src="./js/bootstrap-anti-plagiarism.js"></script>
+<script src="./js/bootstrap-anti-plagiarism.js?v=2"></script>
 
 <!-- LOADING -->
 <div id="pg-loading">
@@ -1244,23 +1253,23 @@
 
 <div id="toast"></div>
 
-<script src="./js/app-core.js"></script>
-<script src="./js/konfigurasi-tagihan.js"></script>
-<script src="./js/dashboard.js"></script>
-<script src="./js/tagihan.js"></script>
-<script src="./js/pembayaran.js"></script>
-<script src="./js/santri.js"></script>
-<script src="./js/rekap-tunggakan.js"></script>
-<script src="./js/kelulusan.js"></script>
-<script src="./js/piutang.js"></script>
-<script src="./js/tf-admin.js"></script>
-<script src="./js/riwayat-wa.js"></script>
-<script src="./js/import.js"></script>
-<script src="./js/manajemen-bendahara.js"></script>
-<script src="./js/monitor.js"></script>
-<script src="./js/pengaturan.js"></script>
-<script src="./js/ui-helpers.js"></script>
-<script src="./js/sw-register.js"></script>
+<script src="./js/app-core.js?v=2"></script>
+<script src="./js/konfigurasi-tagihan.js?v=2"></script>
+<script src="./js/dashboard.js?v=2"></script>
+<script src="./js/tagihan.js?v=2"></script>
+<script src="./js/pembayaran.js?v=2"></script>
+<script src="./js/santri.js?v=2"></script>
+<script src="./js/rekap-tunggakan.js?v=2"></script>
+<script src="./js/kelulusan.js?v=2"></script>
+<script src="./js/piutang.js?v=2"></script>
+<script src="./js/tf-admin.js?v=2"></script>
+<script src="./js/riwayat-wa.js?v=2"></script>
+<script src="./js/import.js?v=2"></script>
+<script src="./js/manajemen-bendahara.js?v=2"></script>
+<script src="./js/monitor.js?v=2"></script>
+<script src="./js/pengaturan.js?v=2"></script>
+<script src="./js/ui-helpers.js?v=2"></script>
+<script src="./js/sw-register.js?v=2"></script>
 <!-- MODAL KOBONG -->
 <div class="mo" id="mo-kobong">
   <div class="mo-box" style="max-width:460px">
@@ -1330,7 +1339,7 @@
     <div id="loading-title" style="font-size:15px;font-weight:700;color:#1e293b;font-family:'DM Sans',sans-serif;text-align:center">Memproses...</div>
     <div id="loading-subtitle" style="font-size:12px;color:#64748b;font-family:'DM Sans',sans-serif;text-align:center;min-height:16px"></div>
     <div id="loading-progress-wrap" style="display:none;width:100%;background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden">
-      <div id="loading-progress-bar" style="height:100%;background:var(--green,#1a7a4a);border-radius:99px;transition:width .3s;width:0%"></div>
+      <div id="loading-progress-bar" style="height:100%;width:100%;background:var(--green,#1a7a4a);border-radius:99px;transform-origin:left;transform:scaleX(0);transition:transform .3s"></div>
     </div>
     <div id="loading-progress-text" style="font-size:11px;color:#94a3b8;font-family:'DM Sans',sans-serif"></div>
   </div>
@@ -1348,12 +1357,12 @@
   <button class="pwa-close" id="pwa-close">✕</button>
 </div>
 
-<script src="./js/pwa-install.js"></script>
+<script src="./js/pwa-install.js?v=2"></script>
 
 
-<script src="./js/kobong-asrama-actions.js"></script>
+<script src="./js/kobong-asrama-actions.js?v=2"></script>
 
 
-<script src="./js/offline-detection.js"></script>
+<script src="./js/offline-detection.js?v=2"></script>
 </body>
 </html>

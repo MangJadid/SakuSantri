@@ -156,14 +156,16 @@ async function enterApp(){
 
   document.getElementById('pg-login').style.display='none';
   document.getElementById('pg-app').style.display='block';
-  document.getElementById('hdr-bulan').textContent = CONFIG.bulan_aktif||'—';
+  const hdrBulanEl = document.getElementById('hdr-bulan');
+  if(hdrBulanEl) hdrBulanEl.textContent = CONFIG.bulan_aktif||'—';
   const pesEl = document.getElementById('hdr-pesantren');
   if(pesEl) pesEl.textContent = CONFIG.pesantren_nama||'Pondok Pesantren';
   const subEl = document.getElementById('hdr-sub');
   if(subEl) subEl.textContent = 'Saku Santri';
 
   const roleLabels = {super:'🛡️ Admin', pengurus:'👨‍💼 '+((SESSION.user?.nama)||'Pengurus'), ortu:'👨‍👩‍👦 Orang Tua', sekretaris:'📋 '+((SESSION.user?.nama)||'Sekretaris'), sekretariat:'🏢 '+((SESSION.user?.nama)||'Sekretariat')};
-  document.getElementById('hdr-role').textContent = roleLabels[SESSION.role]||'—';
+  const hdrRoleEl = document.getElementById('hdr-role');
+  if(hdrRoleEl) hdrRoleEl.textContent = roleLabels[SESSION.role]||'—';
 
   _suppressBroadcast = true;
   await loadAllData();

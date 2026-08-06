@@ -1,8 +1,13 @@
 // ===== INIT =====
 (async function init(){
-  // Hardcoded Supabase config — skip setup screen
-  const HARDCODED_URL = 'https://tajdid.jadidsaepul0.workers.dev';
-  const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
+  // Deteksi otomatis lingkungan: di localhost (XAMPP) pakai API lokal (lihat api/
+  // dan shared/supabase-client.js), di domain publik pakai Supabase asli -- satu
+  // kode buat dua tempat, gak perlu diubah manual tiap mau push/deploy.
+  const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
+  const HARDCODED_URL = isLocalDev ? '../api' : 'https://tajdid.jadidsaepul0.workers.dev';
+  const HARDCODED_KEY = isLocalDev
+    ? 'e3d37d584dce22eba5836211744f18ffab5a7c663ef2fe48f5c2447fa3e8ac0e'
+    : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
 
   // Load config from localStorage
   const raw = localStorage.getItem('siujang_cfg');

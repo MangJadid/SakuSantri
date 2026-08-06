@@ -1,3 +1,48 @@
+// ===== PANEL AKUN (geser dari kanan) =====
+function openAccountDrawer(){
+  const p = SESSION.user || {};
+  const av = document.getElementById('acc-av');
+  if(p.foto_url){
+    av.innerHTML = `<img src="${p._foto_cache||p.foto_url}">`;
+  } else {
+    av.textContent = avLetter(p.nama||'P');
+  }
+  document.getElementById('acc-name').textContent = p.nama || 'Pengguna';
+  document.getElementById('acc-user').textContent = '@' + (p.username || '—');
+
+  const roleBadgeLabels = {super:'👑 Administrator', pengurus:'👨‍💼 Pengurus', sekretaris:'📋 Sekretaris', sekretariat:'🏢 Sekretariat', pengawas:'👁️ Pengawas'};
+  document.getElementById('acc-role-badge').textContent = roleBadgeLabels[SESSION.role] || SESSION.role;
+  document.getElementById('acc-pondok').textContent = CONFIG.pesantren_nama || '—';
+  document.getElementById('acc-periode').textContent = CONFIG.bulan_aktif || '—';
+
+  // Cuma menu yang beneran ada fiturnya -- gak nambahin link kosong
+  const items = [
+    {ic:'👤', title:'Profil Saya', sub:'Lihat & edit profil', onclick:"closeAccountDrawer();openProfilPengurus()"},
+  ];
+  if(document.getElementById('tab-notifikasi')){
+    items.push({ic:'🔔', title:'Notifikasi', sub:'Lihat notifikasi terbaru', onclick:"closeAccountDrawer();showTab('notifikasi')"});
+  }
+  if(SESSION.role==='super'){
+    items.push({ic:'⚙️', title:'Pengaturan', sub:'Preferensi aplikasi', onclick:"closeAccountDrawer();showTab('pengaturan')"});
+  }
+  items.push({ic:'❓', title:'Bantuan', sub:'Hubungi admin pesantren', onclick:"closeAccountDrawer();toast('Hubungi admin pesantren untuk bantuan ya!', true)"});
+
+  document.getElementById('acc-menu').innerHTML = items.map(m => `
+    <button class="acc-menu-item" onclick="${m.onclick}">
+      <span class="acc-menu-ic">${m.ic}</span>
+      <span class="acc-menu-txt"><b>${m.title}</b><span>${m.sub}</span></span>
+      <span class="acc-menu-chev">›</span>
+    </button>`).join('');
+
+  document.getElementById('acc-overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAccountDrawer(e){
+  document.getElementById('acc-overlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
 // ===== PROFIL PENGURUS =====
 let _profilFotoFile = null;
 let _profilHapusFoto = false;
@@ -133,7 +178,8 @@ async function simpanProfilPengurus(){
 
   // Update nama di header
   const roleLabels = {super:'👑 Kang Admin', pengurus:'👨\u200d💼 '+(SESSION.user?.nama||'Pengurus'), sekretaris:'📋 '+(SESSION.user?.nama||'Sekretaris'), sekretariat:'🏢 '+(SESSION.user?.nama||'Sekretariat')};
-  document.getElementById('hdr-role').textContent = roleLabels[SESSION.role]||SESSION.role;
+  const hdrRoleEl2 = document.getElementById('hdr-role');
+  if(hdrRoleEl2) hdrRoleEl2.textContent = roleLabels[SESSION.role]||SESSION.role;
   // Update avatar foto di header dan greeting dashboard - bust cache dengan timestamp
   if(SESSION.user.foto_url){
     SESSION.user._foto_cache = SESSION.user.foto_url + '?t=' + Date.now();

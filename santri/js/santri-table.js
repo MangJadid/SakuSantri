@@ -25,19 +25,17 @@ function renderTabelSantri(){
     return true;
   });
 
-  const total = filtered.length;
-  const pages = Math.ceil(total/PAGE_SIZE);
-  if(santriPage>pages) santriPage=1;
-  const slice = filtered.slice((santriPage-1)*PAGE_SIZE, santriPage*PAGE_SIZE);
-
   let html='';
-  slice.forEach((s,i)=>{
+  filtered.forEach((s,i)=>{
     const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const sc = s.saldo<0?'s-minus':s.saldo===0?'s-nol':s.saldo<kritis?'s-warn':'s-ok';
     const isChecked = _bulkSelected.has(s.id);
+    const waBtn = s.no_wa
+      ? `<button class="btn btn-wa btn-sm" onclick="kirimWASantri(${s.id})" title="Kirim WA ke ${s.no_wa}">📲</button>`
+      : `<button class="btn btn-o btn-sm" style="opacity:.4;cursor:not-allowed" title="No WA tidak ada">📵</button>`;
     html+=`<tr style="${isChecked?'background:#f0fdf4;':''}">
       <td style="width:36px">${canBulk?`<input type="checkbox" ${isChecked?'checked':''} onchange="santriToggleOne(${s.id},this.checked)" style="accent-color:var(--green);cursor:pointer;width:16px;height:16px">`:''}</td>
-      <td style="color:var(--text-l);font-size:12px">${(santriPage-1)*PAGE_SIZE+i+1}</td>
+      <td style="color:var(--text-l);font-size:12px">${i+1}</td>
       <td><div style="display:flex;align-items:center;gap:9px">
         <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
         <div><strong>${s.nama}</strong>${s.kelas?`<div style="font-size:11px;color:var(--text-l)">Kelas ${s.kelas}</div>`:''}
@@ -48,6 +46,7 @@ function renderTabelSantri(){
       <td><strong class="${sc}">${s.saldo<0?'−':''} ${rp(s.saldo)}</strong></td>
       <td>
         <div class="tbl-act" style="display:flex;gap:5px;flex-wrap:wrap">
+          ${waBtn}
           <button class="btn btn-o btn-sm" onclick="openDetailModal(${s.id})">📋</button>
           ${!isSekretariat?`<button class="btn btn-p btn-sm" onclick="openTxModal(${s.id})">➕ Tx</button>`:''}
           <button class="btn btn-o btn-sm" onclick="editSantri(${s.id})">✏️</button>
@@ -58,13 +57,14 @@ function renderTabelSantri(){
   });
   document.getElementById('santri-tbl').innerHTML = html||`<tr><td colspan="7"><div class="empty"><span class="ei">👥</span><p>Belum ada santri</p></div></td></tr>`;
 
+  const kritisAdaWA = filtered.filter(s=>(s.saldo<kritis)&&s.no_wa).length;
+  const btnWaSemua = document.getElementById('btn-wa-semua');
+  if(btnWaSemua) btnWaSemua.style.display = kritisAdaWA>0 ? 'inline-flex' : 'none';
+
   updateBulkBar();
 
-  let pg='';
-  for(let i=1;i<=pages;i++){
-    pg+=`<button onclick="santriPage=${i};renderTabelSantri()" style="padding:5px 11px;border:1.5px solid ${i===santriPage?'var(--green)':'var(--border)'};background:${i===santriPage?'var(--green)':'var(--white)'};color:${i===santriPage?'#fff':'var(--text-m)'};border-radius:7px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">${i}</button>`;
-  }
-  document.getElementById('santri-pagination').innerHTML = pg;
+  const pgEl = document.getElementById('santri-pagination');
+  if(pgEl) pgEl.innerHTML = '';
   setTimeout(activateLazyLoad, 50);
 }
 

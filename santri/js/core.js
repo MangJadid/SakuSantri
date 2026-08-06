@@ -61,18 +61,14 @@ let ALL_ASRAMA = [];
 let ALL_PENGURUS = [];
 let ALL_TX = [];
 
-const PAGE_SIZE = 50;
-let santriPage = 1;
-let riwPage = 1;
-
 // Debounce utility — cegah render berlebihan saat mengetik di kotak cari
 function debounce(fn, delay=300){
   let t;
   return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); };
 }
-const renderTabelSantriDebounced = ()=>{ santriPage=1; renderTabelSantri(); };
+const renderTabelSantriDebounced = ()=>{ renderTabelSantri(); };
 const renderDashboardDebounced = ()=>{ renderDashboard(); };
-const renderRiwayatDebounced = ()=>{ riwPage=1; renderRiwayat(); };
+const renderRiwayatDebounced = ()=>{ renderRiwayat(); };
 const COLORS = ['#1a5c3a','#2471a3','#6c3483','#c0392b','#e67e22','#148f77','#1e8449','#2980b9','#8e44ad','#c0392b','#d35400','#16a085'];
 
 // ===== UTILS =====
