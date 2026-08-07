@@ -188,7 +188,7 @@ async function exportLengkap(){
   } catch(e){
     toast('Gagal export: '+e.message, false);
   } finally {
-    if(btn){ btn.textContent='📦 Backup Lengkap'; btn.disabled=false; }
+    if(btn){ btn.innerHTML=svgIcon('archive',14)+' Backup Lengkap'; btn.disabled=false; }
   }
 
   } finally { setLoading(false, _lBtn); }
@@ -265,7 +265,7 @@ async function backupSemuaData(){
     btnTutup.disabled = false;
     btnTutup.style.opacity = '1';
     btnTutup.style.cursor = 'pointer';
-    btnTutup.textContent = '🗓️ 2. Tutup Bulan';
+    btnTutup.innerHTML = svgIcon('lock',14)+' 2. Tutup Bulan';
   }
   const st = document.getElementById('tutup-status');
   if(st) st.innerHTML = '<span style="color:var(--green)">✅ Backup selesai! Sekarang kamu bisa klik <strong>Tutup Bulan</strong>.</span>';

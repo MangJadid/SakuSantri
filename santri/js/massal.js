@@ -30,7 +30,7 @@ async function loadMassalSantriPengurus(){
 
   let html='';
   Object.entries(byKobong).forEach(([kNama, list])=>{
-    html+=`<div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;border-bottom:2px solid var(--green-b);margin-bottom:4px">🏠 ${kNama}</div>`;
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;border-bottom:2px solid var(--green-b);margin-bottom:4px;display:flex;align-items:center;gap:5px">${svgIcon('home',12)} ${kNama}</div>`;
     list.forEach(s=>{
       html+=`<div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
         <div style="display:flex;align-items:center;gap:8px">
@@ -71,17 +71,6 @@ async function loadMassalSantri(){
     </div>`;
   });
   document.getElementById('massal-list').innerHTML=html;
-}
-
-function isiSemuaNominal(){
-  openMo('mo-nominal');
-  document.getElementById('nominal-sama').value='';
-}
-
-function terapNominalSama(){
-  const nom=document.getElementById('nominal-sama').value;
-  document.querySelectorAll('[id^="massal-"]').forEach(el=>{ if(el.tagName==='INPUT') el.value=nom; });
-  closeMo('mo-nominal');
 }
 
 function onMassalJenisChange(){

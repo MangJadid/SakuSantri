@@ -65,7 +65,7 @@ async function openDetailModal(id){
         <!-- Baris 1: Sisa Tagihan full width -->
         <div style="background:${totalBelum>0?'linear-gradient(135deg,#7f1d1d,#991b1b)':'linear-gradient(135deg,#065f46,#047857)'};padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="color:rgba(255,255,255,.65);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">${totalBelum>0?'⚠️ Sisa Tagihan':'✅ Status'}</div>
+            <div style="color:rgba(255,255,255,.65);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;display:flex;align-items:center;gap:4px">${totalBelum>0?svgIcon('alert-triangle',11)+' Sisa Tagihan':svgIcon('check-circle',11)+' Status'}</div>
             <div style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-.5px">${totalBelum>0?rp(totalBelum):'Lunas'}</div>
             <div style="color:rgba(255,255,255,.5);font-size:10px;margin-top:3px">${totalBelum>0?'Belum lunas':'Semua terbayar'}</div>
           </div>
@@ -95,8 +95,8 @@ async function openDetailModal(id){
         return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;background:var(--bg)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <strong style="font-size:14px">${t.bulan||'—'}</strong>
-            <span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:${lunas?'#e8f5ee':'#fdecea'};color:${lunas?'var(--green)':'var(--red)'}">
-              ${lunas?'✅ Lunas':'❌ Belum Bayar'}
+            <span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:${lunas?'#e8f5ee':'#fdecea'};color:${lunas?'var(--green)':'var(--red)'};display:inline-flex;align-items:center;gap:4px">
+              ${lunas?svgIcon('check-circle',12)+' Lunas':svgIcon('x',12)+' Belum Bayar'}
             </span>
           </div>
           ${t.nominal_makan?`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-l)">Uang Makan</span><span>${rp(t.nominal_makan)}</span></div>`:''}
@@ -137,7 +137,7 @@ async function openDetailModal(id){
         <td class="s-ok dh-nominal">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>
         <td class="dh-nominal" style="color:var(--red)">${t.jenis==='keluar'?rp(t.nominal):'—'}</td>
         <td><strong class="${sc2} dh-nominal">${t.running<0?'−':''} ${rp(t.running)}</strong></td>
-        <td>${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-d btn-sm" onclick="hapusTx(${t.id},${id})">🗑</button>`:''}</td>
+        <td>${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-d btn-sm" onclick="hapusTx(${t.id},${id})">${svgIcon('trash',14)}</button>`:''}</td>
       </tr>`;
     });
     txHtml+=`</tbody></table></div>`;
@@ -156,15 +156,15 @@ async function openDetailModal(id){
         </div>
         <div class="dh-divider-thin"></div>
         <div class="dh-meta">
-          <span class="dh-meta-row kantin">🍽️ ${dapurVal}</span>
-          <span class="dh-meta-row kobong">🏠 ${k}</span>
+          <span class="dh-meta-row kantin">${svgIcon('utensils',12)} ${dapurVal}</span>
+          <span class="dh-meta-row kobong">${svgIcon('home',12)} ${k}</span>
         </div>
         <div class="dh-saldo">
           <div>
             <div class="lbl">Saldo Akhir</div>
             <div class="amt" id="dh-amt-1" style="${saldoReal<0?'color:#ff6b6b':saldoReal<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoReal<0?'− ':''} ${rp(saldoReal)}</div>
           </div>
-          <button class="dh-eye" onclick="dhToggle('dh-amt-1',this)">&#128065;</button>
+          <button class="dh-eye" onclick="dhToggle('dh-amt-1',this)">${svgIcon('eye',16)}</button>
         </div>
       </div>
       </div>
@@ -179,18 +179,18 @@ async function openDetailModal(id){
         <div class="dh-nominal" style="font-size:16px;font-weight:800;color:var(--red);letter-spacing:-.2px">${rp(totalKeluar)}</div>
       </div>
     </div>
-      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-p btn-sm" onclick="closeMo('mo-detail');openTxModal(${id})">➕ Tambah Transaksi</button>`:''}
-      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-o btn-sm" onclick="closeMo('mo-detail');editSantri(${id})">✏️ Edit Santri</button>`:''}
+      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-p btn-sm" onclick="closeMo('mo-detail');openTxModal(${id})">${svgIcon('plus',14)} Tambah Transaksi</button>`:''}
+      ${(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat')?`<button class="btn btn-o btn-sm" onclick="closeMo('mo-detail');editSantri(${id})">${svgIcon('edit',14)} Edit Santri</button>`:''}
 
-      ${SESSION.role==='super'?'<button class="btn btn-d btn-sm" onclick="closeMo(\'mo-detail\');hapusSantri('+id+')">🗑 Hapus</button>':''}
+      ${SESSION.role==='super'?`<button class="btn btn-d btn-sm" onclick="closeMo('mo-detail');hapusSantri(${id})">${svgIcon('trash',14)} Hapus</button>`:''}
     </div>
     <div style="display:flex;gap:6px;margin:18px 0 12px;background:var(--bg);border-radius:12px;padding:4px">
-      <button id="tab-tx-btn" onclick="switchDetailTab('tx')" style="flex:1;padding:10px 6px;border:none;border-radius:9px;background:var(--green);color:#fff;font-weight:700;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">📜 Riwayat Transaksi</button>
-      <button id="tab-tagihan-btn" onclick="switchDetailTab('tagihan')" style="flex:1;padding:10px 6px;border:none;border-radius:9px;background:none;color:var(--text-m);font-weight:600;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">🧾 Tagihan Pondok</button>
+      <button id="tab-tx-btn" onclick="switchDetailTab('tx')" style="flex:1;padding:10px 6px;border:none;border-radius:9px;background:var(--green);color:#fff;font-weight:700;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">${svgIcon('document',13)} Riwayat Transaksi</button>
+      <button id="tab-tagihan-btn" onclick="switchDetailTab('tagihan')" style="flex:1;padding:10px 6px;border:none;border-radius:9px;background:none;color:var(--text-m);font-weight:600;cursor:pointer;font-size:12.5px;letter-spacing:.3px;transition:.2s">${svgIcon('archive',13)} Tagihan Pondok</button>
     </div>
     <div id="tab-tx-content">
       <div style="background:#fafdfb;border:1.5px solid var(--green-b);border-radius:14px;overflow:hidden">
-        <div class="ph" style="background:var(--green-p);border-bottom:1.5px solid var(--green-b)"><h2>📜 Riwayat Transaksi</h2></div>
+        <div class="ph" style="background:var(--green-p);border-bottom:1.5px solid var(--green-b)"><h2>${svgIcon('document',16)} Riwayat Transaksi</h2></div>
         <div class="pb">${txHtml}</div>
       </div>
     </div>

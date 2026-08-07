@@ -43,7 +43,9 @@ Kami informasikan bahwa saldo uang jajan putra/putri Bapak/Ibu:
 
 Saldo sudah di bawah batas minimum. Mohon segera melakukan top up agar kebutuhan harian santri tetap terpenuhi.
 
-Cek saldo secara langsung di:
+Untuk cek saldo & riwayat transaksi secara online, login dengan:
+👤 Nama Santri : {{nama}}
+🔑 PIN         : {{pin}}
 🔗 {{link}}
 
 Jazakallahu Khairan 🙏
@@ -62,6 +64,7 @@ function buatPesanWA(santri){
     .replace(/{{nama}}/g, santri.nama)
     .replace(/{{kobong}}/g, k)
     .replace(/{{saldo}}/g, 'Rp '+santri.saldo.toLocaleString('id-ID'))
+    .replace(/{{pin}}/g, santri.pin||'-')
     .replace(/{{link}}/g, link)
     .replace(/{{pondok}}/g, pondok);
 }
@@ -88,7 +91,7 @@ let _waIndex = 0;
 
 function kirimWASemuaKritis(){
   const kritis = parseInt(CONFIG.kritis_batas)||50000;
-  const af = document.getElementById('santri-asrama')?.value||'';
+  const af = document.getElementById('dash-asrama')?.value||'';
   const scope = af ? ALL_SANTRI.filter(s=>String(getAsramaIdBySantri(s))===af) : ALL_SANTRI;
   const kritisAdaWA = scope.filter(s=>s.saldo<kritis && s.no_wa);
   const tanpaWA = scope.filter(s=>s.saldo<kritis && !s.no_wa).length;
@@ -129,7 +132,7 @@ function kirimWABerikutnya(){
   }
   const sisa = _waQueue.length - _waIndex;
   mo.innerHTML = `
-    <div style="font-size:12px;color:var(--text-l);margin-bottom:4px">📲 Progres WA</div>
+    <div style="font-size:12px;color:var(--text-l);margin-bottom:4px;display:flex;align-items:center;gap:4px">${svgIcon('message-square',12)} Progres WA</div>
     <div style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:10px">
       ${_waIndex} / ${_waQueue.length} terkirim
       ${sisa>0?`<span style="color:var(--text-m);font-weight:400"> — ${sisa} sisa</span>`:''}
@@ -138,8 +141,8 @@ function kirimWABerikutnya(){
       <div style="background:var(--green);height:5px;border-radius:3px;width:${(_waIndex/_waQueue.length*100).toFixed(0)}%;transition:width .4s"></div>
     </div>
     ${sisa>0
-      ? `<button class="btn btn-wa btn-sm" style="width:100%" onclick="kirimWABerikutnya()">📲 Kirim ke: ${_waQueue[_waIndex]?.nama||''}</button>`
-      : `<div style="color:var(--green);font-weight:600;text-align:center">✅ Semua selesai!</div>`
+      ? `<button class="btn btn-wa btn-sm" style="width:100%" onclick="kirimWABerikutnya()">${svgIcon('message-square',14)} Kirim ke: ${_waQueue[_waIndex]?.nama||''}</button>`
+      : `<div style="color:var(--green);font-weight:600;text-align:center;display:flex;align-items:center;justify-content:center;gap:5px">${svgIcon('check-circle',14)} Semua selesai!</div>`
     }
     ${sisa>0?`<button class="btn btn-o btn-sm" style="width:100%;margin-top:6px" onclick="document.getElementById('mo-wa-progress').remove()">Hentikan</button>`:''}
   `;

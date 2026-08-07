@@ -263,16 +263,16 @@ function renderKobong(){
           const count = kSantri.length;
           const saldo = kSantri.reduce((a,s)=>a+s.saldo,0);
           return `<div class="kcard" onclick="lihatSantriKobong(${k.id})" style="cursor:pointer">
-            <h3>🏠 ${k.nama}</h3>
+            <h3>${svgIcon('home',15)} ${k.nama}</h3>
             <div class="km">${k.keterangan||k.wali||'—'}</div>
             <div class="ks">
-              <span>👥 ${count} santri</span>
+              <span style="display:inline-flex;align-items:center;gap:4px">${svgIcon('users',13)} ${count} santri</span>
               <span style="font-weight:600;color:${saldo<0?'var(--red)':'var(--green)'}">${rp(saldo)}</span>
             </div>
             <div style="display:flex;gap:6px;margin-top:10px">
-              <button class="btn btn-p btn-sm" onclick="event.stopPropagation();lihatSantriKobong(${k.id})">👥 Lihat Santri</button>
-              ${isSuper?`<button class="btn btn-o btn-sm" onclick="event.stopPropagation();editKobong(${k.id})">✏️</button>
-              <button class="btn btn-d btn-sm" onclick="event.stopPropagation();hapusKobong(${k.id})">🗑</button>`:''}
+              <button class="btn btn-p btn-sm" onclick="event.stopPropagation();lihatSantriKobong(${k.id})">${svgIcon('users',14)} Lihat Santri</button>
+              ${isSuper?`<button class="btn btn-o btn-sm" onclick="event.stopPropagation();editKobong(${k.id})">${svgIcon('edit',14)}</button>
+              <button class="btn btn-d btn-sm" onclick="event.stopPropagation();hapusKobong(${k.id})">${svgIcon('trash',14)}</button>`:''}
             </div>
           </div>`;
         }).join('') +
@@ -285,18 +285,18 @@ function renderKobong(){
       ? '<span style="background:#f5eef8;color:#6c3483;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;margin-left:6px">👧 Puteri</span>'
       : a.jenis_kelamin==='putera'
       ? '<span style="background:var(--green-p);color:var(--green);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;margin-left:6px">🧒 Putera</span>'
-      : '<span style="background:var(--red-p);color:var(--red);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;margin-left:6px">⚠️ Belum diset — Edit!</span>';
+      : `<span style="background:var(--red-p);color:var(--red);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;margin-left:6px;display:inline-flex;align-items:center;gap:3px">${svgIcon('alert-triangle',11)} Belum diset — Edit!</span>`;
 
     html += `<div class="asrama-block ${isExpanded?'expanded':''}" data-id="${a.id}">
       <div class="asrama-block-header" onclick="toggleAsramaBlock(this)">
         <div style="display:flex;align-items:center;gap:10px;flex:1;flex-wrap:wrap">
-          <h3>🏛️ ${a.nama}${jkBadge}</h3>
+          <h3>${svgIcon('building',15)} ${a.nama}${jkBadge}</h3>
           <span style="font-size:12px;color:var(--text-l);background:var(--bg);padding:2px 8px;border-radius:20px">${kobongs.length} kobong · ${santriCount} santri</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          ${isSuper?`<button class="btn btn-p btn-sm" onclick="event.stopPropagation();tambahKobongDiAsrama(${a.id})">➕ Kobong</button>
-          <button class="btn btn-o btn-sm" onclick="event.stopPropagation();editAsrama(${a.id})">✏️</button>
-          <button class="btn btn-d btn-sm" onclick="event.stopPropagation();hapusAsrama(${a.id})">🗑</button>`:''}
+          ${isSuper?`<button class="btn btn-p btn-sm" onclick="event.stopPropagation();tambahKobongDiAsrama(${a.id})">${svgIcon('plus',14)} Kobong</button>
+          <button class="btn btn-o btn-sm" onclick="event.stopPropagation();editAsrama(${a.id})">${svgIcon('edit',14)}</button>
+          <button class="btn btn-d btn-sm" onclick="event.stopPropagation();hapusAsrama(${a.id})">${svgIcon('trash',14)}</button>`:''}
           <span class="asrama-chevron">▼</span>
         </div>
       </div>
@@ -377,7 +377,7 @@ function lihatSantriKobong(kobongId){
         <td style="padding:10px 12px;font-size:12px;color:var(--text-m)">${s.kelas||'—'}</td>
         <td style="padding:10px 12px;text-align:right">${saldoTxt}</td>
         <td style="padding:10px 12px;text-align:center">
-          <button class="btn btn-p btn-sm" onclick="closeMo('mo-kobong-santri');openDetailModal(${s.id})">📋 Detail</button>
+          <button class="btn btn-p btn-sm" onclick="closeMo('mo-kobong-santri');openDetailModal(${s.id})">${svgIcon('document',14)} Detail</button>
         </td>
       </tr>`;
     }).join('');

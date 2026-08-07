@@ -1,4 +1,28 @@
 
+// ===== HEADER AUTO-HIDE ON SCROLL (HP) -- turun sembunyi, tarik dikit ke atas langsung muncul lagi, kayak Instagram =====
+(function(){
+  let lastY = window.scrollY || 0;
+  window.addEventListener('scroll', () => {
+    if(window.innerWidth > 640) return; // desktop: header selalu tampil
+    const hdr = document.querySelector('header');
+    if(!hdr) return;
+    const y = window.scrollY || document.documentElement.scrollTop || 0;
+    if(y > lastY && y > 80) hdr.classList.add('hdr-hidden');
+    else if(y < lastY) hdr.classList.remove('hdr-hidden');
+    lastY = y;
+  }, {passive:true});
+})();
+
+// ===== LOADING SCREEN: fade-out halus sebelum hilang =====
+function hideLoadingScreen(){
+  const el = document.getElementById('pg-loading');
+  if(!el) return;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced){ el.style.display='none'; return; }
+  el.classList.add('pg-fade-out');
+  setTimeout(()=>{ el.style.display='none'; }, 350);
+}
+
 // ===== SHA-256 HASHING (Web Crypto API) =====
 async function sha256(str){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -97,12 +121,32 @@ function toast(msg, ok=true){
   t.className = 'toast '+(ok?'ok':'err');
   t.textContent = msg;
   w.appendChild(t);
-  setTimeout(()=>t.remove(), 3500);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(()=>{
+    if(reduceMotion){ t.remove(); return; }
+    t.classList.add('closing');
+    setTimeout(()=>t.remove(), 200);
+  }, 3500);
 }
 
-function openMo(id){document.getElementById(id).classList.add('open')}
-function closeMo(id){document.getElementById(id).classList.remove('open')}
-document.addEventListener('click',e=>{if(e.target.classList.contains('mo'))e.target.classList.remove('open')});
+function openMo(id){
+  const mo = document.getElementById(id);
+  if(!mo) return;
+  mo.classList.remove('closing');
+  mo.classList.add('open');
+}
+function closeMo(id){
+  const mo = document.getElementById(id);
+  if(!mo || !mo.classList.contains('open') || mo.classList.contains('closing')) return;
+  // Keluar cermin masuk (bukan teleport) -- tunggu animasi kelar baru display:none
+  // beneran. Kalau reduced-motion aktif, animasinya sendiri udah dimatiin global
+  // (lihat aturan @media di bawah), jadi gak perlu nunggu jeda tanpa alasan.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduceMotion){ mo.classList.remove('open'); return; }
+  mo.classList.add('closing');
+  setTimeout(()=>{ mo.classList.remove('open','closing'); }, 200);
+}
+document.addEventListener('click',e=>{if(e.target.classList.contains('mo'))closeMo(e.target.id)});
 
 function konfirm(msg, fn, tipe, okLabel){
   // tipe: 'hapus' (default), 'wa', 'lainnya', 'duplikat'

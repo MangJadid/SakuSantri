@@ -38,7 +38,7 @@ function previewFoto(input){
 function hapusFoto(){
   fotoBase64 = null;
   fotoFile = null;
-  document.getElementById('foto-preview').innerHTML = '👤';
+  document.getElementById('foto-preview').innerHTML = svgIcon('person',24);
   document.getElementById('s-foto').value = '';
   document.getElementById('hapus-foto-btn').style.display='none';
 }
@@ -50,7 +50,7 @@ function setFotoPreview(url){
     prev.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
     document.getElementById('hapus-foto-btn').style.display='inline-flex';
   } else {
-    prev.innerHTML = '👤';
+    prev.innerHTML = svgIcon('person',24);
     document.getElementById('hapus-foto-btn').style.display='none';
   }
 }

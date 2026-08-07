@@ -73,7 +73,7 @@
     // hanya lihat/unduh (read-only)
     'exportLengkap','downloadTemplateExcel','backupSemuaData','cekKoneksi','renderMonitor','mintaIzinNotif',
     // isi form lokal (belum tersimpan, tombol simpannya sendiri tetap diblokir)
-    'isiSemuaNominal','terapNominalSama','bulkBatalPilih','prsShowSub',
+    'bulkBatalPilih','prsShowSub',
     // navigasi/seleksi di wizard Naik Kelas (belum menerapkan perubahan)
     'nkSetMode','nkKelasPilihSemua','nkKelasBatalSemua','nkKelasPilihGroup',
     'nkPilihSemua','nkBatalSemua','nkPilihSatuKobong',

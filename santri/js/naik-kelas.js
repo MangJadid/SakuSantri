@@ -6,27 +6,27 @@ function renderNaikKelas(){
   <div style="background:linear-gradient(135deg,var(--green),var(--green-m));border-radius:var(--rad);padding:22px 26px;margin-bottom:22px;color:#fff;position:relative;overflow:hidden">
     <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:80px;opacity:.07;font-family:'Amiri',serif">🎓</div>
     <div style="position:relative;z-index:1">
-      <div style="font-family:'Amiri',serif;font-size:22px;font-weight:700;margin-bottom:4px">🎓 Naik Kelas & Pindah Kobong</div>
+      <div style="font-family:'Lora',serif;font-size:22px;font-weight:700;margin-bottom:4px">${svgIcon('graduation-cap',20)} Naik Kelas & Pindah Kobong</div>
       <div style="font-size:13px;opacity:.8">Kelola perpindahan kelas dan kobong santri setiap tahun ajaran baru</div>
     </div>
   </div>
 
   <!-- MODE TABS -->
   <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">
-    <button id="nk-mode-kelas" class="btn btn-p" onclick="nkSetMode('kelas')" style="flex:1;min-width:140px;justify-content:center">📚 Naik Kelas Massal</button>
-    <button id="nk-mode-kobong" class="btn btn-o" onclick="nkSetMode('kobong')" style="flex:1;min-width:140px;justify-content:center">🏠 Pindah Kobong per Kobong</button>
-    <button id="nk-mode-individu" class="btn btn-o" onclick="nkSetMode('individu')" style="flex:1;min-width:140px;justify-content:center">👤 Atur Individu</button>
-    <button id="nk-mode-wali" class="btn btn-o" onclick="nkSetMode('wali')" style="flex:1;min-width:140px;justify-content:center">👨‍💼 Ganti Wali Massal</button>
+    <button id="nk-mode-kelas" class="btn btn-p" onclick="nkSetMode('kelas')" style="flex:1;min-width:140px;justify-content:center">${svgIcon('graduation-cap',14)} Naik Kelas Massal</button>
+    <button id="nk-mode-kobong" class="btn btn-o" onclick="nkSetMode('kobong')" style="flex:1;min-width:140px;justify-content:center">${svgIcon('home',14)} Pindah Kobong per Kobong</button>
+    <button id="nk-mode-individu" class="btn btn-o" onclick="nkSetMode('individu')" style="flex:1;min-width:140px;justify-content:center">${svgIcon('person',14)} Atur Individu</button>
+    <button id="nk-mode-wali" class="btn btn-o" onclick="nkSetMode('wali')" style="flex:1;min-width:140px;justify-content:center">${svgIcon('person',14)} Ganti Wali Massal</button>
   </div>
 
   <!-- PANEL: NAIK KELAS -->
   <div id="nk-panel-kelas" class="panel">
     <div class="ph">
-      <h2>📚 Naik Kelas Santri</h2>
+      <h2>${svgIcon('graduation-cap',16)} Naik Kelas Santri</h2>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <span id="nk-kelas-badge" style="display:none;background:var(--green);color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700"></span>
-        <button class="btn btn-o btn-sm" onclick="nkKelasPilihSemua()">☑️ Pilih Semua</button>
-        <button class="btn btn-o btn-sm" onclick="nkKelasBatalSemua()">✕ Batal Semua</button>
+        <button class="btn btn-o btn-sm" onclick="nkKelasPilihSemua()">${svgIcon('check-square',14)} Pilih Semua</button>
+        <button class="btn btn-o btn-sm" onclick="nkKelasBatalSemua()">${svgIcon('x',14)} Batal Semua</button>
       </div>
     </div>
     <div class="pb">
@@ -64,7 +64,7 @@ function renderNaikKelas(){
           </div>
         </div>
         <div id="nk-kelas-info" style="font-size:13px;color:var(--green);margin-bottom:14px;display:none"></div>
-        <button class="btn btn-p" onclick="nkTerapkanNaikKelas()" id="nk-btn-kelas" disabled style="opacity:.4">✅ Terapkan Naik Kelas</button>
+        <button class="btn btn-p" onclick="nkTerapkanNaikKelas()" id="nk-btn-kelas" disabled style="opacity:.4">${svgIcon('check',14)} Terapkan Naik Kelas</button>
       </div>
     </div>
   </div>
@@ -72,11 +72,11 @@ function renderNaikKelas(){
   <!-- PANEL: PINDAH KOBONG -->
   <div id="nk-panel-kobong" class="panel" style="display:none">
     <div class="ph">
-      <h2>🏠 Pindah Kobong Santri</h2>
+      <h2>${svgIcon('home',16)} Pindah Kobong Santri</h2>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <span id="nk-selected-badge" style="display:none;background:var(--green);color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700"></span>
-        <button class="btn btn-o btn-sm" onclick="nkPilihSemua()">☑️ Pilih Semua</button>
-        <button class="btn btn-o btn-sm" onclick="nkBatalSemua()">✕ Batal Semua</button>
+        <button class="btn btn-o btn-sm" onclick="nkPilihSemua()">${svgIcon('check-square',14)} Pilih Semua</button>
+        <button class="btn btn-o btn-sm" onclick="nkBatalSemua()">${svgIcon('x',14)} Batal Semua</button>
       </div>
     </div>
     <div class="pb">
@@ -106,7 +106,7 @@ function renderNaikKelas(){
           </select>
         </div>
         <div id="nk-konfirmasi-info" style="font-size:13px;color:var(--green);margin-bottom:14px;display:none"></div>
-        <button class="btn btn-p" onclick="nkTerapkanPindahKobong()" id="nk-btn-pindah" disabled style="opacity:.4">✅ Pindahkan Santri</button>
+        <button class="btn btn-p" onclick="nkTerapkanPindahKobong()" id="nk-btn-pindah" disabled style="opacity:.4">${svgIcon('check',14)} Pindahkan Santri</button>
       </div>
     </div>
   </div>
@@ -116,11 +116,11 @@ function renderNaikKelas(){
   <!-- PANEL: GANTI WALI MASSAL -->
   <div id="nk-panel-wali" class="panel" style="display:none">
     <div class="ph">
-      <h2>👨‍💼 Ganti Wali Kobong Massal</h2>
+      <h2>${svgIcon('person',16)} Ganti Wali Kobong Massal</h2>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <span id="nk-wali-badge" style="display:none;background:var(--green);color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700"></span>
-        <button class="btn btn-o btn-sm" onclick="nkWaliPilihSemua()">☑️ Pilih Semua</button>
-        <button class="btn btn-o btn-sm" onclick="nkWaliBatalSemua()">✕ Batal Semua</button>
+        <button class="btn btn-o btn-sm" onclick="nkWaliPilihSemua()">${svgIcon('check-square',14)} Pilih Semua</button>
+        <button class="btn btn-o btn-sm" onclick="nkWaliBatalSemua()">${svgIcon('x',14)} Batal Semua</button>
       </div>
     </div>
     <div class="pb" style="padding:14px 16px">
@@ -148,7 +148,7 @@ function renderNaikKelas(){
           </select>
         </div>
         <div id="nk-wali-konfirmasi-info" style="font-size:13px;color:var(--green);margin-bottom:14px;display:none"></div>
-        <button class="btn btn-p" onclick="nkGantiWaliMassal()" id="nk-btn-wali" disabled style="opacity:.4">✅ Ganti Wali Sekarang</button>
+        <button class="btn btn-p" onclick="nkGantiWaliMassal()" id="nk-btn-wali" disabled style="opacity:.4">${svgIcon('check',14)} Ganti Wali Sekarang</button>
       </div>
 
     </div>
@@ -156,7 +156,7 @@ function renderNaikKelas(){
 
   <div id="nk-panel-individu" class="panel" style="display:none">
     <div class="ph">
-      <h2>👤 Atur Kelas & Kobong per Santri</h2>
+      <h2>${svgIcon('person',16)} Atur Kelas & Kobong per Santri</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <input type="text" id="nk-cari" placeholder="🔍 Cari nama..." oninput="nkRenderTabel()" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;min-width:170px">
         <select id="nk-filter-kobong" onchange="nkRenderTabel()" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
@@ -183,7 +183,7 @@ function renderNaikKelas(){
       </div>
     </div>
     <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-p" onclick="nkSimpanSemuaIndividu()">💾 Simpan Semua Perubahan</button>
+      <button class="btn btn-p" onclick="nkSimpanSemuaIndividu()">${svgIcon('save',14)} Simpan Semua Perubahan</button>
       <span id="nk-individu-count" style="font-size:12px;color:var(--text-l);align-self:center"></span>
     </div>
   </div>`;
@@ -247,7 +247,7 @@ function nkRenderKelasList(){
     const ids = group.map(s=>s.id);
     return `
     <div style="padding:6px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b);font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;justify-content:space-between">
-      <span>📚 Kelas ${kelas} — ${group.length} santri</span>
+      <span style="display:inline-flex;align-items:center;gap:4px">${svgIcon('graduation-cap',12)} Kelas ${kelas} — ${group.length} santri</span>
       <button onclick="nkKelasPilihGroup(${JSON.stringify(ids)})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Kelas Ini</button>
     </div>
     ${group.map(s=>`
@@ -259,7 +259,7 @@ function nkRenderKelasList(){
           <div style="font-weight:600;font-size:13px">${s.nama}</div>
           <div style="font-size:11px;color:var(--text-l)">🏠 ${s.kobong?.nama||getKobongNama(s.kobong_id)||'—'} · Kelas ${s.kelas||'—'}</div>
         </div>
-        ${nkKelasSelectedIds.has(s.id)?'<span style="font-size:11px;color:var(--green);font-weight:600">✓ Dipilih</span>':''}
+        ${nkKelasSelectedIds.has(s.id)?`<span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}
       </label>
     `).join('')}`;
   }).join('');
@@ -384,7 +384,7 @@ function nkRenderPindahList(){
 
   el.innerHTML = Object.values(byKobong).map(group=>`
     <div style="padding:6px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b);font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;justify-content:space-between">
-      <span>🏠 ${group.nama}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px">${svgIcon('home',12)} ${group.nama}</span>
       <button onclick="nkPilihSatuKobong(${JSON.stringify(group.list.map(s=>s.id))})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Kobong Ini</button>
     </div>
     ${group.list.map(s=>`
@@ -396,7 +396,7 @@ function nkRenderPindahList(){
           <div style="font-weight:600;font-size:13px">${s.nama}</div>
           <div style="font-size:11px;color:var(--text-l)">Kelas ${s.kelas||'—'} · Saldo ${rp(s.saldo)}</div>
         </div>
-        ${nkSelectedIds.has(s.id)?'<span style="font-size:11px;color:var(--green);font-weight:600">✓ Dipilih</span>':''}
+        ${nkSelectedIds.has(s.id)?`<span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}
       </label>
     `).join('')}
   `).join('');
@@ -563,7 +563,7 @@ function nkRenderWaliList(){
 
   el.innerHTML = Object.values(byWali).map(group=>`
     <div style="padding:6px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b);font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;justify-content:space-between">
-      <span>👨‍💼 ${group.nama} — ${group.list.length} santri</span>
+      <span style="display:inline-flex;align-items:center;gap:4px">${svgIcon('person',12)} ${group.nama} — ${group.list.length} santri</span>
       <button onclick="nkWaliPilihGroup(${JSON.stringify(group.list.map(s=>s.id))})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Wali Ini</button>
     </div>
     ${group.list.map(s=>`
@@ -575,7 +575,7 @@ function nkRenderWaliList(){
           <div style="font-weight:600;font-size:13px">${s.nama}</div>
           <div style="font-size:11px;color:var(--text-l)">🏠 ${s.kobong?.nama||getKobongNama(s.kobong_id)||'—'} · Kelas ${s.kelas||'—'}</div>
         </div>
-        ${nkWaliSelectedIds.has(s.id)?'<span style="font-size:11px;color:var(--green);font-weight:600">✓ Dipilih</span>':''}
+        ${nkWaliSelectedIds.has(s.id)?`<span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}
       </label>
     `).join('')}
   `).join('');

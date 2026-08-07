@@ -1,4 +1,59 @@
 // ===== NOTIFIKASI =====
+// Badge "baru" (bukan sistem baca/belum-baca per-pesan di DB -- cukup simpan
+// id notifikasi terakhir yang sudah dilihat di localStorage per user, hitung
+// berapa yang lebih baru dari itu). Dicache di _notifBaruCount biar panel akun
+// bisa baca sinkron tanpa nunggu fetch (buka panel harus instan).
+let _notifBaruCount = 0;
+
+function _notifLastSeenKey(){ return 'notif_last_seen_id_'+(SESSION?.user?.username||'guest'); }
+
+async function updateBadgeNotifikasi(){
+  if(!SESSION || SESSION.role==='ortu') { _notifBaruCount = 0; return; }
+  try{
+    const lastSeen = parseInt(localStorage.getItem(_notifLastSeenKey())||'0');
+    const {data} = await SB.from('push_notifications').select('id',{count:'exact'}).gt('id', lastSeen);
+    _notifBaruCount = data?.length||0;
+  } catch(e){ _notifBaruCount = 0; }
+  ['badge-notifikasi-tab','badge-notifikasi-grid','badge-notif-bell'].forEach(elId=>{
+    const el = document.getElementById(elId);
+    if(!el) return;
+    el.style.display = _notifBaruCount>0 ? 'inline' : 'none';
+    el.textContent = _notifBaruCount>9 ? '9+' : _notifBaruCount;
+  });
+}
+
+// Panel bel (baca-saja) buat role tanpa akses tab Notifikasi penuh (pengurus/
+// sekretaris/sekretariat) -- sumber datanya sama persis push_notifications,
+// jadi kalau Kang Admin hapus satu, otomatis hilang juga di sini (satu tabel
+// yang sama, bukan salinan per-user).
+async function openNotifBellPanel(){
+  openMo('mo-notif-bell');
+  const listEl = document.getElementById('notif-bell-list');
+  listEl.innerHTML = '<div class="empty"><span class="ei">🔔</span><p>Memuat...</p></div>';
+  const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  _tandaiNotifikasiSudahDilihat(riwayat);
+  if(!riwayat?.length){
+    listEl.innerHTML = '<div class="empty"><span class="ei">🔔</span><p>Belum ada notifikasi</p></div>';
+    return;
+  }
+  listEl.innerHTML = riwayat.map(n=>{
+    const tgl = new Date(n.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="font-weight:700;font-size:13px">${n.judul}</div>
+      <div style="font-size:12px;color:var(--text-m);margin-top:2px">${n.pesan}</div>
+      <div style="font-size:11px;color:var(--text-l);margin-top:4px">${tgl}</div>
+    </div>`;
+  }).join('');
+}
+
+function _tandaiNotifikasiSudahDilihat(riwayat){
+  if(!riwayat?.length) return;
+  const maxId = Math.max(...riwayat.map(n=>n.id));
+  localStorage.setItem(_notifLastSeenKey(), String(maxId));
+  _notifBaruCount = 0;
+  updateBadgeNotifikasi();
+}
+
 async function renderNotifikasi(){
   // Hitung subscriber
   const { data: subs } = await SB.from('push_subscriptions').select('id, username');
@@ -16,6 +71,7 @@ async function renderNotifikasi(){
 
   // Riwayat notifikasi
   const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  _tandaiNotifikasiSudahDilihat(riwayat);
   const listEl = document.getElementById('notif-riwayat-list');
   if(listEl){
     if(!riwayat?.length){ listEl.innerHTML='<div style="color:var(--text-l);font-size:13px;text-align:center;padding:16px">Belum ada notifikasi dikirim</div>'; return; }
@@ -32,7 +88,7 @@ async function renderNotifikasi(){
           </div>
           <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
             <span style="font-size:11px;background:var(--green-p);color:var(--green);padding:2px 8px;border-radius:6px;white-space:nowrap">${n.tipe||'bebas'}</span>
-            <button onclick="hapusNotifikasi(${n.id})" style="background:#fee2e2;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--red);font-size:13px" title="Hapus">🗑️</button>
+            <button onclick="hapusNotifikasi(${n.id})" style="background:#fee2e2;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--red);font-size:13px" title="Hapus">${svgIcon('trash',13)}</button>
           </div>
         </div>
       </div>`;

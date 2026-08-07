@@ -42,7 +42,7 @@ async function renderKeuangan(){
   if(progressEl) progressEl.innerHTML = `
     <div style="background:#f8fafc;border:1.5px solid var(--border);border-radius:12px;padding:14px">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:700">📈 Progress Pembayaran</span>
+        <span style="font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:5px">${svgIcon('trending-up',14)} Progress Pembayaran</span>
         <span style="font-size:13px;font-weight:700;color:var(--green)">${persen}%</span>
       </div>
       <div style="background:#e5e7eb;border-radius:99px;height:12px;overflow:hidden">
@@ -69,7 +69,7 @@ async function renderKeuangan(){
 
   const dapurEl = document.getElementById('keuangan-dapur');
   if(dapurEl) dapurEl.innerHTML = `
-    <div style="font-size:13px;font-weight:700;color:var(--text-m);margin-bottom:10px">🍽️ Rekap Per Dapur</div>
+    <div style="font-size:13px;font-weight:700;color:var(--text-m);margin-bottom:10px;display:flex;align-items:center;gap:5px">${svgIcon('utensils',13)} Rekap Per Dapur</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
       ${Object.entries(dapurMap).map(([id,d])=>{
         const nama = dapurNamaMap[id]||`Dapur ${id}`;
@@ -117,10 +117,10 @@ async function renderMonitor(){
   sec.innerHTML = `
   <div class="panel" style="margin-bottom:16px">
     <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <h2>👁️ Monitor Aktivitas & Device Pengurus</h2>
+      <h2>${svgIcon('eye',16)} Monitor Aktivitas & Device Pengurus</h2>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="font-size:12px;color:var(--text-l)">Update: ${updateTime}</span>
-        <button class="btn btn-b btn-sm" onclick="renderMonitor()">🔄 Refresh</button>
+        <button class="btn btn-b btn-sm" onclick="renderMonitor()">${svgIcon('refresh',14)} Refresh</button>
       </div>
     </div>
     <div class="pb">
@@ -226,7 +226,7 @@ async function renderMonitor(){
             <div style="font-size:11px;color:var(--text-l);margin-top:2px">Login pertama: ${s.loginFirst}</div>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0">
-            <button class="btn btn-d btn-xs" onclick="monitorLogoutDevice('${s.session_id}','${namaEsc}','${deviceEsc}')">⬅️ Logout</button>
+            <button class="btn btn-d btn-xs" onclick="monitorLogoutDevice('${s.session_id}','${namaEsc}','${deviceEsc}')">${svgIcon('log-out',12)} Logout</button>
           </div>
         </div>`;
       }).join('');
@@ -242,8 +242,8 @@ async function renderMonitor(){
               </div>
             </div>
             ${g.role!=='super'?`<div style="display:flex;gap:5px;flex-wrap:wrap">
-              ${anyAktif?`<button class="btn btn-d btn-xs" onclick="monitorLogout('${g.pengurus_id}','${(g.nama||'').replace(/'/g,"\\'")}')">⬅️ Logout Semua Device</button>`:''}
-              <button class="btn btn-d btn-xs" style="background:#dc2626;border-color:#dc2626" onclick="monitorBlokir('${g.pengurus_id}','${(g.nama||'').replace(/'/g,"\\'")}')">🚫 Blokir</button>
+              ${anyAktif?`<button class="btn btn-d btn-xs" onclick="monitorLogout('${g.pengurus_id}','${(g.nama||'').replace(/'/g,"\\'")}')">${svgIcon('log-out',12)} Logout Semua Device</button>`:''}
+              <button class="btn btn-d btn-xs" style="background:#dc2626;border-color:#dc2626" onclick="monitorBlokir('${g.pengurus_id}','${(g.nama||'').replace(/'/g,"\\'")}')">${svgIcon('ban',12)} Blokir</button>
             </div>`:''}
           </div>
           ${sesiRows}

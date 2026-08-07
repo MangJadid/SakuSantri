@@ -59,7 +59,7 @@ async function tutupBulan(){
 
   } catch(e) {
     if(st) st.innerHTML = `<span style="color:var(--red)">❌ Gagal: ${e.message}</span>`;
-    if(btn){ btn.disabled=false; btn.textContent='🗓️ 2. Tutup Bulan'; }
+    if(btn){ btn.disabled=false; btn.innerHTML=svgIcon('lock',14)+' 2. Tutup Bulan'; }
     toast('Gagal tutup bulan: '+e.message, false);
   }
 }

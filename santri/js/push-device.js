@@ -55,22 +55,22 @@ function tampilkanBannerNotif(tipe){
 
   if(tipe === 'ask'){
     banner.innerHTML = `
-      <span style="font-size:24px">🔔</span>
+      <span style="color:var(--green);flex-shrink:0">${svgIcon('bell',22)}</span>
       <div style="flex:1">
         <div style="font-weight:700;font-size:13px;color:var(--green)">Aktifkan Notifikasi</div>
         <div style="font-size:12px;color:var(--text-m);margin-top:2px">Izinkan notifikasi agar kamu bisa menerima pengingat dari admin</div>
       </div>
       <button onclick="mintaIzinNotif()" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Izinkan</button>
-      <button onclick="hapusBannerNotif()" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:18px;padding:0 4px">✕</button>
+      <button onclick="hapusBannerNotif()" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:18px;padding:0 4px">${svgIcon('x',16)}</button>
     `;
   } else {
     banner.innerHTML = `
-      <span style="font-size:24px">🔕</span>
+      <span style="color:var(--red);flex-shrink:0">${svgIcon('bell-off',22)}</span>
       <div style="flex:1">
         <div style="font-weight:700;font-size:13px;color:var(--red)">Notifikasi Diblokir</div>
         <div style="font-size:12px;color:var(--text-m);margin-top:2px">Buka pengaturan browser → izinkan notifikasi untuk site ini</div>
       </div>
-      <button onclick="hapusBannerNotif()" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:18px;padding:0 4px">✕</button>
+      <button onclick="hapusBannerNotif()" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:18px;padding:0 4px">${svgIcon('x',16)}</button>
     `;
   }
   document.body.appendChild(banner);

@@ -1,13 +1,13 @@
 // Menu selain dashboard/santri/massal/riwayat (4 itu masuk bottom nav di HP).
 // Dipakai buat grid "Fitur Lainnya" di dashboard -- icon + warna sesuai referensi.
 const MENU_LAINNYA = [
-  {id:'kobong', label:'Kobong', icon:'🏠', c:'b'},
-  {id:'naikkelas', label:'Naik Kelas', icon:'🎓', c:'p'},
-  {id:'pengurus', label:'Pengurus', icon:'👨‍💼', c:'g'},
-  {id:'persetujuan', label:'Persetujuan', icon:'✅', c:'g'},
-  {id:'notifikasi', label:'Notifikasi', icon:'🔔', c:'gg'},
-  {id:'monitor', label:'Monitor', icon:'👁️', c:'b'},
-  {id:'pengaturan', label:'Pengaturan', icon:'⚙️', c:'r'},
+  {id:'kobong', label:'Kobong', icon:svgIcon('home'), c:'b'},
+  {id:'naikkelas', label:'Naik Kelas', icon:svgIcon('graduation-cap'), c:'p'},
+  {id:'pengurus', label:'Pengurus', icon:svgIcon('person'), c:'g'},
+  {id:'persetujuan', label:'Persetujuan', icon:svgIcon('check-circle'), c:'g'},
+  {id:'notifikasi', label:'Notifikasi', icon:svgIcon('bell'), c:'gg'},
+  {id:'monitor', label:'Monitor', icon:svgIcon('eye'), c:'b'},
+  {id:'pengaturan', label:'Pengaturan', icon:svgIcon('settings'), c:'r'},
 ];
 
 function buildTabs(){
@@ -15,31 +15,31 @@ function buildTabs(){
   let t = '';
   if(SESSION.role==='ortu'){
     tabs.classList.add('tabs-ortu');
-    t += tab('detail','📊 Saldo Santri');
-    t += tab('syahriyah','🧾 Uang Syahriyah<span id="badge-syahriyah" class="badge-tab" style="display:none">0</span>');
+    t += tab('detail',svgIcon('wallet',14)+' Saldo Santri');
+    t += tab('syahriyah',svgIcon('document',14)+' Uang Syahriyah<span id="badge-syahriyah" class="badge-tab" style="display:none">0</span>');
   } else {
     tabs.classList.remove('tabs-ortu');
-    t += tab('dashboard','📊 Dashboard');
-    t += tab('santri','👥 Santri');
+    t += tab('dashboard',svgIcon('home',14)+' Dashboard');
+    t += tab('santri',svgIcon('users',14)+' Santri');
     if(SESSION.role!=='sekretaris'&&SESSION.role!=='sekretariat'){
-      t += tab('massal','💸 Massal');
+      t += tab('massal',svgIcon('wallet',14)+' Transaksi');
     }
-    t += tab('riwayat','📜 Riwayat');
+    t += tab('riwayat',svgIcon('document',14)+' Riwayat');
     if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
-      t += tab('kobong','🏠 Kobong');
-      t += tab('naikkelas','🎓 Naik Kelas');
-      t += tab('persetujuan','🗑️ Persetujuan<span id="badge-persetujuan" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:5px">0</span>');
+      t += tab('kobong',svgIcon('home',14)+' Kobong');
+      t += tab('naikkelas',svgIcon('graduation-cap',14)+' Naik Kelas');
+      t += tab('persetujuan',svgIcon('check-circle',14)+' Persetujuan<span id="badge-persetujuan" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:5px">0</span>');
     }
     if(SESSION.role==='super'||SESSION.role==='pengawas'){
-      t += tab('kobong','🏠 Kobong');
-      t += tab('naikkelas','🎓 Naik Kelas');
-      t += tab('pengurus','👨‍💼 Pengurus');
-      t += tab('persetujuan','🗑️ Persetujuan<span id="badge-persetujuan" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:5px">0</span>');
-      t += tab('notifikasi','🔔 Notifikasi');
-      t += tab('monitor','👁️ Monitor');
+      t += tab('kobong',svgIcon('home',14)+' Kobong');
+      t += tab('naikkelas',svgIcon('graduation-cap',14)+' Naik Kelas');
+      t += tab('pengurus',svgIcon('person',14)+' Pengurus');
+      t += tab('persetujuan',svgIcon('check-circle',14)+' Persetujuan<span id="badge-persetujuan" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:5px">0</span>');
+      t += tab('notifikasi',svgIcon('bell',14)+' Notifikasi<span id="badge-notifikasi-tab" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:5px">0</span>');
+      t += tab('monitor',svgIcon('eye',14)+' Monitor');
     }
     if(SESSION.role==='super'){
-      t += tab('pengaturan','⚙️ Pengaturan');
+      t += tab('pengaturan',svgIcon('settings',14)+' Pengaturan');
     }
   }
   tabs.innerHTML = t;
@@ -61,10 +61,10 @@ function buildMobileNav(){
   document.body.classList.add('has-bnav');
 
   const primer = [
-    {id:'dashboard', label:'Beranda', icon:'🏠'},
-    {id:'santri', label:'Santri', icon:'👥'},
-    {id:'massal', label:'Massal', icon:'💸'},
-    {id:'riwayat', label:'Riwayat', icon:'📜'},
+    {id:'dashboard', label:'Beranda', icon:svgIcon('home',20)},
+    {id:'santri', label:'Santri', icon:svgIcon('users',20)},
+    {id:'massal', label:'Transaksi', icon:svgIcon('wallet',20)},
+    {id:'riwayat', label:'Riwayat', icon:svgIcon('document',20)},
   ].filter(m => document.getElementById('tab-'+m.id));
 
   bnav.innerHTML = '<span class="bnav-highlight" id="bnav-highlight"></span>' + primer.map(m => `
@@ -81,8 +81,12 @@ function buildMobileNav(){
       ${lainnya.map(m => `
         <button class="mnav-item" onclick="showTab('${m.id}')">
           <span class="sci ${m.c}">${m.icon}</span><span>${m.label}</span>
+          ${m.id==='notifikasi'?'<span id="badge-notifikasi-grid" class="mnav-badge" style="display:none">0</span>':''}
+          ${m.id==='persetujuan'?'<span id="badge-persetujuan-grid" class="mnav-badge" style="display:none">0</span>':''}
         </button>`).join('')}
     </div>` : '';
+  if(typeof updateBadgeNotifikasi==='function') updateBadgeNotifikasi();
+  if(typeof updateBadgePersetujuan==='function') updateBadgePersetujuan();
 }
 
 // Geser pill highlight ke tombol bottom-nav yang lagi aktif (ukur posisi asli,
@@ -139,25 +143,25 @@ function showTab(id){
         sec.dataset.loaded = '1';
         sec.innerHTML = `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" class="two">
-          <div class="panel"><div class="ph"><h2>⚙️ Pengaturan Umum</h2></div><div class="pb">
+          <div class="panel"><div class="ph"><h2>${svgIcon('settings',16)} Pengaturan Umum</h2></div><div class="pb">
             <div class="fg" style="margin-bottom:12px"><label>Nama Pondok</label><input type="text" id="set-nama" placeholder="Nama Pondok Pesantren"></div>
             <div class="fg" style="margin-bottom:12px"><label>Bulan Aktif</label><input type="text" id="set-bulan" placeholder="Juni 2025"></div>
             <div class="fg" style="margin-bottom:16px"><label>Batas Saldo Kritis (Rp)</label><input type="number" id="set-kritis" placeholder="50000"></div>
-            <button class="btn btn-p btn-sm" onclick="simpanPengaturan()">💾 Simpan</button>
+            <button class="btn btn-p btn-sm" onclick="simpanPengaturan()">${svgIcon('save',14)} Simpan</button>
           </div></div>
-          <div class="panel"><div class="ph"><h2>🔐 Ganti Akun Kang Admin</h2></div><div class="pb">
+          <div class="panel"><div class="ph"><h2>${svgIcon('lock',16)} Ganti Akun Kang Admin</h2></div><div class="pb">
             <div class="fg" style="margin-bottom:12px"><label>Username Baru</label><input type="text" id="set-user1" placeholder="Username baru..."></div>
             <div class="fg" style="margin-bottom:12px"><label>Ulangi Username</label><input type="text" id="set-user2" placeholder="Ulangi username..."></div>
-            <button class="btn btn-b btn-sm" style="margin-bottom:16px" onclick="gantiUsername()">👤 Ganti Username</button>
+            <button class="btn btn-b btn-sm" style="margin-bottom:16px" onclick="gantiUsername()">${svgIcon('person',14)} Ganti Username</button>
             <hr style="margin-bottom:16px;border:none;border-top:1px solid var(--border)">
             <div class="fg" style="margin-bottom:12px"><label>Password Baru</label><input type="password" id="set-pass1" placeholder="••••••••"></div>
             <div class="fg" style="margin-bottom:16px"><label>Ulangi Password</label><input type="password" id="set-pass2" placeholder="••••••••"></div>
-            <button class="btn btn-p btn-sm" onclick="gantiPass()">🔑 Ganti Password</button>
+            <button class="btn btn-p btn-sm" onclick="gantiPass()">${svgIcon('key',14)} Ganti Password</button>
           </div></div>
         </div>
-        <div class="panel"><div class="ph"><h2>🔗 Koneksi Supabase</h2></div><div class="pb">
+        <div class="panel"><div class="ph"><h2>${svgIcon('link',16)} Koneksi Supabase</h2></div><div class="pb">
           <div class="info-box" style="margin-bottom:14px"><strong>URL:</strong> <span id="set-url-display" style="font-family:'DM Mono',monospace;font-size:12px"></span><br><strong>Status:</strong> <span id="set-status">—</span></div>
-          <div style="margin-bottom:20px"><button class="btn btn-b btn-sm" onclick="cekKoneksi()">🔍 Cek Koneksi</button></div>
+          <div style="margin-bottom:20px"><button class="btn btn-b btn-sm" onclick="cekKoneksi()">${svgIcon('search',14)} Cek Koneksi</button></div>
           <details style="margin-bottom:16px">
           <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text-m);padding:8px 0;user-select:none">🔧 SQL Migrasi Database (Lanjutan)</summary>
           <div style="margin-top:12px">
@@ -376,31 +380,31 @@ create policy "public delete fotos" on storage.objects
   for delete using (bucket_id = 'fotos');</textarea>
           <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-b btn-sm" onclick="navigator.clipboard.writeText(this.closest('.pb').querySelector('textarea').value);toast('SQL disalin!')">📋 Salin SQL</button>
-            <button class="btn btn-p btn-sm" onclick="testStorage()">🔍 Cek Status Storage</button>
+            <button class="btn btn-p btn-sm" onclick="testStorage()">${svgIcon('search',14)} Cek Status Storage</button>
           </div>
           <div id="storage-status" style="margin-top:10px;font-size:13px"></div>
         </div></div>
-        <div class="panel"><div class="ph"><h2>💬 Kata-kata Greeting Dashboard</h2></div><div class="pb">
+        <div class="panel"><div class="ph"><h2>${svgIcon('message-square',16)} Kata-kata Greeting Dashboard</h2></div><div class="pb">
           <p style="font-size:13px;color:var(--text-m);margin-bottom:14px;line-height:1.7">Kata-kata ini akan muncul di greeting dashboard pengurus secara bergantian setiap login.</p>
           <div id="greeting-list" style="margin-bottom:14px"></div>
           <div style="display:flex;gap:8px">
             <input type="text" id="greeting-input" placeholder="Tulis kata-kata motivasi..." style="flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13.5px;outline:none" onkeydown="if(event.key==='Enter') tambahGreeting()">
-            <button class="btn btn-p btn-sm" onclick="tambahGreeting()">➕ Tambah</button>
+            <button class="btn btn-p btn-sm" onclick="tambahGreeting()">${svgIcon('plus',14)} Tambah</button>
           </div>
         </div></div>
-        <div class="panel"><div class="ph"><h2>📲 Template Pesan WA Saldo Kritis</h2></div><div class="pb">
-          <div class="info-box" style="margin-bottom:14px">Variabel: <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{nama}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{kobong}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{saldo}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{link}}</code></div>
+        <div class="panel"><div class="ph"><h2>${svgIcon('message-square',16)} Template Pesan WA Saldo Kritis</h2></div><div class="pb">
+          <div class="info-box" style="margin-bottom:14px">Variabel: <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{nama}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{kobong}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{saldo}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{pin}}</code> <code style="background:var(--green-p);color:var(--green);padding:2px 6px;border-radius:4px;font-size:12px">{{link}}</code></div>
           <div class="fg" style="margin-bottom:14px"><label>Template Pesan</label><textarea id="set-wa-template" rows="10" style="font-family:'DM Mono',monospace;font-size:12.5px;line-height:1.7;resize:vertical" placeholder="Tulis template pesan WA..."></textarea></div>
-          <button class="btn btn-p btn-sm" onclick="simpanTemplateWA()">💾 Simpan Template</button>
+          <button class="btn btn-p btn-sm" onclick="simpanTemplateWA()">${svgIcon('save',14)} Simpan Template</button>
         </div></div>
-        <div class="panel"><div class="ph"><h2>💾 Backup & Tutup Bulan</h2></div><div class="pb">
+        <div class="panel"><div class="ph"><h2>${svgIcon('archive',16)} Backup & Tutup Bulan</h2></div><div class="pb">
           <p style="font-size:13px;color:var(--text-m);margin-bottom:16px;line-height:1.7">Lakukan ini di <strong>awal setiap bulan baru</strong> agar website tetap ringan. Data bulan lalu diarsip ke Excel, lalu transaksi lama dihapus. Saldo santri tetap terbawa sebagai transaksi pembuka bulan baru.</p>
           <div style="background:var(--gold-p);border:1px solid var(--gold-l);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;color:#7a5c00">
             <strong>⚠️ Urutan wajib:</strong><br>1️⃣ Backup dulu → 2️⃣ Baru Tutup Bulan<br><span style="font-size:12px;opacity:.8">Tombol Tutup Bulan baru aktif setelah backup dilakukan.</span>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <button class="btn btn-p" onclick="backupSemuaData()" id="btn-backup">📦 1. Backup Lengkap</button>
-            <button class="btn btn-d" onclick="konfirmasiTutupBulan()" id="btn-tutup-bulan" disabled style="opacity:.4;cursor:not-allowed">🔒 2. Tutup Bulan</button>
+            <button class="btn btn-p" onclick="backupSemuaData()" id="btn-backup">${svgIcon('archive',14)} 1. Backup Lengkap</button>
+            <button class="btn btn-d" onclick="konfirmasiTutupBulan()" id="btn-tutup-bulan" disabled style="opacity:.4;cursor:not-allowed">${svgIcon('lock',14)} 2. Tutup Bulan</button>
           </div>
           <div id="tutup-status" style="margin-top:12px;font-size:13px"></div>
         </div></div>`;

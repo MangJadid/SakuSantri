@@ -174,6 +174,7 @@ async function enterApp(){
   buildTabs();
   updateNotif();
   if(SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') updateBadgePersetujuan();
+  if(SESSION.role!=='ortu') updateBadgeNotifikasi();
   showTab(SESSION.role==='ortu'?'detail':'dashboard');
   // Tampilkan tombol Profil untuk pengurus & sekretariat
   const btnProfil = document.getElementById('btn-profil-hdr');
@@ -181,6 +182,14 @@ async function enterApp(){
     const isPengurusRole = SESSION.role==='pengurus'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat'||SESSION.role==='super';
     btnProfil.style.display = isPengurusRole ? 'inline-flex' : 'none';
     if(isPengurusRole) updateHdrProfilAv();
+  }
+  // Bel notifikasi di header -- cuma buat role yang gak punya tab Notifikasi
+  // sendiri (super/pengawas udah bisa lewat tab), biar tetap bisa lihat apa
+  // yang dikirim Kang Admin tanpa perlu tab terpisah.
+  const btnBell = document.getElementById('btn-notif-bell');
+  if(btnBell){
+    const showBell = SESSION.role==='pengurus'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat';
+    btnBell.style.display = showBell ? 'inline-flex' : 'none';
   }
 
   resetSessionTimer();

@@ -34,11 +34,12 @@ async function updateBadgePersetujuan(){
     if(allowed) q = q.in('asrama_id', allowed.length?allowed:[-1]);
     const {data} = await q;
     const cnt = data?.length||0;
-    const badge = document.getElementById('badge-persetujuan');
-    if(badge){
+    ['badge-persetujuan','badge-persetujuan-grid'].forEach(elId=>{
+      const badge = document.getElementById(elId);
+      if(!badge) return;
       badge.style.display = cnt>0 ? 'inline' : 'none';
-      badge.textContent = cnt;
-    }
+      badge.textContent = cnt>9 ? '9+' : cnt;
+    });
   } catch(e){}
 }
 
@@ -100,8 +101,8 @@ async function renderPersetujuan(){
     list.forEach(r=>{
       const tgl = new Date(r.created_at).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
       const jenisBadge = r.jenis==='hapus'
-        ? `<span style="background:var(--red-p);color:var(--red);border:1.5px solid #fca5a5;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">🗑️ Hapus Santri</span>`
-        : `<span style="background:var(--blue-p);color:var(--blue);border:1.5px solid var(--blue-b);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">✏️ Edit Data</span>`;
+        ? `<span style="background:var(--red-p);color:var(--red);border:1.5px solid #fca5a5;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">${svgIcon('trash',11)} Hapus Santri</span>`
+        : `<span style="background:var(--blue-p);color:var(--blue);border:1.5px solid var(--blue-b);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">${svgIcon('edit',11)} Edit Data</span>`;
 
       html += `<div style="background:var(--white);border:1.5px solid #fde68a;border-radius:12px;padding:16px 18px;margin-bottom:12px">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
@@ -120,8 +121,8 @@ async function renderPersetujuan(){
           <div>👨‍💼 <strong>Diajukan oleh:</strong> ${r.diajukan_nama||r.diajukan_oleh||'—'} · ${tgl}</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-          <button class="btn btn-g btn-sm" onclick="${r.jenis==='hapus'?`approveHapus(${parseInt(r.id,10)},${parseInt(r.santri_id,10)},'${(r.santri_nama||'').replace(/'/g,"\\'")}')`:`approveEdit(${parseInt(r.id,10)})`}">✅ ${r.jenis==='hapus'?'Setujui & Hapus':'Setujui Perubahan'}</button>
-          <button class="btn btn-d btn-sm" onclick="rejectPermintaan(${parseInt(r.id,10)})">❌ Tolak</button>
+          <button class="btn btn-g btn-sm" onclick="${r.jenis==='hapus'?`approveHapus(${parseInt(r.id,10)},${parseInt(r.santri_id,10)},'${(r.santri_nama||'').replace(/'/g,"\\'")}')`:`approveEdit(${parseInt(r.id,10)})`}">${svgIcon('check',14)} ${r.jenis==='hapus'?'Setujui & Hapus':'Setujui Perubahan'}</button>
+          <button class="btn btn-d btn-sm" onclick="rejectPermintaan(${parseInt(r.id,10)})">${svgIcon('x',14)} Tolak</button>
         </div>
       </div>`;
     });
@@ -192,17 +193,17 @@ async function renderRiwayatPersetujuan(){
       const jenisLabel = r.jenis==='hapus' ? '🗑️ Hapus Santri' : r.jenis==='tambah' ? '➕ Tambah Santri Baru' : '✏️ Edit Data';
       let sumberBadge, aktorHtml;
       if(r._tipe==='ditolak'){
-        sumberBadge = `<span style="background:var(--red-p);color:var(--red);border:1.5px solid #fca5a5;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">❌ Ditolak</span>`;
+        sumberBadge = `<span style="background:var(--red-p);color:var(--red);border:1.5px solid #fca5a5;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">${svgIcon('x',11)} Ditolak</span>`;
         aktorHtml = `<div>👨‍💼 <strong>Diajukan oleh:</strong> ${r.diajukan_nama||r.diajukan_oleh||'—'}</div>
           <div>🔐 <strong>Ditolak oleh:</strong> ${r.diproses_nama||r.diproses_oleh||'—'}</div>
           ${r.catatan_admin?`<div>💬 <strong>Catatan:</strong> ${r.catatan_admin}</div>`:''}`;
       } else if(r.sumber==='persetujuan'){
-        sumberBadge = `<span style="background:var(--green-p);color:var(--green);border:1.5px solid var(--green-b);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">✅ Disetujui</span>`;
+        sumberBadge = `<span style="background:var(--green-p);color:var(--green);border:1.5px solid var(--green-b);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">${svgIcon('check-circle',11)} Disetujui</span>`;
         aktorHtml = `<div>👨‍💼 <strong>Diajukan oleh:</strong> ${r.diajukan_nama||r.diajukan_oleh||'—'}</div>
           <div>🔐 <strong>Disetujui oleh:</strong> ${r.diubah_nama||r.diubah_oleh||'—'}</div>
           ${r.alasan?`<div>📋 <strong>Alasan:</strong> ${r.alasan}</div>`:''}`;
       } else {
-        sumberBadge = `<span style="background:var(--blue-p);color:var(--blue);border:1.5px solid var(--blue-b);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">⚡ Langsung</span>`;
+        sumberBadge = `<span style="background:var(--blue-p);color:var(--blue);border:1.5px solid var(--blue-b);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">${svgIcon('check',11)} Langsung</span>`;
         aktorHtml = `<div>👤 <strong>Diubah oleh:</strong> ${r.diubah_nama||r.diubah_oleh||'—'}</div>`;
       }
 
@@ -221,7 +222,7 @@ async function renderRiwayatPersetujuan(){
           ${(r.jenis==='edit'||r.jenis==='tambah')?_rowDiffHtml(r.data_lama,r.data_baru):''}
           ${aktorHtml}
         </div>
-        ${SESSION.role==='super'?`<div style="margin-top:10px"><button class="btn btn-d btn-sm" onclick="hapusRiwayatEntry(${parseInt(r.id,10)},'${r._tipe}')">🗑️ Hapus Entri</button></div>`:''}
+        ${SESSION.role==='super'?`<div style="margin-top:10px"><button class="btn btn-d btn-sm" onclick="hapusRiwayatEntry(${parseInt(r.id,10)},'${r._tipe}')">${svgIcon('trash',14)} Hapus Entri</button></div>`:''}
       </div>`;
     });
     sec.innerHTML = html;
@@ -251,7 +252,7 @@ function bukaModalBersihkanRiwayat(){
   const modal = document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
   modal.innerHTML=`<div style="background:#fff;border-radius:16px;width:100%;max-width:420px;padding:24px;box-shadow:0 24px 64px rgba(0,0,0,.3)">
-    <h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px">🧹 Bersihkan Riwayat</h3>
+    <h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px">${svgIcon('trash',15)} Bersihkan Riwayat</h3>
     <div style="font-size:12px;color:var(--text-m);margin-bottom:16px;line-height:1.6">Hapus permanen riwayat perubahan santri (termasuk riwayat permintaan yang ditolak) yang lebih lama dari periode berikut. Tindakan ini <strong>tidak bisa dibatalkan</strong>.</div>
     <div class="fg" style="margin-bottom:18px">
       <label>Hapus riwayat lebih lama dari</label>
@@ -265,7 +266,7 @@ function bukaModalBersihkanRiwayat(){
     </div>
     <div style="display:flex;gap:9px;justify-content:flex-end">
       <button class="btn btn-o" onclick="this.closest('div[style]').remove()">Batal</button>
-      <button class="btn btn-d" id="btn-konfirm-bersih">🧹 Hapus</button>
+      <button class="btn btn-d" id="btn-konfirm-bersih">${svgIcon('trash',14)} Hapus</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
@@ -377,14 +378,14 @@ async function rejectPermintaan(reqId){
   const modal = document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
   modal.innerHTML=`<div style="background:#fff;border-radius:16px;width:100%;max-width:420px;padding:24px;box-shadow:0 24px 64px rgba(0,0,0,.3)">
-    <h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">❌ Tolak Permintaan</h3>
+    <h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:6px">${svgIcon('x',15)} Tolak Permintaan</h3>
     <div class="fg" style="margin-bottom:16px">
       <label>Catatan Penolakan (opsional)</label>
       <textarea id="reject-catatan" rows="3" placeholder="Mis: Santri masih aktif, data belum lengkap, dll..." style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;outline:none"></textarea>
     </div>
     <div style="display:flex;gap:9px;justify-content:flex-end">
       <button class="btn btn-o" onclick="this.closest('div[style]').remove()">Batal</button>
-      <button class="btn btn-d" id="btn-konfirm-reject">❌ Tolak</button>
+      <button class="btn btn-d" id="btn-konfirm-reject">${svgIcon('x',14)} Tolak</button>
     </div>
   </div>`;
   document.body.appendChild(modal);

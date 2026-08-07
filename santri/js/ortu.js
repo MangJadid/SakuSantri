@@ -81,15 +81,15 @@ async function renderDetailOrtu(){
         </div>
         <div class="dh-divider-thin"></div>
         <div class="dh-meta">
-          <span class="dh-meta-row kantin">🍽️ ${dapurValO}</span>
-          <span class="dh-meta-row kobong">🏠 ${k}</span>
+          <span class="dh-meta-row kantin">${svgIcon('utensils',12)} ${dapurValO}</span>
+          <span class="dh-meta-row kobong">${svgIcon('home',12)} ${k}</span>
         </div>
         <div class="dh-saldo">
           <div>
             <div class="lbl">Saldo Akhir</div>
             <div class="amt" id="dh-amt-2" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoRealO<0?'− ':''} ${rp(saldoRealO)}</div>
           </div>
-          <button class="dh-eye" onclick="dhToggle('dh-amt-2',this)">&#128065;</button>
+          <button class="dh-eye" onclick="dhToggle('dh-amt-2',this)">${svgIcon('eye',16)}</button>
         </div>
       </div>
       </div>
@@ -105,7 +105,7 @@ async function renderDetailOrtu(){
       </div>
     </div>
     <div class="panel">
-      <div class="ph"><h2>📜 Riwayat Transaksi</h2></div>
+      <div class="ph"><h2>${svgIcon('document',16)} Riwayat Transaksi</h2></div>
       <div class="pb">${txHtml}</div>
     </div>`;
 }
@@ -154,14 +154,14 @@ async function renderSyahriyahOrtu(){
           </div></div>
         </div>
         <div class="dh-meta">
-          <div class="dh-meta-row"><span>🏠</span><span>${kamarSy}</span><span class="sep">·</span><span>🎓 Kelas ${kelasSy}</span></div>
-          <div class="dh-meta-row"><span>🍽️</span><span>${dapurSy}</span><span class="sep">·</span><span>📍</span><span>${asramaSy}</span></div>
+          <div class="dh-meta-row"><span>${svgIcon('home',12)}</span><span>${kamarSy}</span><span class="sep">·</span><span style="display:inline-flex;align-items:center;gap:3px">${svgIcon('graduation-cap',12)} Kelas ${kelasSy}</span></div>
+          <div class="dh-meta-row"><span>${svgIcon('utensils',12)}</span><span>${dapurSy}</span><span class="sep">·</span><span>${svgIcon('map-pin',12)}</span><span>${asramaSy}</span></div>
         </div>
       </div>
     </div>
     <div id="syahriyah-deposit-info" style="margin-bottom:14px"></div>
     <div class="panel">
-      <div class="ph"><h2>🧾 Tagihan Bulanan</h2></div>
+      <div class="ph"><h2>${svgIcon('archive',16)} Tagihan Bulanan</h2></div>
       <div class="pb" id="syahriyah-list"><div style="text-align:center;padding:32px;color:var(--text-l)">⏳ Memuat...</div></div>
     </div>`;
 
@@ -180,7 +180,7 @@ async function renderSyahriyahOrtu(){
       const nomBulan = 420000; // nominal per bulan
       const bulanLagi = Math.floor(saldoDeposit / nomBulan);
       depEl.innerHTML = `<div style="background:#fef9e7;border:1px solid #f9ca24;border-radius:12px;padding:14px 16px">
-        <div style="font-size:12px;color:#7d6608;font-weight:600;margin-bottom:4px">🏦 SALDO DEPOSIT</div>
+        <div style="font-size:12px;color:#7d6608;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:4px">${svgIcon('bank',12)} SALDO DEPOSIT</div>
         <div style="font-size:22px;font-weight:800;color:#b7770d;margin-bottom:6px">Rp ${saldoDeposit.toLocaleString('id-ID')}</div>
         <div style="font-size:12px;color:#7d6608">Uang ini sudah dititipkan ke pesantren dan akan <strong>otomatis dipotong</strong> untuk tagihan bulan berikutnya${bulanLagi>0?' (~'+bulanLagi+' bulan lagi)':''}.</div>
       </div>`;
@@ -192,7 +192,7 @@ async function renderSyahriyahOrtu(){
 
     if(list.length === 0){
       listEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-l)">
-        <div style="font-size:40px;margin-bottom:12px">✅</div>
+        <div style="margin-bottom:12px;color:var(--green);display:flex;justify-content:center">${svgIcon('check-circle',40)}</div>
         <p>Belum ada tagihan syahriyah</p>
       </div>`;
       return;
@@ -204,9 +204,9 @@ async function renderSyahriyahOrtu(){
 
     const fmtRp = n => 'Rp '+Number(n).toLocaleString('id-ID');
     const statusBadge = s => {
-      if(s==='lunas') return '<span style="background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">✅ Lunas</span>';
-      if(s==='cicil') return '<span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ Cicilan</span>';
-      return '<span style="background:#fee2e2;color:#991b1b;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">❌ Belum Bayar</span>';
+      if(s==='lunas') return `<span style="background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">${svgIcon('check-circle',11)} Lunas</span>`;
+      if(s==='cicil') return `<span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">${svgIcon('clock',11)} Cicilan</span>`;
+      return `<span style="background:#fee2e2;color:#991b1b;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px">${svgIcon('x',11)} Belum Bayar</span>`;
     };
 
     listEl.innerHTML = `
@@ -214,7 +214,7 @@ async function renderSyahriyahOrtu(){
         <!-- Baris 1: Sisa Tagihan full width -->
         <div style="background:${sisaHutang>0?'linear-gradient(135deg,#7f1d1d,#991b1b)':'linear-gradient(135deg,#065f46,#047857)'};padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="color:rgba(255,255,255,.65);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">${sisaHutang>0?'⚠️ Sisa Tagihan':'✅ Status'}</div>
+            <div style="color:rgba(255,255,255,.65);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;display:flex;align-items:center;gap:4px">${sisaHutang>0?svgIcon('alert-triangle',11)+' Sisa Tagihan':svgIcon('check-circle',11)+' Status'}</div>
             <div style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-.5px">${sisaHutang>0?fmtRp(sisaHutang):'Lunas'}</div>
             <div style="color:rgba(255,255,255,.5);font-size:10px;margin-top:3px">${sisaHutang>0?'Belum lunas':'Semua terbayar'}</div>
           </div>

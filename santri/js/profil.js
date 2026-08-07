@@ -12,25 +12,30 @@ function openAccountDrawer(){
 
   const roleBadgeLabels = {super:'👑 Administrator', pengurus:'👨‍💼 Pengurus', sekretaris:'📋 Sekretaris', sekretariat:'🏢 Sekretariat', pengawas:'👁️ Pengawas'};
   document.getElementById('acc-role-badge').textContent = roleBadgeLabels[SESSION.role] || SESSION.role;
-  document.getElementById('acc-pondok').textContent = CONFIG.pesantren_nama || '—';
+  const asramaIds = JSON.parse(p.asrama_ids||'[]').map(String);
+  const asramaNama = asramaIds.map(id=>ALL_ASRAMA.find(a=>String(a.id)===id)?.nama).filter(Boolean).join(', ');
+  document.getElementById('acc-pondok').textContent = SESSION.role==='super' ? 'Semua Asrama' : (asramaNama || 'Semua Asrama');
   document.getElementById('acc-periode').textContent = CONFIG.bulan_aktif || '—';
 
   // Cuma menu yang beneran ada fiturnya -- gak nambahin link kosong
   const items = [
-    {ic:'👤', title:'Profil Saya', sub:'Lihat & edit profil', onclick:"closeAccountDrawer();openProfilPengurus()"},
+    {ic:svgIcon('person'), title:'Profil Saya', sub:'Lihat & edit profil', onclick:"closeAccountDrawer();openProfilPengurus()"},
   ];
   if(document.getElementById('tab-notifikasi')){
-    items.push({ic:'🔔', title:'Notifikasi', sub:'Lihat notifikasi terbaru', onclick:"closeAccountDrawer();showTab('notifikasi')"});
+    items.push({ic:svgIcon('bell'), title:'Notifikasi', sub:'Lihat notifikasi terbaru', onclick:"closeAccountDrawer();showTab('notifikasi')",
+      badge: (typeof _notifBaruCount!=='undefined' && _notifBaruCount>0) ? (_notifBaruCount>9?'9+':_notifBaruCount) : null});
   }
   if(SESSION.role==='super'){
-    items.push({ic:'⚙️', title:'Pengaturan', sub:'Preferensi aplikasi', onclick:"closeAccountDrawer();showTab('pengaturan')"});
+    items.push({ic:svgIcon('settings'), title:'Pengaturan', sub:'Preferensi aplikasi', onclick:"closeAccountDrawer();showTab('pengaturan')"});
   }
-  items.push({ic:'❓', title:'Bantuan', sub:'Hubungi admin pesantren', onclick:"closeAccountDrawer();toast('Hubungi admin pesantren untuk bantuan ya!', true)"});
+  const waAdminUrl = `https://wa.me/6287789179398?text=${encodeURIComponent('Assalamualaikum, saya '+(p.nama||'pengurus')+' butuh bantuan terkait aplikasi Saku Santri.')}`;
+  items.push({ic:svgIcon('help-circle'), title:'Bantuan', sub:'Hubungi admin via WhatsApp', onclick:`closeAccountDrawer();window.open('${waAdminUrl}','_blank')`});
 
   document.getElementById('acc-menu').innerHTML = items.map(m => `
     <button class="acc-menu-item" onclick="${m.onclick}">
       <span class="acc-menu-ic">${m.ic}</span>
       <span class="acc-menu-txt"><b>${m.title}</b><span>${m.sub}</span></span>
+      ${m.badge?`<span class="acc-menu-badge">${m.badge}</span>`:''}
       <span class="acc-menu-chev">›</span>
     </button>`).join('');
 

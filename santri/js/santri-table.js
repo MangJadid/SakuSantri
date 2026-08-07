@@ -11,6 +11,8 @@ function renderTabelSantri(){
 
   const cbAll = document.getElementById('santri-cb-all');
   if(cbAll) cbAll.style.display = canBulk ? '' : 'none';
+  const btnPilih = document.getElementById('btn-toggle-pilih-santri');
+  if(btnPilih) btnPilih.style.display = canBulk ? '' : 'none';
 
   let filtered = ALL_SANTRI.filter(s=>{
     if(q && !s.nama.toLowerCase().includes(q)) return false;
@@ -30,42 +32,47 @@ function renderTabelSantri(){
     const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const sc = s.saldo<0?'s-minus':s.saldo===0?'s-nol':s.saldo<kritis?'s-warn':'s-ok';
     const isChecked = _bulkSelected.has(s.id);
-    const waBtn = s.no_wa
-      ? `<button class="btn btn-wa btn-sm" onclick="kirimWASantri(${s.id})" title="Kirim WA ke ${s.no_wa}">📲</button>`
-      : `<button class="btn btn-o btn-sm" style="opacity:.4;cursor:not-allowed" title="No WA tidak ada">📵</button>`;
+    // Klik nama buka Detail -- cuma di HP (mobile), desktop gak berubah perilakunya
+    const klikNamaMobile = `if(window.innerWidth<=640) openDetailModal(${s.id})`;
     html+=`<tr style="${isChecked?'background:#f0fdf4;':''}">
-      <td style="width:36px">${canBulk?`<input type="checkbox" ${isChecked?'checked':''} onchange="santriToggleOne(${s.id},this.checked)" style="accent-color:var(--green);cursor:pointer;width:16px;height:16px">`:''}</td>
+      <td class="cb-col" style="width:36px">${canBulk?`<input type="checkbox" ${isChecked?'checked':''} onchange="santriToggleOne(${s.id},this.checked)" style="accent-color:var(--green);cursor:pointer;width:16px;height:16px">`:''}</td>
       <td style="color:var(--text-l);font-size:12px">${i+1}</td>
-      <td><div style="display:flex;align-items:center;gap:9px">
+      <td onclick="${klikNamaMobile}"><div style="display:flex;align-items:center;gap:9px">
         <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
         <div><strong>${s.nama}</strong>${s.kelas?`<div style="font-size:11px;color:var(--text-l)">Kelas ${s.kelas}</div>`:''}
         </div>
       </div></td>
       <td><span class="badge bg">${k}</span></td>
-      <td>${s.pin && s.pin.length > 10 ? `<span style="color:var(--red);font-size:11px;font-weight:600;cursor:pointer" onclick="editSantri(${s.id})" title="PIN perlu direset">⚠️ Perlu Reset</span>` : `<code style="font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);padding:2px 7px;border-radius:5px">${s.pin}</code>`}</td>
+      <td>${s.pin && s.pin.length > 10 ? `<span style="color:var(--red);font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px" onclick="editSantri(${s.id})" title="PIN perlu direset">${svgIcon('alert-triangle',12)} Perlu Reset</span>` : `<code style="font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);padding:2px 7px;border-radius:5px">${s.pin}</code>`}</td>
       <td><strong class="${sc}">${s.saldo<0?'−':''} ${rp(s.saldo)}</strong></td>
       <td>
         <div class="tbl-act" style="display:flex;gap:5px;flex-wrap:wrap">
-          ${waBtn}
-          <button class="btn btn-o btn-sm" onclick="openDetailModal(${s.id})">📋</button>
-          ${!isSekretariat?`<button class="btn btn-p btn-sm" onclick="openTxModal(${s.id})">➕ Tx</button>`:''}
-          <button class="btn btn-o btn-sm" onclick="editSantri(${s.id})">✏️</button>
-          <button class="btn btn-d btn-sm" onclick="hapusSantri(${s.id})">🗑</button>
+          <button class="btn btn-o btn-sm act-detail" onclick="openDetailModal(${s.id})">${svgIcon('document',14)}</button>
+          ${!isSekretariat?`<button class="btn btn-p btn-sm act-tx" onclick="openTxModal(${s.id})">${svgIcon('plus',14)} Tx</button>`:''}
+          <button class="btn btn-o btn-sm act-edit" onclick="editSantri(${s.id})">${svgIcon('edit',14)}</button>
+          <button class="btn btn-d btn-sm act-hapus" onclick="hapusSantri(${s.id})">${svgIcon('trash',14)}</button>
         </div>
       </td>
     </tr>`;
   });
   document.getElementById('santri-tbl').innerHTML = html||`<tr><td colspan="7"><div class="empty"><span class="ei">👥</span><p>Belum ada santri</p></div></td></tr>`;
 
-  const kritisAdaWA = filtered.filter(s=>(s.saldo<kritis)&&s.no_wa).length;
-  const btnWaSemua = document.getElementById('btn-wa-semua');
-  if(btnWaSemua) btnWaSemua.style.display = kritisAdaWA>0 ? 'inline-flex' : 'none';
-
   updateBulkBar();
 
   const pgEl = document.getElementById('santri-pagination');
   if(pgEl) pgEl.innerHTML = '';
   setTimeout(activateLazyLoad, 50);
+}
+
+// HP: cek box kolom disembunyikan sampai tombol ini ditekan (biar tabel gak
+// penuh cek box yang jarang dipakai) -- desktop gak kena, selalu tampil.
+function toggleModePilihSantri(){
+  const tw = document.getElementById('santri-tw');
+  if(!tw) return;
+  const aktif = tw.classList.toggle('pilih-aktif');
+  const btn = document.getElementById('btn-toggle-pilih-santri');
+  if(btn) btn.textContent = aktif ? '✕ Batal Pilih' : '☑️ Pilih Santri';
+  if(!aktif){ _bulkSelected.clear(); renderTabelSantri(); }
 }
 
 function santriToggleOne(id, checked){

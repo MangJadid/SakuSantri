@@ -2,8 +2,11 @@
 (async function init(){
   // Deteksi otomatis lingkungan: di localhost (XAMPP) pakai API lokal (lihat api/
   // dan shared/supabase-client.js), di domain publik pakai Supabase asli -- satu
-  // kode buat dua tempat, gak perlu diubah manual tiap mau push/deploy.
-  const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
+  // kode buat dua tempat, gak perlu diubah manual tiap mau push/deploy. IP LAN
+  // ikut dihitung lokal juga -- biar tes dari HP lewat IP komputer (bukan cuma
+  // "localhost") tetap nyambung ke API lokal, samain sama cek di index.html.
+  const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname)
+    || /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(location.hostname);
   const HARDCODED_URL = isLocalDev ? '../api' : 'https://tajdid.jadidsaepul0.workers.dev';
   const HARDCODED_KEY = isLocalDev
     ? 'e3d37d584dce22eba5836211744f18ffab5a7c663ef2fe48f5c2447fa3e8ac0e'
@@ -19,7 +22,7 @@
   localStorage.setItem('siujang_cfg', JSON.stringify(CONFIG));
 
   if(!CONFIG.url || !CONFIG.key){
-    document.getElementById('pg-loading').style.display='none';
+    hideLoadingScreen();
     document.getElementById('pg-setup').style.display='flex';
     return;
   }
@@ -31,14 +34,14 @@
     const {error} = await SB.from('santri').select('id',{count:'exact',head:true});
     if(error && error.code === '42P01'){
       // Tables don't exist yet, go to setup
-      document.getElementById('pg-loading').style.display='none';
+      hideLoadingScreen();
       document.getElementById('pg-setup').style.display='flex';
       document.getElementById('setup-url').value = CONFIG.url;
       document.getElementById('setup-key').value = CONFIG.key;
       return;
     }
   }catch(e){
-    document.getElementById('pg-loading').style.display='none';
+    hideLoadingScreen();
     document.getElementById('pg-setup').style.display='flex';
     return;
   }
@@ -73,10 +76,10 @@
       SESSION = null;
       clearPersistentSession();
       if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
-      document.getElementById('pg-loading').style.display='none';
+      hideLoadingScreen();
       // lanjut ke tampilan login biasa di bawah (tidak return)
     } else {
-      document.getElementById('pg-loading').style.display='none';
+      hideLoadingScreen();
       await enterApp();
       // Cek notifikasi untuk pengurus yang sudah login
       if(SESSION && SESSION.role !== 'ortu'){
@@ -89,7 +92,7 @@
   // Load santri names for ortu datalist
   await loadSantriNames();
 
-  document.getElementById('pg-loading').style.display='none';
+  hideLoadingScreen();
   document.getElementById('pg-login').style.display='flex';
   document.getElementById('login-sub').textContent = CONFIG.pesantren_nama || 'PONDOK PESANTREN AN-NUR';
 })();

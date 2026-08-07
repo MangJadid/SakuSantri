@@ -197,33 +197,41 @@ function renderDashboard(){
   const kritis_count = scopeSantri.filter(s=>s.saldo>=0&&s.saldo<kritis).length;
   const minus_count = scopeSantri.filter(s=>s.saldo<0).length;
 
+  document.getElementById('dash-stat-hero').innerHTML = `
+    <div class="sc-hero">
+      <div>
+        <div class="sc-hero-label">Total Saldo Seluruh Santri</div>
+        <div class="sc-hero-val" style="${totalSaldo<0?'color:#f5b8b8':''}">${totalSaldo<0?'− ':''}${rp(Math.abs(totalSaldo))}</div>
+      </div>
+      <div class="sc-hero-ic">${svgIcon('wallet',22)}</div>
+    </div>
+  `;
+
   if(SESSION.role==='pengurus'){
     // Pengurus: tanpa kotak Kobong & Saldo Minus, tambah Rekening & Cash
     const pgKey = 'pg_rekening_'+(SESSION.user?.id||'0');
     const uangRekening = parseInt(localStorage.getItem(pgKey)||'0');
     const uangCash = totalSaldo - uangRekening;
     document.getElementById('dash-stats').innerHTML=`
-      <div class="sc"><div class="sci g">👥</div><div class="sil"><label>Total Santri</label><strong>${total}</strong><small>santri binaan</small></div></div>
-      <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Saldo</label><strong style="font-size:15px;${totalSaldo<0?'color:var(--red)':''}">${totalSaldo<0?'− ':''} ${rp(totalSaldo)}</strong><small>seluruh santri</small></div></div>
-      <div class="sc" style="cursor:pointer;border:1.5px solid var(--blue-p)" onclick="openRekeningModal()" title="Klik untuk ubah jumlah rekening">
-        <div class="sci b">🏦</div>
+      <div class="sc"><div class="sci g">${svgIcon('users')}</div><div class="sil"><label>Total Santri</label><strong>${total}</strong><small>santri binaan</small></div></div>
+      <div class="sc" style="cursor:pointer;border-left:1.5px solid var(--blue-p);border-right:1.5px solid var(--blue-p);border-bottom:1.5px solid var(--blue-p)" onclick="openRekeningModal()" title="Klik untuk ubah jumlah rekening">
+        <div class="sci b">${svgIcon('bank')}</div>
         <div class="sil">
           <label>Uang Rekening <span style="font-size:9px;background:var(--blue-p);color:var(--blue);padding:1px 5px;border-radius:4px;margin-left:3px">Edit</span></label>
           <strong style="font-size:15px" id="stat-rekening">${rp(uangRekening)}</strong>
           <small>klik untuk ubah</small>
         </div>
       </div>
-      <div class="sc"><div class="sci p">💵</div><div class="sil"><label>Uang Cash</label><strong style="font-size:15px;${uangCash<0?'color:var(--red)':''}" id="stat-cash">${uangCash<0?'− ':''} ${rp(Math.abs(uangCash))}</strong><small>Total Saldo − Rekening</small></div></div>
-      <div class="sc"><div class="sci r">⚠️</div><div class="sil"><label>Saldo Kritis</label><strong class="s-warn">${kritis_count}</strong><small>di bawah ${rp(kritis)}</small></div></div>
+      <div class="sc"><div class="sci p">${svgIcon('cash')}</div><div class="sil"><label>Uang Cash</label><strong style="font-size:15px;${uangCash<0?'color:var(--red)':''}" id="stat-cash">${uangCash<0?'− ':''} ${rp(Math.abs(uangCash))}</strong><small>Total Saldo − Rekening</small></div></div>
+      <div class="sc sc-warn"><div class="sci r">${svgIcon('alert-triangle')}</div><div class="sil"><label>Saldo Kritis</label><strong class="s-warn">${kritis_count}</strong><small>di bawah ${rp(kritis)}</small></div></div>
     `;
   } else {
     // Super admin: tampil semua termasuk kobong & saldo minus
     document.getElementById('dash-stats').innerHTML=`
-      <div class="sc"><div class="sci g">👥</div><div class="sil"><label>Total Santri</label><strong>${total}</strong><small>${scopeKobong.length} kobong</small></div></div>
-      <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Saldo</label><strong style="font-size:15px;${totalSaldo<0?'color:var(--red)':''}">${totalSaldo<0?'− ':''} ${rp(totalSaldo)}</strong><small>seluruh santri</small></div></div>
-      <div class="sc"><div class="sci r">⚠️</div><div class="sil"><label>Saldo Kritis</label><strong class="s-warn">${kritis_count}</strong><small>di bawah ${rp(kritis)}</small></div></div>
-      <div class="sc"><div class="sci r">🔴</div><div class="sil"><label>Saldo Minus</label><strong class="s-minus">${minus_count}</strong><small>santri</small></div></div>
-      <div class="sc" style="cursor:pointer" onclick="showTab('kobong')" title="Klik untuk kelola kobong"><div class="sci b">🏠</div><div class="sil"><label>Kobong</label><strong>${scopeKobong.length}</strong><small>aktif</small></div></div>
+      <div class="sc"><div class="sci g">${svgIcon('users')}</div><div class="sil"><label>Total Santri</label><strong>${total}</strong><small>${scopeKobong.length} kobong</small></div></div>
+      <div class="sc" style="cursor:pointer" onclick="showTab('kobong')" title="Klik untuk kelola kobong"><div class="sci b">${svgIcon('home')}</div><div class="sil"><label>Kobong</label><strong>${scopeKobong.length}</strong><small>aktif</small></div></div>
+      <div class="sc sc-warn"><div class="sci r">${svgIcon('alert-triangle')}</div><div class="sil"><label>Saldo Kritis</label><strong class="s-warn">${kritis_count}</strong><small>di bawah ${rp(kritis)}</small></div></div>
+      <div class="sc sc-danger"><div class="sci r">${svgIcon('circle-minus')}</div><div class="sil"><label>Saldo Minus</label><strong class="s-minus">${minus_count}</strong><small>santri</small></div></div>
     `;
   }
 
@@ -232,6 +240,9 @@ function renderDashboard(){
     const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const sc = s.saldo<0?'s-minus':s.saldo===0?'s-nol':s.saldo<kritis?'s-warn':'s-ok';
     const isKritis = s.saldo>=0 && s.saldo<kritis || s.saldo<0;
+    const waBtn = s.no_wa
+      ? `<button class="btn btn-wa btn-sm" onclick="kirimWASantri(${s.id})" title="Kirim WA ke ${s.no_wa}">📲</button>`
+      : `<button class="btn btn-o btn-sm" style="opacity:.4;cursor:not-allowed" title="No WA tidak ada">📵</button>`;
     html+=`<tr class="row-reveal">
       <td style="color:var(--text-l);font-size:12px">${i+1}</td>
       <td><div style="display:flex;align-items:center;gap:9px">
@@ -242,10 +253,14 @@ function renderDashboard(){
       <td class="s-ok">${rp(ALL_TX.filter(t=>t.santri_id===s.id&&t.jenis==='masuk').reduce((a,t)=>a+t.nominal,0))}</td>
       <td style="color:var(--red)">${rp(ALL_TX.filter(t=>t.santri_id===s.id&&t.jenis==='keluar').reduce((a,t)=>a+t.nominal,0))}</td>
       <td><strong class="${sc}">${s.saldo<0?'− ':''} ${rp(s.saldo)}</strong></td>
-      <td><button class="btn btn-o btn-sm" onclick="openDetailModal(${s.id})">📋 Detail</button></td>
+      <td><div style="display:flex;gap:5px;flex-wrap:wrap">${waBtn}<button class="btn btn-o btn-sm" onclick="openDetailModal(${s.id})">📋 Detail</button></div></td>
     </tr>`;
   });
   document.getElementById('dash-tbl').innerHTML = html||`<tr><td colspan="7"><div class="empty"><span class="ei">🔍</span><p>Tidak ada data</p></div></td></tr>`;
+
+  const kritisAdaWA = filtered.filter(s=>(s.saldo<kritis)&&s.no_wa).length;
+  const btnWaSemuaDash = document.getElementById('btn-wa-semua');
+  if(btnWaSemuaDash) btnWaSemuaDash.style.display = kritisAdaWA>0 ? 'inline-flex' : 'none';
 
   setTimeout(activateLazyLoad, 50);
   setTimeout(activateRowReveal, 50);

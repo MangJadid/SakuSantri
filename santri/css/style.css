@@ -19,21 +19,25 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   /* Core palette */
-  --green:#0f4c2a;--green-m:#1a6b3c;--green-l:#2d8f56;--green-xl:#4caf7d;
-  --green-p:#f0f7f3;--green-b:#d4eade;
-  --gold:#b8820a;--gold-l:#e6a820;--gold-p:#fdf8ee;--gold-b:#f0d898;
-  --red:#c0392b;--red-p:#fef2f2;--red-b:#fecaca;
+  --green:#123528;--green-m:#1c4d3d;--green-l:#2f6f4f;--green-xl:#4a9873;
+  --green-p:#eaf1ec;--green-b:#e3ecdf;
+  --gold:#8a6d1f;--gold-l:#c9a227;--gold-p:#f6efd9;--gold-b:#eddcae;
+  --red:#b23a3a;--red-p:#fbe9e9;--red-b:#efc9c9;
   --blue:#1d5fa8;--blue-p:#eff6ff;--blue-b:#bfdbfe;
   --purple:#5b21b6;--purple-p:#f5f3ff;--purple-b:#ddd6fe;
   --orange:#c2410c;--orange-p:#fff7ed;
 
+  /* Highlight card (Saldo Kritis/Minus) -- background+border sendiri, bukan cuma tint di icon chip */
+  --warn-bg:#fbf1dd;--warn-border:#eddcae;--warn-ic:#b5791a;
+  --danger-bg2:#fbe9e9;--danger-border2:#efc9c9;
+
   /* Neutrals */
-  --bg:#f6f8f6;--surface:#ffffff;--surface-2:#f9fafb;
-  --text:#0d1f15;--text-m:#3d5a48;--text-l:#7a9a87;--text-xl:#b0c8bc;
-  --border:#e2ede8;--border-m:#c8ddd2;
+  --bg:#f6f4ee;--surface:#ffffff;--surface-2:#faf8f2;
+  --text:#1e2b23;--text-m:#3c4a41;--text-l:#7a8a80;--text-xl:#9aa69d;
+  --border:#e7e2d3;--border-m:#d9d2bb;
 
   /* Tokens */
-  --rad:10px;--rad-sm:7px;--rad-lg:16px;--rad-xl:20px;
+  --rad:10px;--rad-sm:7px;--rad-md:12px;--rad-lg:16px;--rad-xl:20px;
   --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
   --sh-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
   --sh-lg:0 12px 32px rgba(0,0,0,.1),0 4px 8px rgba(0,0,0,.06);
@@ -42,7 +46,7 @@
 }
 
 html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--green-xl);border-radius:99px;opacity:.5}
@@ -56,12 +60,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 @keyframes toastIn{from{opacity:0;transform:translateX(20px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
+/* ── PULL TO REFRESH (HP) ─────────────────── */
+#ptr-indicator{
+  position:fixed;top:76px;left:50%;z-index:101;
+  width:38px;height:38px;border-radius:50%;
+  background:var(--surface);box-shadow:var(--sh-md);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transform:translateX(-50%) translateY(-30px) scale(.7);
+  will-change:transform,opacity;
+}
+.ptr-spinner{
+  width:17px;height:17px;border-radius:50%;
+  border:2.5px solid var(--green-p);border-top-color:var(--green);
+}
+#ptr-indicator.is-spinning .ptr-spinner{animation:spin .7s linear infinite}
+
 /* ── LOADING SCREEN ───────────────────────── */
 #pg-loading{
   position:fixed;inset:0;z-index:9999;
   background:linear-gradient(160deg,#071a0f 0%,#0d2818 50%,#0a1f12 100%);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  opacity:1;transition:opacity .35s ease;
 }
+#pg-loading.pg-fade-out{opacity:0;pointer-events:none}
 .load-brand{
   display:flex;flex-direction:column;align-items:center;gap:16px;
   animation:fadeIn .6s ease both;
@@ -77,7 +99,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   backdrop-filter:blur(8px);
 }
 .load-title{
-  font-family:'Amiri',serif;font-size:22px;font-weight:700;
+  font-family:'Lora',serif;font-size:22px;font-weight:700;
   color:#fff;letter-spacing:.3px;text-align:center;
 }
 .load-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:-8px;text-align:center;letter-spacing:.5px}
@@ -91,7 +113,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* ── SETUP SCREEN ────────────────────────── */
 #pg-setup{display:none;min-height:100vh;background:linear-gradient(160deg,#071a0f,#0d2818);align-items:center;justify-content:center;padding:20px;flex-direction:column}
 .setup-box{background:var(--surface);border-radius:var(--rad-xl);padding:36px;width:100%;max-width:500px;box-shadow:var(--sh-xl);animation:slideUp .3s ease}
-.setup-box h2{font-family:'Amiri',serif;font-size:22px;color:var(--green);margin-bottom:5px}
+.setup-box h2{font-family:'Lora',serif;font-size:22px;color:var(--green);margin-bottom:5px}
 .setup-box p{font-size:13px;color:var(--text-m);margin-bottom:24px;line-height:1.7}
 .setup-step{background:var(--green-p);border:1px solid var(--border);border-radius:var(--rad);padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;color:var(--text-m)}
 .setup-step ol{padding-left:18px}
@@ -113,12 +135,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   font-size:28px;margin:0 auto 16px;
   box-shadow:0 8px 20px rgba(15,76,42,.35);
 }
-.login-box h2{font-family:'Amiri',serif;font-size:24px;color:var(--green);text-align:center;margin-bottom:3px}
+.login-box h2{font-family:'Lora',serif;font-size:24px;color:var(--green);text-align:center;margin-bottom:3px}
 .login-box .sub{font-size:12px;color:var(--text-l);text-align:center;margin-bottom:28px;letter-spacing:.2px}
 .role-tabs{display:flex;gap:4px;background:var(--bg);border-radius:var(--rad-sm);padding:3px;margin-bottom:22px;border:1px solid var(--border)}
 .rtab{
   flex:1;padding:8px 6px;border:none;border-radius:5px;
-  font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;
   cursor:pointer;background:none;color:var(--text-l);
   transition:var(--transition);white-space:nowrap;
 }
@@ -131,27 +153,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 }
 
 /* ── APP SHELL ───────────────────────────── */
-#pg-app{display:none}
+#pg-app{display:none;padding-top:68px}
 
 /* ── HEADER ─────────────────────────────── */
 header{
-  background:var(--green);
-  height:58px;padding:0 24px;
+  background:linear-gradient(135deg,var(--green-m),var(--green));
+  height:68px;padding:0 24px;
   display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;
+  position:fixed;top:0;left:0;right:0;z-index:100;
   box-shadow:0 1px 0 rgba(255,255,255,.08),0 4px 16px rgba(0,0,0,.2);
+  transition:transform .25s cubic-bezier(.23,1,.32,1);
 }
+header.hdr-hidden{transform:translateY(-100%)}
 .brand{display:flex;align-items:center;gap:10px}
 .brand-ico{
-  width:34px;height:34px;
+  width:36px;height:36px;
   background:var(--gold-l);
-  border-radius:8px;
+  border-radius:9px;
   display:flex;align-items:center;justify-content:center;
-  font-family:'Amiri',serif;font-size:17px;color:var(--green);font-weight:700;
+  font-family:'Lora',serif;font-size:17px;color:var(--green);font-weight:700;
   flex-shrink:0;
 }
-.brand-txt h1{font-family:'Amiri',serif;font-size:16px;color:#fff;line-height:1.15;letter-spacing:.1px}
-.brand-txt span{font-size:10.5px;color:rgba(255,255,255,.5);font-weight:400;letter-spacing:.2px}
+.brand-txt h1{font-family:'Lora',serif;font-size:17px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.4px}
+.brand-txt span{font-size:11px;color:var(--gold-l);font-weight:600;letter-spacing:.5px}
 .hdr-right{display:flex;align-items:center;gap:6px}
 .hchip{
   padding:3px 10px;border-radius:99px;
@@ -165,7 +189,7 @@ header{
   border-radius:99px;color:rgba(255,255,255,.9);
   font-size:11.5px;font-weight:500;cursor:pointer;
   background:rgba(255,255,255,.08);transition:var(--transition);
-  font-family:'DM Sans',sans-serif;
+  font-family:'Plus Jakarta Sans',sans-serif;
 }
 .hbtn:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35)}
 .acc-trigger-ic{ display:flex; flex-direction:column; gap:3px; width:18px; }
@@ -197,7 +221,7 @@ main{max-width:1200px;margin:0 auto;padding:22px 18px}
 .tb{
   padding:7px 15px;border:none;background:none;
   border-radius:var(--rad-sm);
-  font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:500;
   color:var(--text-l);cursor:pointer;transition:var(--transition);
   display:flex;align-items:center;gap:5px;white-space:nowrap;
 }
@@ -223,7 +247,7 @@ main{max-width:1200px;margin:0 auto;padding:22px 18px}
   position:relative; z-index:1;
   display:flex; flex-direction:column; align-items:center; gap:3px;
   flex:1; padding:12px 4px 9px; border:none; background:none; cursor:pointer;
-  color:var(--text-l); font-family:'DM Sans',sans-serif; font-size:10px; font-weight:600;
+  color:var(--text-l); font-family:'Plus Jakarta Sans',sans-serif; font-size:10px; font-weight:600;
   transition:color .2s ease;
 }
 .bnav-ic{ font-size:19px; line-height:1; display:inline-block; transition:transform .28s cubic-bezier(.23,1,.32,1); }
@@ -252,57 +276,67 @@ main{max-width:1200px;margin:0 auto;padding:22px 18px}
 }
 .acc-overlay.show .acc-panel{ transform:translateX(0); }
 .acc-head{
-  position:relative; padding:28px 22px 22px; text-align:center; flex-shrink:0;
-  background:linear-gradient(150deg,#0d2818 0%,#155c34 55%,#0f4c2a 100%);
+  position:relative; padding:18px 20px 20px; flex-shrink:0;
+  background:linear-gradient(150deg,var(--green-m) 0%,var(--green) 100%);
   color:#fff;
 }
+.acc-head::before{
+  content:''; position:absolute; top:0; left:8%; right:8%; height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold-l),transparent);
+}
+.acc-head-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.acc-eyebrow{ font-size:11px; font-weight:700; color:var(--gold-l); letter-spacing:1.4px; text-transform:uppercase; }
 .acc-close{
-  position:absolute; top:14px; right:14px; width:30px; height:30px;
+  width:28px; height:28px; flex-shrink:0;
   border-radius:50%; border:none; background:rgba(255,255,255,.15); color:#fff;
   font-size:14px; cursor:pointer; transition:var(--transition);
+  display:flex; align-items:center; justify-content:center;
 }
 .acc-close:hover{ background:rgba(255,255,255,.28); }
 .acc-close:active{ transform:scale(.9); }
+.acc-id-row{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
 .acc-av{
-  width:64px; height:64px; margin:0 auto 12px; border-radius:50%;
-  background:rgba(255,255,255,.16); border:2px solid rgba(255,255,255,.3);
+  width:52px; height:52px; border-radius:50%; flex-shrink:0;
+  background:rgba(255,255,255,.16); border:2px solid var(--gold-l);
   display:flex; align-items:center; justify-content:center;
-  font-size:24px; font-weight:700; overflow:hidden;
+  font-size:19px; font-weight:700; overflow:hidden;
 }
 .acc-av img{ width:100%; height:100%; object-fit:cover; }
-.acc-name{ font-family:'Amiri',serif; font-size:18px; font-weight:700; margin-bottom:2px; }
-.acc-user{ font-size:12px; color:rgba(255,255,255,.6); margin-bottom:10px; }
+.acc-id-txt{ flex:1; min-width:0; }
+.acc-name{ font-family:'Lora',serif; font-size:17px; font-weight:700; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.acc-user{ font-size:12px; color:rgba(255,255,255,.6); margin-top:1px; }
 .acc-badge{
   display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:700;
-  padding:4px 12px; border-radius:99px; background:rgba(230,168,32,.2); color:var(--gold-l);
-  border:1px solid rgba(230,168,32,.35);
+  padding:4px 12px; border-radius:99px; background:rgba(201,162,39,.2); color:var(--gold-l);
+  border:1px solid rgba(201,162,39,.35); flex-shrink:0;
 }
+.acc-stats{ display:grid; grid-template-columns:1fr 1fr 1fr; }
+.acc-stat{ text-align:center; padding:0 6px; border-left:1px solid rgba(255,255,255,.15); }
+.acc-stat:first-child{ border-left:none; padding-left:0; }
+.acc-stat small{ display:block; font-size:9px; font-weight:700; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.6px; margin-bottom:4px; }
+.acc-stat b{ display:block; font-size:13px; font-weight:700; color:#fff; }
 .acc-body{ flex:1; overflow-y:auto; padding:20px 20px 10px; }
 .acc-section-label{
   font-size:10px; font-weight:700; color:var(--text-l); text-transform:uppercase;
   letter-spacing:.7px; margin-bottom:10px;
 }
-.acc-info{
-  background:var(--bg); border:1px solid var(--border); border-radius:var(--rad);
-  padding:4px 14px; margin-bottom:22px;
+.acc-menu-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--rad-lg);
+  box-shadow:var(--sh); overflow:hidden; margin-bottom:20px;
 }
-.acc-info-row{ display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
-.acc-info-row:last-child{ border-bottom:none; }
-.acc-info-ic{ font-size:17px; width:30px; text-align:center; flex-shrink:0; }
-.acc-info-row small{ display:block; font-size:10px; color:var(--text-l); margin-bottom:2px; }
-.acc-info-row b{ font-size:13px; color:var(--text); font-weight:600; }
-.acc-menu{ display:flex; flex-direction:column; gap:2px; }
+.acc-menu{ display:flex; flex-direction:column; }
 .acc-menu-item{
-  display:flex; align-items:center; gap:12px; padding:11px 8px; border-radius:var(--rad-sm);
-  border:none; background:none; cursor:pointer; text-align:left; width:100%;
+  display:flex; align-items:center; gap:12px; padding:13px 14px;
+  border:none; border-bottom:1px solid var(--border); background:none; cursor:pointer; text-align:left; width:100%;
   transition:background .15s ease;
 }
-.acc-menu-item:hover{ background:var(--green-p); }
+.acc-menu-item:last-child{ border-bottom:none; }
+.acc-menu-item:hover{ background:var(--bg); }
 .acc-menu-item:active{ transform:scale(.98); }
 .acc-menu-ic{
   width:36px; height:36px; border-radius:10px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center; font-size:16px;
-  background:var(--green-p);
+  background:var(--bg); color:var(--text-m);
 }
 .acc-menu-txt{ flex:1; min-width:0; }
 .acc-menu-txt b{ display:block; font-size:13px; color:var(--text); font-weight:600; }
@@ -314,9 +348,10 @@ main{max-width:1200px;margin:0 auto;padding:22px 18px}
 }
 .acc-foot{ padding:14px 20px; border-top:1px solid var(--border); flex-shrink:0; }
 .acc-logout{
-  width:100%; padding:11px; border-radius:var(--rad); border:1px solid var(--red-b);
-  background:var(--red-p); color:var(--red); font-family:'DM Sans',sans-serif;
+  width:100%; padding:12px; border-radius:var(--rad-lg); border:1px solid var(--red-b);
+  background:var(--red-p); color:var(--red); font-family:'Plus Jakarta Sans',sans-serif;
   font-size:13px; font-weight:700; cursor:pointer; transition:var(--transition);
+  display:flex; align-items:center; justify-content:center; gap:6px;
 }
 .acc-logout:hover{ background:var(--red); color:#fff; }
 .acc-logout:active{ transform:scale(.98); }
@@ -332,14 +367,27 @@ main{max-width:1200px;margin:0 auto;padding:22px 18px}
 .mnav-label i{ width:3px; height:14px; border-radius:2px; background:var(--gold-l); display:block; }
 .mnav-items{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
 .mnav-item{
+  position:relative;
   display:flex; flex-direction:column; align-items:center; gap:6px;
   padding:12px 4px; border:1px solid var(--border); background:var(--surface);
-  border-radius:var(--rad); cursor:pointer; font-family:'DM Sans',sans-serif;
+  border-radius:var(--rad); cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif;
   font-size:10.5px; font-weight:600; color:var(--text-m); box-shadow:var(--sh);
   transition:var(--transition);
 }
 .mnav-item .sci{ width:38px; height:38px; font-size:17px; border-radius:12px; }
 .mnav-item:active{ transform:scale(.96); }
+.mnav-badge{
+  position:absolute; top:7px; right:calc(50% - 26px);
+  background:var(--red); color:#fff; font-size:9.5px; font-weight:700;
+  border-radius:99px; padding:1px 5px; min-width:15px; text-align:center;
+  box-shadow:0 0 0 2px var(--surface);
+}
+.bell-badge{
+  position:absolute; top:2px; right:2px;
+  background:var(--red); color:#fff; font-size:9px; font-weight:700;
+  border-radius:99px; padding:1px 5px; min-width:15px; text-align:center;
+  box-shadow:0 0 0 2px var(--green);
+}
 .sec{display:none}.sec.act{display:block;animation:fadeIn .2s ease}
 
 /* Segmented control khusus tab Orang Tua (Saldo Saya / Uang Syahriyah) */
@@ -385,11 +433,26 @@ tbody tr.row-reveal.is-visible{opacity:1;transform:translateY(0)}
   display:flex;align-items:center;justify-content:center;
   font-size:18px;flex-shrink:0;
 }
-.sci.g{background:var(--green-p)}.sci.gg{background:var(--gold-p)}
-.sci.r{background:var(--red-p)}.sci.b{background:var(--blue-p)}.sci.p{background:var(--purple-p)}
+.sci.g{background:var(--green-p);color:var(--green-l)}.sci.gg{background:var(--gold-p);color:var(--gold)}
+.sci.r{background:var(--red-p);color:var(--red)}.sci.b{background:var(--blue-p);color:var(--blue)}.sci.p{background:var(--purple-p);color:var(--purple)}
 .sil label{font-size:10px;color:var(--text-l);font-weight:700;text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:2px}
 .sil strong{font-size:19px;font-weight:700;display:block;line-height:1.25;color:var(--text);letter-spacing:-.3px}
 .sil small{font-size:11px;color:var(--text-l);font-weight:400}
+
+/* Kartu Total Saldo -- hero card di atas grid, bukan salah satu child-nya */
+.sc-hero{
+  background:var(--green);border-radius:var(--rad-lg);
+  padding:18px 20px;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  box-shadow:0 8px 20px rgba(18,53,40,.25);
+}
+.sc-hero-label{font-size:11px;font-weight:700;color:var(--gold-l);letter-spacing:.8px;text-transform:uppercase}
+.sc-hero-val{font-family:'Lora',serif;font-size:26px;font-weight:700;color:#fdf9ee;margin-top:5px;line-height:1.2}
+.sc-hero-ic{
+  width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);
+  color:var(--gold-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
 
 /* ── PANEL ───────────────────────────────── */
 .panel{
@@ -402,7 +465,7 @@ tbody tr.row-reveal.is-visible{opacity:1;transform:translateY(0)}
   display:flex;align-items:center;justify-content:space-between;
   background:var(--surface);flex-wrap:wrap;gap:8px;
 }
-.ph h2{font-family:'Amiri',serif;font-size:16px;color:var(--text);font-weight:700}
+.ph h2{font-family:'Lora',serif;font-size:16px;color:var(--text);font-weight:700}
 .pb{padding:16px 18px}
 
 /* ── DASHBOARD: contoh aksen khas pesantren (dibatasi ke #sec-dashboard saja) ── */
@@ -411,6 +474,11 @@ tbody tr.row-reveal.is-visible{opacity:1;transform:translateY(0)}
   background:linear-gradient(180deg,#fffdf6,var(--surface) 60%);
 }
 #sec-dashboard .sc:hover{box-shadow:0 10px 24px rgba(184,130,10,.14)}
+/* Kartu Saldo Kritis/Minus -- background+border sendiri, bukan cuma tint di icon chip */
+#sec-dashboard .sc.sc-warn{background:var(--warn-bg);border:1px solid var(--warn-border)}
+#sec-dashboard .sc.sc-warn .sci{background:rgba(255,255,255,.6);color:var(--warn-ic)}
+#sec-dashboard .sc.sc-danger{background:var(--danger-bg2);border:1px solid var(--danger-border2)}
+#sec-dashboard .sc.sc-danger .sci{background:rgba(255,255,255,.6);color:var(--red)}
 #sec-dashboard .panel{position:relative;border-color:var(--gold-b)}
 #sec-dashboard .panel::before{
   content:'';position:absolute;top:0;left:8%;right:8%;height:2px;
@@ -459,7 +527,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
 /* ── BUTTONS ─────────────────────────────── */
 .btn{
   padding:8px 16px;border:none;border-radius:var(--rad-sm);
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;
   cursor:pointer;transition:var(--transition);
   display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
 }
@@ -491,7 +559,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .fg input,.fg select,.fg textarea{
   padding:9px 12px;border:1.5px solid var(--border);
   border-radius:var(--rad-sm);
-  font-family:'DM Sans',sans-serif;font-size:13.5px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;
   color:var(--text);background:var(--surface);
   outline:none;transition:border-color var(--transition),box-shadow var(--transition);width:100%;
 }
@@ -508,14 +576,14 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .fbar input{
   grid-column:1/-1;padding:9px 12px;
   border:1.5px solid var(--border);border-radius:var(--rad-sm);
-  font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);
   background:var(--surface);outline:none;transition:border-color var(--transition);
   box-sizing:border-box;width:100%;
 }
 .fbar select{
   width:100%;box-sizing:border-box;padding:9px 12px;
   border:1.5px solid var(--border);border-radius:var(--rad-sm);
-  font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);
   background:var(--surface);outline:none;transition:border-color var(--transition);
 }
 .fbar input:focus,.fbar select:focus{border-color:var(--green-l);box-shadow:0 0 0 3px rgba(45,143,86,.08)}
@@ -523,33 +591,59 @@ tbody td{padding:10px 14px;vertical-align:middle}
 
 /* COLLAPSIBLE FILTER PANEL */
 .ftog-row{display:flex;gap:8px;margin-bottom:10px}
-.ftog-row input{flex:1;margin-bottom:0;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color var(--transition);box-sizing:border-box}
+.ftog-row input{flex:1;margin-bottom:0;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color var(--transition);box-sizing:border-box}
 .ftog-row input:focus{border-color:var(--green-l);box-shadow:0 0 0 3px rgba(45,143,86,.08)}
-.ftog-btn{position:relative;display:flex;align-items:center;gap:6px;padding:9px 14px;border:1.5px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color var(--transition);font-family:'DM Sans',sans-serif}
+.ftog-btn{position:relative;display:flex;align-items:center;gap:6px;padding:9px 14px;border:1.5px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color var(--transition);font-family:'Plus Jakarta Sans',sans-serif}
 .ftog-btn:hover{border-color:var(--green-l)}
 .ftog-btn.active{border-color:var(--green-l);background:rgba(45,143,86,.08);color:var(--green-l)}
 .ftog-btn .fb-badge{position:absolute;top:-6px;right:-6px;background:var(--green-l);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
-.fpanel{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;padding:12px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rad-md)}
-.fpanel.open{display:grid}
-.fpanel select{width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none}
+/* Buka/tutup lewat grid-template-rows 0fr->1fr (bukan display:none instan) --
+   .fpanel-wrap yang nge-animasi tinggi, :has() baca status .open di anak
+   .fpanel-nya jadi gak perlu ubah JS toggleFPanel() yang sudah ada. Padding
+   ikut ditransisi bareng biar bener-bener rata pas nutup, gak nyisa gap. */
+.fpanel-wrap{
+  display:grid;grid-template-rows:0fr;
+  transition:grid-template-rows .2s cubic-bezier(.32,.72,0,1);
+}
+.fpanel-wrap:has(.fpanel.open){grid-template-rows:1fr}
+.fpanel{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rad-md);
+  overflow:hidden;min-height:0;padding:0 12px;margin-bottom:0;
+  transition:padding .2s cubic-bezier(.32,.72,0,1),margin .2s cubic-bezier(.32,.72,0,1);
+}
+.fpanel-wrap:has(.fpanel.open) .fpanel{padding:12px;margin-bottom:14px}
+.fpanel select{width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none}
 .fpanel select:focus{border-color:var(--green-l);box-shadow:0 0 0 3px rgba(45,143,86,.08)}
-.freset-btn{grid-column:1/-1;padding:8px;border:1.5px dashed var(--border);border-radius:var(--rad-sm);background:transparent;color:var(--text-m);font-size:12px;font-weight:600;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif}
+.freset-btn{grid-column:1/-1;padding:8px;border:1.5px dashed var(--border);border-radius:var(--rad-sm);background:transparent;color:var(--text-m);font-size:12px;font-weight:600;cursor:pointer;text-align:center;font-family:'Plus Jakarta Sans',sans-serif}
 .freset-btn:hover{border-color:#e53e3e;color:#e53e3e}
 
 /* ── MODAL ───────────────────────────────── */
+/* Keluar cermin masuk (bukan teleport display:none instan) -- .closing
+   memutar animasi sebaliknya, baru display:none beneran sesudah kelar
+   (lihat closeMo() di core.js yang nunggu durasi ini sebelum lepas .open). */
 .mo{
   display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.45);
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
   z-index:200;align-items:center;justify-content:center;padding:16px;
 }
-.mo.open{display:flex}
+.mo.open{display:flex; animation:moFadeIn .18s ease}
+.mo.closing{animation:moFadeOut .2s ease forwards}
 .modal{
   background:var(--surface);border-radius:var(--rad-xl);
   width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
   box-shadow:var(--sh-xl);animation:slideUp .25s cubic-bezier(.16,1,.3,1);
   border:1px solid var(--border);
 }
+#mo-detail .modal{scrollbar-width:none}
+#mo-detail .modal::-webkit-scrollbar{display:none}
+#mo-detail .tw{scrollbar-width:none}
+#mo-detail .tw::-webkit-scrollbar{display:none}
+.mo.closing .modal{animation:modalSlideOut .2s cubic-bezier(.32,.72,0,1) forwards}
+@keyframes moFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes moFadeOut{from{opacity:1}to{opacity:0}}
+@keyframes modalSlideOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(14px)}}
 .modal-lg{max-width:720px}
 .modal-xl{max-width:900px}
 .mh{
@@ -557,7 +651,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;background:var(--surface);z-index:1;
 }
-.mh h3{font-family:'Amiri',serif;font-size:18px;color:var(--text)}
+.mh h3{font-family:'Lora',serif;font-size:18px;color:var(--text)}
 .mc{
   background:var(--bg);border:1px solid var(--border);
   width:28px;height:28px;border-radius:99px;
@@ -602,7 +696,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
   transition:background var(--transition);
 }
 .asrama-block-header:hover{background:var(--green-p)}
-.asrama-block-header h3{font-family:'Amiri',serif;font-size:16px;color:var(--gold);margin:0;flex:1}
+.asrama-block-header h3{font-family:'Lora',serif;font-size:16px;color:var(--gold);margin:0;flex:1}
 .asrama-block-body{padding:0 16px 16px;display:none}
 .asrama-block-body.open{display:block}
 .asrama-chevron{transition:transform .25s;font-size:14px;color:var(--text-l)}
@@ -615,7 +709,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
   position:relative;overflow:hidden;
 }
 .kcard:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--green-l)}
-.kcard h3{font-family:'Amiri',serif;font-size:15px;color:var(--text);margin-bottom:4px;margin-top:4px}
+.kcard h3{font-family:'Lora',serif;font-size:15px;color:var(--text);margin-bottom:4px;margin-top:4px}
 .kcard .km{font-size:12px;color:var(--text-m);margin-bottom:8px}
 .kcard .ks{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-l)}
 
@@ -645,7 +739,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .dh-detail{display:none}.dh-grid{display:none}.dh-item{display:none}.dh-divider{display:none}
 .dh-divider-thin{height:1px;background:rgba(255,255,255,.08);margin:0 18px;position:relative;z-index:1}
 .dh-meta{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px 12px 22px;position:relative;z-index:1}
-.dh-meta-row{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:600;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.dh-meta-row{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:600;white-space:nowrap;font-family:'Plus Jakarta Sans',sans-serif}
 .dh-meta-row.kantin{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.25);color:rgba(255,220,100,.9)}
 .dh-meta-row.kobong{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:rgba(134,239,172,.9)}
 .dh-meta-row .sep{display:none}
@@ -708,9 +802,13 @@ tbody td{padding:10px 14px;vertical-align:middle}
   font-size:13px;font-weight:600;color:#fff;
   box-shadow:0 8px 24px rgba(0,0,0,.2),0 2px 8px rgba(0,0,0,.1);
   animation:toastIn .3s cubic-bezier(.16,1,.3,1);
+  /* Keluar lebih cepat dari masuk (300ms->200ms), tetap ease-out -- cermin
+     arah masuknya (translateX+scale balik ke titik sama), bukan cuma fade. */
   white-space:nowrap;pointer-events:auto;
   backdrop-filter:blur(4px);
 }
+.toast.closing{animation:toastOut .2s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes toastOut{from{opacity:1;transform:translateX(0) scale(1)}to{opacity:0;transform:translateX(20px) scale(.95)}}
 .toast.ok{background:var(--green)}
 .toast.err{background:var(--red)}
 
@@ -772,9 +870,16 @@ body.role-sekretaris .super-admin-only{display:none!important}
 body.role-sekretariat .super-admin-only{display:none!important}
 
 /* ── MOBILE ──────────────────────────────── */
+.mobile-only-el{display:none}
 @media(max-width:640px){
-  header{height:58px;padding:0 12px;flex-wrap:nowrap;gap:4px}
-  .brand-txt h1{font-size:13.5px}
+  #pg-app{padding-top:68px}
+  header{height:68px;padding:0 12px;flex-wrap:nowrap;gap:4px}
+  /* Nama pengurus di kartu sapaan kepotong ellipsis di layar sempit (kolom
+     nama harus berbagi ruang sama kolom tanggal di kanan) -- kecilkan font
+     nama-nya aja, kotak/kartu-nya sendiri gak diubah ukurannya sama sekali. */
+  #dash-greeting-name{font-size:17px!important}
+  .brand-txt h1{font-size:15px}
+  .brand-txt span{font-size:10px}
   .hdr-right{gap:4px}
   .hchip{font-size:10px;padding:3px 8px}
   .hbtn{font-size:11px;padding:4px 10px}
@@ -788,6 +893,8 @@ body.role-sekretariat .super-admin-only{display:none!important}
   body.has-bnav .mnav-grid{display:block}
   body:not(.has-bnav) .tabs{overflow-x:auto;width:100%;flex-wrap:nowrap;scrollbar-width:none}
   body:not(.has-bnav) .tabs::-webkit-scrollbar{display:none}
+  #dash-ringkasan-panel .tw{scrollbar-width:none}
+  #dash-ringkasan-panel .tw::-webkit-scrollbar{display:none}
   table{font-size:12px}
   thead th{padding:9px 10px;font-size:10px}
   tbody td{padding:9px 10px}
@@ -800,6 +907,14 @@ body.role-sekretariat .super-admin-only{display:none!important}
   .toast{text-align:center;white-space:normal;border-radius:var(--rad)}
   .login-box{padding:28px 24px}
   #tab-tx-btn,#tab-tagihan-btn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  /* Tabel Data Santri di HP: aksi cuma Detail + Tambah Transaksi (Edit/Hapus
+     tetap bisa lewat modal Detail, gak hilang fungsinya). Desktop gak kena. */
+  #santri-tbl .act-edit,#santri-tbl .act-hapus{display:none}
+  /* Cek box kolom disembunyikan sampai tombol "Pilih Santri" ditekan --
+     desktop selalu tampil (aturan ini cuma jalan di dalam media query ini). */
+  #santri-tw .cb-col{display:none}
+  #santri-tw.pilih-aktif .cb-col{display:table-cell}
+  .mobile-only-el{display:inline-flex}
 }
 
 /* ── DASHBOARD GREETING ──────────────────── */

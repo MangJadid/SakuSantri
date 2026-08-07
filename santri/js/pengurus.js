@@ -11,7 +11,7 @@ function renderPengurus(){
     const roleBadge = isSekretariat
       ? `<span style="background:var(--blue-p);color:var(--blue);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">🏢 Sekretariat</span>`
       : `<span style="background:var(--green-p);color:var(--green);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">👨‍💼 Pengurus</span>`;
-    const blokirBadge = p.is_blocked ? `<span style="background:#fee2e2;color:#b91c1c;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">🚫 Diblokir</span>` : '';
+    const blokirBadge = p.is_blocked ? `<span style="background:#fee2e2;color:#b91c1c;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:3px">${svgIcon('x',10)} Diblokir</span>` : '';
     html+=`<div class="pcard" style="align-items:flex-start;gap:16px${p.is_blocked?';background:#fef2f2':''}">
       <div class="pav" style="width:58px;height:58px;font-size:22px;flex-shrink:0;background:${c}22;color:${c};overflow:hidden;border-radius:50%;border:2px solid ${c}44">${p.foto_url?`<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(p.nama)}</div>
       <div style="flex:1;min-width:0">
@@ -24,21 +24,21 @@ function renderPengurus(){
         ${p.no_wa
           ? `<a href="https://wa.me/62${p.no_wa.replace(/^0/,'')}" target="_blank"
                style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#25D366;font-weight:600;text-decoration:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:2px 10px;margin-bottom:4px">
-               📱 ${p.no_wa}
+               ${svgIcon('message-square',12)} ${p.no_wa}
              </a>`
-          : `<div style="font-size:11.5px;color:var(--text-l);margin-bottom:4px;font-style:italic">📵 Belum ada no HP</div>`
+          : `<div style="font-size:11.5px;color:var(--text-l);margin-bottom:4px;font-style:italic;display:flex;align-items:center;gap:4px">${svgIcon('x',11)} Belum ada no HP</div>`
         }
-        <div style="font-size:11.5px;color:var(--text-m)">
+        <div style="font-size:11.5px;color:var(--text-m);display:flex;align-items:center;gap:4px">
           ${isSekretariat
-            ? `🏛️ Asrama: ${asramaNama}`
-            : `🏠 ${kobs}`
+            ? svgIcon('building',12)+` Asrama: ${asramaNama}`
+            : svgIcon('home',12)+` ${kobs}`
           }
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
-        <button class="btn btn-o btn-sm" onclick="editPengurus(${p.id})">✏️</button>
-        ${p.is_blocked ? `<button class="btn btn-p btn-sm" style="background:#16a34a;border-color:#16a34a" onclick="bukaBlokirPengurus(${p.id},'${(p.nama||'').replace(/'/g,"\\'")}')">✅</button>` : ''}
-        <button class="btn btn-d btn-sm" onclick="hapusPengurus(${p.id})">🗑</button>
+        <button class="btn btn-o btn-sm" onclick="editPengurus(${p.id})">${svgIcon('edit',14)}</button>
+        ${p.is_blocked ? `<button class="btn btn-p btn-sm" style="background:#16a34a;border-color:#16a34a" onclick="bukaBlokirPengurus(${p.id},'${(p.nama||'').replace(/'/g,"\\'")}')">${svgIcon('check',14)}</button>` : ''}
+        <button class="btn btn-d btn-sm" onclick="hapusPengurus(${p.id})">${svgIcon('trash',14)}</button>
       </div>
     </div>`;
   });
