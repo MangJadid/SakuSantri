@@ -17,6 +17,7 @@ function buildTabs(){
     tabs.classList.add('tabs-ortu');
     t += tab('detail',svgIcon('wallet',14)+' Saldo Santri');
     t += tab('syahriyah',svgIcon('document',14)+' Uang Syahriyah<span id="badge-syahriyah" class="badge-tab" style="display:none">0</span>');
+    t += tab('profil',svgIcon('person',14)+' Profil Santri');
   } else {
     tabs.classList.remove('tabs-ortu');
     t += tab('dashboard',svgIcon('home',14)+' Dashboard');
@@ -53,19 +54,18 @@ function buildMobileNav(){
   const grid = document.getElementById('mnav-grid');
   if(!bnav || !grid) return;
 
-  if(SESSION.role==='ortu'){
-    bnav.innerHTML=''; grid.innerHTML='';
-    document.body.classList.remove('has-bnav');
-    return;
-  }
   document.body.classList.add('has-bnav');
 
-  const primer = [
+  const primer = (SESSION.role==='ortu' ? [
+    {id:'detail', label:'Beranda', icon:svgIcon('home',20)},
+    {id:'syahriyah', label:'Syahriyah', icon:svgIcon('document',20)},
+    {id:'profil', label:'Profil', icon:svgIcon('person',20)},
+  ] : [
     {id:'dashboard', label:'Beranda', icon:svgIcon('home',20)},
     {id:'santri', label:'Santri', icon:svgIcon('users',20)},
     {id:'massal', label:'Transaksi', icon:svgIcon('wallet',20)},
     {id:'riwayat', label:'Riwayat', icon:svgIcon('document',20)},
-  ].filter(m => document.getElementById('tab-'+m.id));
+  ]).filter(m => document.getElementById('tab-'+m.id));
 
   bnav.innerHTML = '<span class="bnav-highlight" id="bnav-highlight"></span>' + primer.map(m => `
     <button class="bnav-item" id="bnav-${m.id}" onclick="showTab('${m.id}')">
@@ -135,6 +135,7 @@ function showTab(id){
   if(id==='naikkelas') renderNaikKelas();
   if(id==='persetujuan') prsShowSub('pending');
   if(id==='syahriyah') renderSyahriyahOrtu();
+  if(id==='profil') renderProfilOrtu();
   if(id==='pengaturan'){
     if(SESSION.role==='super'){
       // Inject konten pengaturan jika belum ada

@@ -262,3 +262,88 @@ async function renderSyahriyahOrtu(){
   }
 }
 
+// ===== PROFIL SANTRI (ortu) -- data diambil dari input yang sudah ada, termasuk wali kobong =====
+async function renderProfilOrtu(){
+  const container = document.getElementById('profil-content');
+  if(!container) return;
+  const santri = SESSION.santri || {};
+  const santriId = santri.id;
+
+  const _dapurMapP={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
+  let _sObjP = ALL_SANTRI.find(x=>x.id==santriId) || santri;
+  let _kbP = ALL_KOBONG.find(x=>x.id==_sObjP.kobong_id);
+  if(!_kbP && (_sObjP.kobong_id || santri.kobong_id)){
+    const kbId = _sObjP.kobong_id || santri.kobong_id;
+    const {data:kbData} = await SB.from('kobong').select('id,nama,asrama(id,nama)').eq('id',kbId).maybeSingle();
+    if(kbData) _kbP = kbData;
+  }
+  const kobongP = _kbP?.nama || santri.kobong?.nama || santri.kobong_nama || 'Belum ditentukan';
+  const asramaP = _kbP?.asrama?.nama || '—';
+  const kelasP = _sObjP.kelas || santri.kelas || '—';
+  const dapurP = _dapurMapP[_sObjP.dapur_id || santri.dapur_id] || _sObjP.dapur_id || santri.dapur_id || '—';
+  const tglMasukRaw = _sObjP.created_at || santri.created_at;
+  const tglMasukP = tglMasukRaw ? (()=>{ const d=new Date(tglMasukRaw); return `${d.getDate()} ${bNames[d.getMonth()]} ${d.getFullYear()}`; })() : '—';
+  const nisnP = _sObjP.nisn || santri.nisn || '—';
+
+  // Wali kobong -- pengurus yang mengelola santri ini (santri.created_by)
+  let waliNamaP = '—', waliHpP = '—';
+  const createdBy = _sObjP.created_by || santri.created_by;
+  if(createdBy){
+    try{
+      const {data:pgData} = await SB.from('pengurus').select('nama,no_wa').eq('username', createdBy).maybeSingle();
+      if(pgData){ waliNamaP = pgData.nama || '—'; waliHpP = pgData.no_wa || '—'; }
+    }catch(e){}
+  }
+  const alamatP = [santri.kecamatan||_sObjP.kecamatan, santri.kota||_sObjP.kota].filter(Boolean).join(', ') || '—';
+
+  const fotoUrl = santri.foto_url || '';
+  const avHtml = fotoUrl
+    ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    : `<span style="font-size:26px;font-weight:700;color:#fff">${(santri.nama||'?').charAt(0).toUpperCase()}</span>`;
+
+  const infoRow = (label, val) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12.5px;color:var(--text-l)">${label}</span>
+      <span style="font-size:13px;font-weight:600;color:var(--text)">${val}</span>
+    </div>`;
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <div style="width:3px;height:16px;background:var(--gold-l);border-radius:2px"></div>
+      <div style="font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--text)">Profil Santri</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;background:linear-gradient(150deg,var(--green-m),var(--green));border-radius:20px;padding:26px 20px 22px">
+      <div style="width:76px;height:76px;border-radius:50%;border:2px solid var(--gold-l);overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.16)">${avHtml}</div>
+      <div style="font-family:'Lora',serif;font-size:19px;font-weight:700;color:#fdf9ee;margin-top:12px">${santri.nama||'—'}</div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.65);margin-top:3px">NISN ${nisnP}</div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-top:14px;padding:0 18px">
+      ${infoRow('Kelas', 'Kelas '+kelasP)}
+      ${infoRow('Asrama', asramaP)}
+      ${infoRow('Kobong', kobongP)}
+      ${infoRow('Dapur', dapurP)}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0">
+        <span style="font-size:12.5px;color:var(--text-l)">Tanggal Masuk</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${tglMasukP}</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-top:22px;margin-bottom:12px">
+      <div style="width:3px;height:16px;background:var(--gold-l);border-radius:2px"></div>
+      <div style="font-family:'Lora',serif;font-size:15px;font-weight:600;color:var(--text)">Wali Kobong</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:0 18px">
+      ${infoRow('Nama Wali', waliNamaP)}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:12.5px;color:var(--text-l)">No. HP</span>
+        ${waliHpP!=='—'?`<a href="https://wa.me/62${waliHpP.replace(/^0/,'')}" target="_blank" style="font-size:13px;font-weight:600;color:var(--green-l);text-decoration:none">${waliHpP}</a>`:`<span style="font-size:13px;font-weight:600;color:var(--text)">—</span>`}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0">
+        <span style="font-size:12.5px;color:var(--text-l)">Alamat</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text);text-align:right;max-width:60%">${alamatP}</span>
+      </div>
+    </div>`;
+}
+

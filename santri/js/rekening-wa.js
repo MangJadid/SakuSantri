@@ -58,7 +58,7 @@ function getWATemplate(){
 function buatPesanWA(santri){
   const kritis = parseInt(CONFIG.kritis_batas)||50000;
   const k = santri.kobong?.nama || getKobongNama(santri.kobong_id) || '—';
-  const link = window.location.href.split('?')[0];
+  const link = 'https://mangjadid.my.id';
   const pondok = CONFIG.pesantren_nama || 'Pondok Pesantren';
   return getWATemplate()
     .replace(/{{nama}}/g, santri.nama)
