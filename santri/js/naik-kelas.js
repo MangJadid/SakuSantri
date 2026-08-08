@@ -46,7 +46,10 @@ function renderNaikKelas(){
             ${getKobongAccessible().map(k=>`<option value="${k.id}">🏠 ${k.nama}</option>`).join('')}
           </select>
         </div>
-        <div id="nk-kelas-list" style="max-height:340px;overflow-y:auto;border:1.5px solid var(--border);border-radius:10px"></div>
+        <div class="tw"><table>
+          <thead><tr><th style="width:36px"></th><th>Santri</th><th>Kobong</th><th>Kelas</th></tr></thead>
+          <tbody id="nk-kelas-list"></tbody>
+        </table></div>
       </div>
 
       <!-- STEP 2: Isi Kelas Tujuan -->
@@ -92,7 +95,10 @@ function renderNaikKelas(){
             ${getKobongAccessible().map(k=>`<option value="${k.id}">🏠 ${k.nama}</option>`).join('')}
           </select>
         </div>
-        <div id="nk-pindah-list" style="max-height:340px;overflow-y:auto;border:1.5px solid var(--border);border-radius:10px"></div>
+        <div class="tw"><table>
+          <thead><tr><th style="width:36px"></th><th>Santri</th><th>Kelas</th><th>Saldo</th></tr></thead>
+          <tbody id="nk-pindah-list"></tbody>
+        </table></div>
       </div>
 
       <!-- STEP 2: Pilih Kobong Tujuan & Konfirmasi -->
@@ -136,7 +142,10 @@ function renderNaikKelas(){
           <option value="">Semua Wali</option>
         </select>
       </div>
-      <div id="nk-wali-list" style="max-height:340px;overflow-y:auto;border:1.5px solid var(--border);border-radius:10px;margin-bottom:16px"></div>
+      <div class="tw" style="margin-bottom:16px"><table>
+        <thead><tr><th style="width:36px"></th><th>Santri</th><th>Kobong</th><th>Kelas</th></tr></thead>
+        <tbody id="nk-wali-list"></tbody>
+      </table></div>
 
       <!-- STEP 2: Pilih Wali Tujuan -->
       <div id="nk-wali-step2" style="background:var(--green-p);border:1.5px solid var(--green-b);border-radius:12px;padding:16px;display:none">
@@ -229,7 +238,7 @@ function nkRenderKelasList(){
   });
 
   if(!list.length){
-    el.innerHTML=`<div class="empty" style="padding:30px"><span class="ei">👤</span><p>Tidak ada santri ditemukan</p></div>`;
+    el.innerHTML=`<tr><td colspan="4"><div class="empty" style="padding:30px"><span class="ei">👤</span><p>Tidak ada santri ditemukan</p></div></td></tr>`;
     return;
   }
 
@@ -246,21 +255,23 @@ function nkRenderKelasList(){
     const group = byKelas[kelas];
     const ids = group.map(s=>s.id);
     return `
-    <div style="padding:6px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b);font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;justify-content:space-between">
-      <span style="display:inline-flex;align-items:center;gap:4px">${svgIcon('graduation-cap',12)} Kelas ${kelas} — ${group.length} santri</span>
-      <button onclick="nkKelasPilihGroup(${JSON.stringify(ids)})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Kelas Ini</button>
-    </div>
+    <tr><td colspan="4" style="padding:8px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:4px">${svgIcon('graduation-cap',12)} Kelas ${kelas} — ${group.length} santri</span>
+        <button onclick="nkKelasPilihGroup(${JSON.stringify(ids)})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Kelas Ini</button>
+      </div>
+    </td></tr>
     ${group.map(s=>`
-      <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;${nkKelasSelectedIds.has(s.id)?'background:#f0fdf4;':''}">
-        <input type="checkbox" ${nkKelasSelectedIds.has(s.id)?'checked':''} onchange="nkKelasToggle(${s.id},this.checked)"
-          style="width:16px;height:16px;accent-color:var(--green);flex-shrink:0;cursor:pointer">
-        <div class="av" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:${avColor(s.nama)}22;color:${avColor(s.nama)}">${avLetter(s.nama)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:13px">${s.nama}</div>
-          <div style="font-size:11px;color:var(--text-l)">🏠 ${s.kobong?.nama||getKobongNama(s.kobong_id)||'—'} · Kelas ${s.kelas||'—'}</div>
-        </div>
-        ${nkKelasSelectedIds.has(s.id)?`<span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}
-      </label>
+      <tr style="${nkKelasSelectedIds.has(s.id)?'background:#f0fdf4;':''}">
+        <td style="width:36px"><input type="checkbox" ${nkKelasSelectedIds.has(s.id)?'checked':''} onchange="nkKelasToggle(${s.id},this.checked)"
+          style="width:16px;height:16px;accent-color:var(--green);cursor:pointer"></td>
+        <td><div style="display:flex;align-items:center;gap:9px">
+          <div class="av" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:${avColor(s.nama)}22;color:${avColor(s.nama)}">${avLetter(s.nama)}</div>
+          <strong style="font-size:13px">${s.nama}</strong>
+        </div></td>
+        <td><span class="badge bg">${s.kobong?.nama||getKobongNama(s.kobong_id)||'—'}</span></td>
+        <td>Kelas ${s.kelas||'—'}${nkKelasSelectedIds.has(s.id)?` <span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}</td>
+      </tr>
     `).join('')}`;
   }).join('');
 
@@ -369,7 +380,7 @@ function nkRenderPindahList(){
   });
 
   if(!list.length){
-    el.innerHTML=`<div class="empty" style="padding:30px"><span class="ei">👤</span><p>Tidak ada santri ditemukan</p></div>`;
+    el.innerHTML=`<tr><td colspan="4"><div class="empty" style="padding:30px"><span class="ei">👤</span><p>Tidak ada santri ditemukan</p></div></td></tr>`;
     return;
   }
 
@@ -383,21 +394,23 @@ function nkRenderPindahList(){
   });
 
   el.innerHTML = Object.values(byKobong).map(group=>`
-    <div style="padding:6px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b);font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;justify-content:space-between">
-      <span style="display:inline-flex;align-items:center;gap:4px">${svgIcon('home',12)} ${group.nama}</span>
-      <button onclick="nkPilihSatuKobong(${JSON.stringify(group.list.map(s=>s.id))})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Kobong Ini</button>
-    </div>
+    <tr><td colspan="4" style="padding:8px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:4px">${svgIcon('home',12)} ${group.nama}</span>
+        <button onclick="nkPilihSatuKobong(${JSON.stringify(group.list.map(s=>s.id))})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Kobong Ini</button>
+      </div>
+    </td></tr>
     ${group.list.map(s=>`
-      <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:.1s;${nkSelectedIds.has(s.id)?'background:#f0fdf4;':''}">
-        <input type="checkbox" ${nkSelectedIds.has(s.id)?'checked':''} onchange="nkToggle(${s.id},this.checked)"
-          style="width:16px;height:16px;accent-color:var(--green);flex-shrink:0;cursor:pointer">
-        <div class="av" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:${avColor(s.nama)}22;color:${avColor(s.nama)}">${avLetter(s.nama)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:13px">${s.nama}</div>
-          <div style="font-size:11px;color:var(--text-l)">Kelas ${s.kelas||'—'} · Saldo ${rp(s.saldo)}</div>
-        </div>
-        ${nkSelectedIds.has(s.id)?`<span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}
-      </label>
+      <tr style="${nkSelectedIds.has(s.id)?'background:#f0fdf4;':''}">
+        <td style="width:36px"><input type="checkbox" ${nkSelectedIds.has(s.id)?'checked':''} onchange="nkToggle(${s.id},this.checked)"
+          style="width:16px;height:16px;accent-color:var(--green);cursor:pointer"></td>
+        <td><div style="display:flex;align-items:center;gap:9px">
+          <div class="av" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:${avColor(s.nama)}22;color:${avColor(s.nama)}">${avLetter(s.nama)}</div>
+          <strong style="font-size:13px">${s.nama}</strong>
+        </div></td>
+        <td>Kelas ${s.kelas||'—'}</td>
+        <td><strong>${rp(s.saldo)}</strong>${nkSelectedIds.has(s.id)?` <span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}</td>
+      </tr>
     `).join('')}
   `).join('');
 
@@ -547,7 +560,7 @@ function nkRenderWaliList(){
   });
 
   if(!list.length){
-    el.innerHTML=`<div class="empty" style="padding:30px"><span class="ei">👤</span><p>Tidak ada santri ditemukan</p></div>`;
+    el.innerHTML=`<tr><td colspan="4"><div class="empty" style="padding:30px"><span class="ei">👤</span><p>Tidak ada santri ditemukan</p></div></td></tr>`;
     nkWaliUpdateBadge(); return;
   }
 
@@ -562,21 +575,23 @@ function nkRenderWaliList(){
   });
 
   el.innerHTML = Object.values(byWali).map(group=>`
-    <div style="padding:6px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b);font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;justify-content:space-between">
-      <span style="display:inline-flex;align-items:center;gap:4px">${svgIcon('person',12)} ${group.nama} — ${group.list.length} santri</span>
-      <button onclick="nkWaliPilihGroup(${JSON.stringify(group.list.map(s=>s.id))})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Wali Ini</button>
-    </div>
+    <tr><td colspan="4" style="padding:8px 14px;background:var(--green-p);border-bottom:1px solid var(--green-b)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:4px">${svgIcon('person',12)} ${group.nama} — ${group.list.length} santri</span>
+        <button onclick="nkWaliPilihGroup(${JSON.stringify(group.list.map(s=>s.id))})" style="background:none;border:1px solid var(--green-b);color:var(--green);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Pilih Semua Wali Ini</button>
+      </div>
+    </td></tr>
     ${group.list.map(s=>`
-      <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:.1s;${nkWaliSelectedIds.has(s.id)?'background:#f0fdf4;':''}">
-        <input type="checkbox" ${nkWaliSelectedIds.has(s.id)?'checked':''} onchange="nkWaliToggle(${s.id},this.checked)"
-          style="width:16px;height:16px;accent-color:var(--green);flex-shrink:0;cursor:pointer">
-        <div class="av" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:${avColor(s.nama)}22;color:${avColor(s.nama)}">${avLetter(s.nama)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:13px">${s.nama}</div>
-          <div style="font-size:11px;color:var(--text-l)">🏠 ${s.kobong?.nama||getKobongNama(s.kobong_id)||'—'} · Kelas ${s.kelas||'—'}</div>
-        </div>
-        ${nkWaliSelectedIds.has(s.id)?`<span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}
-      </label>
+      <tr style="${nkWaliSelectedIds.has(s.id)?'background:#f0fdf4;':''}">
+        <td style="width:36px"><input type="checkbox" ${nkWaliSelectedIds.has(s.id)?'checked':''} onchange="nkWaliToggle(${s.id},this.checked)"
+          style="width:16px;height:16px;accent-color:var(--green);cursor:pointer"></td>
+        <td><div style="display:flex;align-items:center;gap:9px">
+          <div class="av" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:${avColor(s.nama)}22;color:${avColor(s.nama)}">${avLetter(s.nama)}</div>
+          <strong style="font-size:13px">${s.nama}</strong>
+        </div></td>
+        <td><span class="badge bg">${s.kobong?.nama||getKobongNama(s.kobong_id)||'—'}</span></td>
+        <td>Kelas ${s.kelas||'—'}${nkWaliSelectedIds.has(s.id)?` <span style="font-size:11px;color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:3px">${svgIcon('check',11)} Dipilih</span>`:''}</td>
+      </tr>
     `).join('')}
   `).join('');
 

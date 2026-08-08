@@ -1,0 +1,5 @@
+.claude/
+.impeccable/
+
+# Data hasil export dari Supabase (berisi data pribadi/keuangan santri) — jangan pernah di-push ke GitHub
+db/export/

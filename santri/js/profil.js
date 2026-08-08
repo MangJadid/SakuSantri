@@ -64,6 +64,27 @@ function updateHdrProfilAv(){
   }
 }
 
+// Sidebar + topbar desktop -- nama/role/avatar, dipanggil sekali di enterApp()
+// dan cukup untuk seluruh sesi (avatar juga di-refresh oleh updateHdrProfilAv
+// yang menargetkan id yang sama, hdr-profil-av, dipakai ulang jadi avatar sidebar).
+function updateSidebarProfile(){
+  if(!SESSION) return;
+  const p = SESSION.role==='ortu' ? (SESSION.santri||{}) : (SESSION.user||{});
+  const roleLabels = {super:'Administrator', pengurus:'Pengurus', sekretaris:'Sekretaris', sekretariat:'Sekretariat', pengawas:'Pengawas', ortu:'Orang Tua'};
+  const nama = p.nama || 'Pengguna';
+  const roleLabel = roleLabels[SESSION.role] || SESSION.role || '—';
+  ['sidebar-profile-name','topbar-profile-name'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = nama; });
+  ['sidebar-profile-role','topbar-profile-role'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = roleLabel; });
+  const avHtml = p.foto_url ? `<img src="${p._foto_cache||p.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : null;
+  ['hdr-profil-av','topbar-av'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(avHtml) el.innerHTML = avHtml; else el.textContent = avLetter(nama);
+  });
+  const subEl = document.getElementById('sidebar-brand-sub');
+  if(subEl) subEl.textContent = CONFIG.pesantren_nama || 'Pondok Pesantren';
+}
+
 function openProfilPengurus(){
   const p = SESSION.user;
   if(!p) return;

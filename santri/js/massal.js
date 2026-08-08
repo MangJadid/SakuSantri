@@ -32,7 +32,7 @@ async function loadMassalSantriPengurus(){
   Object.entries(byKobong).forEach(([kNama, list])=>{
     html+=`<div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;border-bottom:2px solid var(--green-b);margin-bottom:4px;display:flex;align-items:center;gap:5px">${svgIcon('home',12)} ${kNama}</div>`;
     list.forEach(s=>{
-      html+=`<div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
+      html+=`<div class="massal-row" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
         <div style="display:flex;align-items:center;gap:8px">
           <div class="av" style="width:32px;height:32px;font-size:13px;background:${avColor(s.nama)}22;color:${avColor(s.nama)}">${avLetter(s.nama)}</div>
           <div>
@@ -54,12 +54,12 @@ async function loadMassalSantri(){
   const santris = ALL_SANTRI.filter(s=>String(s.kobong_id)===kid);
   if(!santris.length){ document.getElementById('massal-list').innerHTML='<div class="empty"><span class="ei">👥</span><p>Tidak ada santri di kobong ini</p></div>'; return; }
 
-  let html=`<div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;padding:8px 0;border-bottom:2px solid var(--border);margin-bottom:4px">
+  let html=`<div class="massal-row massal-header-row" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;padding:8px 0;border-bottom:2px solid var(--border);margin-bottom:4px">
     <div style="font-size:11.5px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px">Nama Santri</div>
     <div style="font-size:11.5px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px">Nominal (Rp)</div>
   </div>`;
   santris.forEach(s=>{
-    html+=`<div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
+    html+=`<div class="massal-row" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
       <div style="display:flex;align-items:center;gap:8px">
         <div class="av" style="width:32px;height:32px;font-size:13px;background:${avColor(s.nama)}22;color:${avColor(s.nama)}">${avLetter(s.nama)}</div>
         <div>

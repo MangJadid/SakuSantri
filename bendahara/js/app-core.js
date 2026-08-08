@@ -77,8 +77,11 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
 (async function init(){
   // Deteksi otomatis lingkungan: di localhost (XAMPP) pakai API lokal (lihat api/
   // dan shared/supabase-client.js), di domain publik pakai Supabase asli -- satu
-  // kode buat dua tempat, gak perlu diubah manual tiap mau push/deploy.
-  const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
+  // kode buat dua tempat, gak perlu diubah manual tiap mau push/deploy. IP LAN
+  // ikut dihitung lokal juga -- biar tes dari HP lewat IP komputer (bukan cuma
+  // "localhost") tetap nyambung ke API lokal, samain sama cek di index.html.
+  const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname)
+    || /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(location.hostname);
   const SB_URL = isLocalDev ? '../api' : 'https://tajdid.jadidsaepul0.workers.dev';
   const SB_KEY = isLocalDev
     ? 'e3d37d584dce22eba5836211744f18ffab5a7c663ef2fe48f5c2447fa3e8ac0e'
@@ -303,6 +306,7 @@ async function enterApp(){
   fillSelects();
   showTab('dashboard');
   updateHeaderProfilAv(); // tampilkan tombol Profil di header
+  updateBadgeNotifikasiBD();
   hideLoginOverlay();
 }
 
@@ -515,9 +519,11 @@ function buildTabs(){
     t+=tab('monitor','👁️ Monitor');
     t+=tab('tanpaDapur','🍽️ Tanpa Dapur');
     t+=tab('generate','⚡ Generate Tagihan');
+    t+=tab('notifikasi','🔔 Notifikasi');
     t+=tab('pengaturan','⚙️ Pengaturan');
   }
   tabs.innerHTML=t;
+  buildMobileNavBD();
 
   // Set SQL migrasi di pengaturan
   if(isAdmin){
@@ -527,19 +533,260 @@ function buildTabs(){
 }
 function tab(id,l){ return `<button class="tb" id="tab-${id}" onclick="showTab('${id}')">${l}</button>`; }
 
+// ===== MOBILE NAV: bottom nav (5 utama) + grid "Fitur Lainnya" (HP saja) =====
+// Diporting 1:1 dari pola Saku Santri: dibangun dari tab yang SUDAH ada di
+// #main-tabs, otomatis ikut aturan akses (hasAkses/isAdmin) yang sama.
+const MENU_LAINNYA_BD = [
+  {id:'rincianDapur', label:'Rincian Dapur', icon:'📊', c:'gg', action:'toggleRincianDapurBD()'},
+  {id:'kelulusan', label:'Kelulusan', icon:'🎓', c:'p'},
+  {id:'tfadmin', label:'TF Admin', icon:'💸', c:'gg'},
+  {id:'import', label:'Import', icon:'📥', c:'b'},
+  {id:'kobong', label:'Kobong', icon:'🏠', c:'g'},
+  {id:'manajemen', label:'Manajemen', icon:'👥', c:'g'},
+  {id:'monitor', label:'Monitor', icon:'👁️', c:'b'},
+  {id:'tanpaDapur', label:'Tanpa Dapur', icon:'🍽️', c:'r'},
+  {id:'generate', label:'Generate Tagihan', icon:'⚡', c:'gg'},
+  {id:'notifikasi', label:'Notifikasi', icon:'🔔', c:'gg'},
+  {id:'pengaturan', label:'Pengaturan', icon:'⚙️', c:'r'},
+];
+
+function buildMobileNavBD(){
+  const bnav = document.getElementById('bottom-nav-bd');
+  const grid = document.getElementById('mnav-grid-bd');
+  if(!bnav || !grid) return;
+  document.body.classList.add('has-bnav');
+
+  const primer = [
+    {id:'dashboard', label:'Dashboard', icon:'📊'},
+    {id:'tagihan', label:'Tagihan', icon:'📋'},
+    {id:'santri', label:'Santri', icon:'👥'},
+    {id:'rekap', label:'Tunggakan', icon:'📊'},
+    {id:'riwayat', label:'Riwayat', icon:'📜'},
+  ].filter(m => document.getElementById('tab-'+m.id));
+
+  bnav.innerHTML = '<span class="bnav-highlight" id="bnav-highlight-bd"></span>' + primer.map(m => `
+    <button class="bnav-item" id="bnav-bd-${m.id}" onclick="showTab('${m.id}')">
+      <span class="bnav-ic">${m.icon}</span><span>${m.label}</span>
+    </button>`).join('');
+  requestAnimationFrame(moveBnavHighlightBD);
+  window.addEventListener('resize', moveBnavHighlightBD);
+
+  const lainnya = MENU_LAINNYA_BD.filter(m => m.action || document.getElementById('tab-'+m.id));
+  grid.innerHTML = lainnya.length ? `
+    <div class="mnav-label"><i></i>Fitur Lainnya</div>
+    <div class="mnav-items">
+      ${lainnya.map(m => `
+        <button class="mnav-item" onclick="${m.action || `showTab('${m.id}')`}">
+          <span class="sci ${m.c}">${m.icon}</span><span>${m.label}</span>
+        </button>`).join('')}
+    </div>` : '';
+}
+
+function toggleRincianDapurBD(){
+  const el = document.getElementById('dapur-cards-wrap');
+  if(!el) return;
+  el.classList.toggle('show');
+  if(el.classList.contains('show')) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function moveBnavHighlightBD(){
+  const hl = document.getElementById('bnav-highlight-bd');
+  const active = document.querySelector('#bottom-nav-bd .bnav-item.act');
+  if(!hl || !active) { if(hl) hl.style.opacity = '0'; return; }
+  hl.style.opacity = '1';
+  hl.style.width = active.offsetWidth - 12 + 'px';
+  hl.style.transform = 'translateX(' + (active.offsetLeft + 6) + 'px)';
+}
+
+// ===== PANEL AKUN (geser dari kanan, HP saja) =====
+function openAccountDrawerBD(){
+  const isAdmin = isKangAdmin();
+  const av = document.getElementById('acc-av-bd');
+  av.textContent = (SESSION.nama||'P').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  document.getElementById('acc-name-bd').textContent = SESSION.nama || 'Pengguna';
+  document.getElementById('acc-user-bd').textContent = '@' + (SESSION.username || '—');
+  document.getElementById('acc-role-badge-bd').textContent = isAdmin ? '👑 Kang Admin' : '🍳 Pengelola Dapur';
+  document.getElementById('acc-dapur-bd').textContent = isAdmin
+    ? 'Semua Dapur'
+    : (SESSION.dapur_ids && SESSION.dapur_ids.length ? SESSION.dapur_ids.map(id=>getDapurNama(id)).join(', ') : '—');
+  document.getElementById('acc-periode-bd').textContent = CONFIG.bulan_aktif || '—';
+
+  const waAdminUrl = `https://wa.me/6287789179398?text=${encodeURIComponent('Assalamualaikum, saya '+(SESSION.nama||'bendahara')+' butuh bantuan terkait aplikasi Bendahara.')}`;
+  const items = [
+    {ic:'👤', title:'Profil Saya', sub:'Lihat & edit profil', onclick:"closeAccountDrawerBD();bukaModalProfil()"},
+  ];
+  if(isAdmin){
+    items.push({ic:'⚙️', title:'Pengaturan', sub:'Preferensi aplikasi', onclick:"closeAccountDrawerBD();showTab('pengaturan')"});
+  }
+  items.push({ic:'❓', title:'Bantuan', sub:'Hubungi admin via WhatsApp', onclick:`closeAccountDrawerBD();window.open('${waAdminUrl}','_blank')`});
+
+  document.getElementById('acc-menu-bd').innerHTML = items.map(m => `
+    <button class="acc-menu-item" onclick="${m.onclick}">
+      <span class="acc-menu-ic">${m.ic}</span>
+      <span class="acc-menu-txt"><b>${m.title}</b><span>${m.sub}</span></span>
+      <span class="acc-menu-chev">›</span>
+    </button>`).join('');
+
+  document.getElementById('acc-overlay-bd').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeAccountDrawerBD(){
+  document.getElementById('acc-overlay-bd').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ===== BEL NOTIFIKASI (baca-saja, HP saja) =====
+// Sumber sama persis push_notifications yang dikirim Kang Admin dari Saku
+// Santri -- kalau dihapus di sana, otomatis hilang di sini juga (1 tabel).
+let _notifBaruCountBD = 0;
+function _notifLastSeenKeyBD(){ return 'notif_last_seen_id_bd_'+(SESSION?.username||'guest'); }
+
+async function updateBadgeNotifikasiBD(){
+  if(!SESSION){ _notifBaruCountBD = 0; return; }
+  try{
+    const lastSeen = parseInt(localStorage.getItem(_notifLastSeenKeyBD())||'0');
+    const {data} = await SB.from('push_notifications').select('id',{count:'exact'}).gt('id', lastSeen);
+    _notifBaruCountBD = data?.length||0;
+  } catch(e){ _notifBaruCountBD = 0; }
+  const el = document.getElementById('badge-notif-bell-bd');
+  if(el){
+    el.style.display = _notifBaruCountBD>0 ? 'inline' : 'none';
+    el.textContent = _notifBaruCountBD>9 ? '9+' : _notifBaruCountBD;
+  }
+}
+
+async function openNotifBellPanelBD(){
+  openMo('mo-notif-bell-bd');
+  const listEl = document.getElementById('notif-bell-list-bd');
+  listEl.innerHTML = '<div class="empty"><span class="ei">🔔</span><p>Memuat...</p></div>';
+  const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  if(riwayat?.length){
+    const maxId = Math.max(...riwayat.map(n=>n.id));
+    localStorage.setItem(_notifLastSeenKeyBD(), String(maxId));
+    _notifBaruCountBD = 0;
+    updateBadgeNotifikasiBD();
+  }
+  if(!riwayat?.length){
+    listEl.innerHTML = '<div class="empty"><span class="ei">🔔</span><p>Belum ada notifikasi</p></div>';
+    return;
+  }
+  listEl.innerHTML = riwayat.map(n=>{
+    const tgl = new Date(n.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="font-weight:700;font-size:13px">${n.judul}</div>
+      <div style="font-size:12px;color:var(--text-m);margin-top:2px">${n.pesan}</div>
+      <div style="font-size:11px;color:var(--text-l);margin-top:4px">${tgl}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== KIRIM NOTIFIKASI (Kang Admin) — porting dari Saku Santri, target
+// diambil dari ALL_AKUN (akun bendahara) karena di sini gak ada mekanisme
+// push_subscriptions sendiri. Nulis ke tabel push_notifications yang sama. =====
+function onNotifTipeChangeBD(){
+  const tipe = document.getElementById('notif-tipe-bd')?.value;
+  const judulEl = document.getElementById('notif-judul-bd');
+  const pesanEl = document.getElementById('notif-pesan-bd');
+  if(tipe==='tutup_bulan'){
+    if(judulEl) judulEl.value = '📅 Pengingat Tutup Bulan';
+    if(pesanEl) pesanEl.value = `Mohon segera selesaikan input data bulan ${bulanAktif()} sebelum ditutup. Pastikan semua transaksi sudah tercatat dengan benar.`;
+  } else {
+    if(judulEl) judulEl.value = '';
+    if(pesanEl) pesanEl.value = '';
+  }
+}
+
+async function renderNotifikasiBD(){
+  const sel = document.getElementById('notif-target-bd');
+  if(sel){
+    sel.innerHTML = '<option value="">Semua Pengelola</option>';
+    (ALL_AKUN||[]).forEach(a=>{
+      sel.innerHTML += `<option value="${a.username}">${a.nama_tampilan||a.username}</option>`;
+    });
+  }
+  const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  const listEl = document.getElementById('notif-riwayat-list-bd');
+  if(!listEl) return;
+  if(!riwayat?.length){ listEl.innerHTML='<div style="color:var(--text-l);font-size:13px;text-align:center;padding:16px">Belum ada notifikasi dikirim</div>'; return; }
+  listEl.innerHTML = riwayat.map(n=>{
+    const tgl = new Date(n.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px">${n.judul}</div>
+          <div style="font-size:12px;color:var(--text-m);margin-top:2px">${n.pesan}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:4px">
+            ${n.target_username?`👤 ${n.target_username}`:'👥 Semua'} · ${tgl}
+          </div>
+        </div>
+        <button onclick="hapusNotifikasiBD(${n.id})" style="background:#fee2e2;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--red);font-size:13px" title="Hapus">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function kirimNotifikasiBD(){
+  const judul = document.getElementById('notif-judul-bd')?.value?.trim();
+  const pesan = document.getElementById('notif-pesan-bd')?.value?.trim();
+  const tipe = document.getElementById('notif-tipe-bd')?.value;
+  const target = document.getElementById('notif-target-bd')?.value;
+
+  if(!judul){ toast('Isi judul notifikasi!', false); return; }
+  if(!pesan){ toast('Isi pesan notifikasi!', false); return; }
+
+  toast('⏳ Mengirim notifikasi...');
+  try{
+    const res = await fetch('https://menfnmfwtxgcgvkbbjxh.supabase.co/functions/v1/send-push', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec`
+      },
+      body: JSON.stringify({
+        judul, pesan, tipe,
+        target_username: target || null,
+        dikirim_oleh: SESSION?.username || 'kangadmin'
+      })
+    });
+    const data = await res.json();
+    if(data.success){
+      toast(`✅ Notifikasi terkirim!`);
+      document.getElementById('notif-judul-bd').value='';
+      document.getElementById('notif-pesan-bd').value='';
+      renderNotifikasiBD();
+    } else {
+      toast('Gagal kirim: '+(data.error||'Unknown error'), false);
+    }
+  } catch(e){
+    toast('Error: '+e.message, false);
+  }
+}
+
+async function hapusNotifikasiBD(id){
+  konfirm('Hapus notifikasi ini?', async()=>{
+    const {error} = await SB.from('push_notifications').delete().eq('id', id);
+    if(error){ toast('Gagal hapus: '+error.message, false); return; }
+    toast('🗑️ Notifikasi dihapus!');
+    renderNotifikasiBD();
+  }, 'hapus');
+}
+
 function showTab(id){
   const isAdmin=isKangAdmin();
   // Cek role dari hdr-role sebagai fallback jika SESSION belum siap
   const isAdminFallback = document.getElementById('hdr-role')?.textContent?.includes('Kang Admin');
-  if(['pengaturan','manajemen','monitor','tanpaDapur','generate'].includes(id) && !isAdmin && !isAdminFallback) return;
+  if(['pengaturan','manajemen','monitor','tanpaDapur','generate','notifikasi'].includes(id) && !isAdmin && !isAdminFallback) return;
 
   // Reset filter saat pindah tab
   resetFiltersBendahara();
 
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));
   document.querySelectorAll('.tb').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('act'));
   const s=document.getElementById('sec-'+id), t=document.getElementById('tab-'+id);
   if(s) s.classList.add('act'); if(t) t.classList.add('act');
+  document.getElementById('bnav-bd-'+id)?.classList.add('act');
+  moveBnavHighlightBD();
   if(id==='dashboard') renderDashboard();
   if(id==='tagihan') renderTagihanTable();
   if(id==='santri') renderSantri();
@@ -552,6 +799,7 @@ function showTab(id){
   if(id==='monitor') renderMonitor();
   if(id==='pengaturan') renderPengaturan();
   if(id==='tanpaDapur') renderTanpaDapur();
+  if(id==='notifikasi') renderNotifikasiBD();
   if(id==='generate'){ renderKonfigurasiTagihanPanel(); renderGeneratePanel(); }
 }
 

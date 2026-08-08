@@ -143,9 +143,11 @@ function showLoginErr(msg){
 }
 
 async function enterApp(){
-  // Load config from DB
-  const {data:sets} = await SB.from('settings').select('*');
-  (sets||[]).forEach(s=>{ CONFIG[s.key]=s.value; });
+  // Load config from DB -- dikasih batas waktu biar gak nyangkut. Kalau timeout,
+  // CONFIG yang sudah di-cache localStorage (dari init-setup.js) tetap dipakai,
+  // biar app tetap kebuka alih-alih layar putih kosong.
+  const {data:sets, timedOut:setsTimedOut} = await withTimeout(SB.from('settings').select('*'), 8000);
+  if(!setsTimedOut) (sets||[]).forEach(s=>{ CONFIG[s.key]=s.value; });
 
   // Simpan session persistent (bukan ortu)
   savePersistentSession();
@@ -155,7 +157,7 @@ async function enterApp(){
   document.body.classList.add('role-'+SESSION.role);
 
   document.getElementById('pg-login').style.display='none';
-  document.getElementById('pg-app').style.display='block';
+  document.getElementById('pg-app').classList.add('shown');
   const hdrBulanEl = document.getElementById('hdr-bulan');
   if(hdrBulanEl) hdrBulanEl.textContent = CONFIG.bulan_aktif||'—';
   const pesEl = document.getElementById('hdr-pesantren');
@@ -168,10 +170,12 @@ async function enterApp(){
   if(hdrRoleEl) hdrRoleEl.textContent = roleLabels[SESSION.role]||'—';
 
   _suppressBroadcast = true;
-  await loadAllData();
+  const {timedOut:dataTimedOut} = await withTimeout(loadAllData(), 12000);
   _suppressBroadcast = false;
+  if(dataTimedOut) toast('Sebagian data lambat dimuat, koneksi mungkin lambat. Tarik layar ke bawah untuk muat ulang.', false);
   setupRealtimeSync();
   buildTabs();
+  updateSidebarProfile();
   updateNotif();
   if(SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') updateBadgePersetujuan();
   if(SESSION.role!=='ortu') updateBadgeNotifikasi();
@@ -187,10 +191,10 @@ async function enterApp(){
   // sendiri (super/pengawas udah bisa lewat tab), biar tetap bisa lihat apa
   // yang dikirim Kang Admin tanpa perlu tab terpisah.
   const btnBell = document.getElementById('btn-notif-bell');
-  if(btnBell){
-    const showBell = SESSION.role==='pengurus'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat';
-    btnBell.style.display = showBell ? 'inline-flex' : 'none';
-  }
+  const showBell = SESSION.role==='pengurus'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat';
+  if(btnBell) btnBell.style.display = showBell ? 'inline-flex' : 'none';
+  const topBell = document.getElementById('topbar-bell');
+  if(topBell) topBell.style.display = showBell ? 'flex' : 'none';
 
   resetSessionTimer();
   if(SESSION.role==='ortu'){ renderDetailOrtu(); updateBadgeSyahriyah(); }
@@ -277,10 +281,7 @@ async function loadSantriForRole(){
   try{
   if(SESSION.role==='super'||SESSION.role==='pengawas'){
     const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').eq('is_arsip',false).order('nama');
-    if(error){
-      alert('[DEBUG] Query super ERROR:\n' + error.message);
-      throw error;
-    }
+    if(error) throw error;
     return data||[];
   }
   if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
@@ -305,7 +306,6 @@ async function loadSantriForRole(){
   } catch(e){
     // Fallback: kolom is_arsip belum ada — query tanpa filter is_arsip
     console.warn('[DEBUG] loadSantriForRole fallback (is_arsip mungkin belum ada):', e.message);
-    alert('[DEBUG] Fallback aktif!\nError: ' + e.message);
     try{
       if(SESSION.role==='super'||SESSION.role==='pengawas'){
         const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').order('nama');

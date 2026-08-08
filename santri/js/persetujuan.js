@@ -34,7 +34,7 @@ async function updateBadgePersetujuan(){
     if(allowed) q = q.in('asrama_id', allowed.length?allowed:[-1]);
     const {data} = await q;
     const cnt = data?.length||0;
-    ['badge-persetujuan','badge-persetujuan-grid'].forEach(elId=>{
+    ['badge-persetujuan','badge-persetujuan-grid','badge-persetujuan-sb'].forEach(elId=>{
       const badge = document.getElementById(elId);
       if(!badge) return;
       badge.style.display = cnt>0 ? 'inline' : 'none';

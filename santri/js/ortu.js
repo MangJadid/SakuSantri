@@ -20,11 +20,12 @@ async function updateBadgeSyahriyah(){
   try{
     const {data} = await SB.from('tagihan_pondok').select('id').eq('santri_id',String(santriId)).neq('status','lunas');
     const cnt = data?.length||0;
-    const badge = document.getElementById('badge-syahriyah');
-    if(badge){
+    ['badge-syahriyah','badge-syahriyah-sb'].forEach(elId=>{
+      const badge = document.getElementById(elId);
+      if(!badge) return;
       badge.style.display = cnt>0 ? 'flex' : 'none';
       badge.textContent = cnt;
-    }
+    });
   } catch(e){}
 }
 
@@ -70,38 +71,43 @@ async function renderDetailOrtu(){
   }
 
   document.getElementById('detail-content').innerHTML=`
-    <div class="dh">
-      
-      <div class="dh-inner">
-        <div class="dh-top">
-          <div class="dh-av" style="overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}<div class="dh-av-dot"></div></div>
-          <div class="dh-name-wrap">
-            <div class="dh-info"><h3>${s.nama}</h3><div class="dh-sub">Kelas ${kelasValO} · Asrama ${asramaValO}</div></div>
-          </div>
-        </div>
-        <div class="dh-divider-thin"></div>
-        <div class="dh-meta">
-          <span class="dh-meta-row kantin">${svgIcon('utensils',12)} ${dapurValO}</span>
-          <span class="dh-meta-row kobong">${svgIcon('home',12)} ${k}</span>
-        </div>
-        <div class="dh-saldo">
+    <div style="background:linear-gradient(160deg,var(--green-m),var(--green));border-radius:20px;overflow:hidden">
+      <div style="padding:20px 20px 16px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:56px;height:56px;border-radius:50%;border:2px solid var(--gold-l);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.16);font-size:20px;font-weight:700;color:#fff">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
           <div>
-            <div class="lbl">Saldo Akhir</div>
-            <div class="amt" id="dh-amt-2" style="${saldoRealO<0?'color:#ff6b6b':saldoRealO<kritis?'color:var(--gold-l)':'color:#a8f0c8'}">${saldoRealO<0?'− ':''} ${rp(saldoRealO)}</div>
+            <div style="font-family:'Lora',serif;font-size:18px;font-weight:700;color:#fdf9ee">${s.nama}</div>
+            <div style="font-size:12px;color:#bcd6c5;margin-top:2px">Kelas ${kelasValO} · Asrama ${asramaValO}</div>
           </div>
-          <button class="dh-eye" onclick="dhToggle('dh-amt-2',this)">${svgIcon('eye',16)}</button>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,.15);margin:16px 0 14px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:7px 13px">
+            <span style="color:var(--gold-l);display:flex">${svgIcon('utensils',13)}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--gold-l)">${dapurValO}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:7px 13px">
+            <span style="color:#bcd6c5;display:flex">${svgIcon('home',13)}</span>
+            <span style="font-size:12px;font-weight:600;color:#bcd6c5">${k}</span>
+          </div>
         </div>
       </div>
+      <div style="background:rgba(0,0,0,.18);padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:10.5px;font-weight:700;color:#a9c9b6;letter-spacing:1px">SALDO AKHIR</div>
+          <div class="amt" id="dh-amt-2" style="font-family:'Lora',serif;font-size:26px;font-weight:700;margin-top:4px;white-space:nowrap;color:${saldoRealO<0?'#ff8a8a':'var(--gold-l)'}">${saldoRealO<0?'− ':''}${rp(saldoRealO)}</div>
+        </div>
+        <button class="dh-eye" onclick="dhToggle('dh-amt-2',this)" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#bcd6c5;flex-shrink:0">${svgIcon('eye',18)}</button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
-      <div style="background:#fff;border:1.5px solid #6EE7A0;border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,0.09)">
-        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Total Pemasukan</div>
-        <div class="dh-nominal" style="font-size:16px;font-weight:800;color:var(--green);letter-spacing:-.2px">${rp(totalMasukO)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;margin-bottom:18px">
+      <div style="background:var(--surface);border:1px solid var(--green-b);border-radius:14px;padding:14px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--text-l);letter-spacing:.6px">TOTAL PEMASUKAN</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-top:6px">${rp(totalMasukO)}</div>
       </div>
-      <div style="background:#fff;border:1.5px solid #FECACA;border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,0.09)">
-        <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Total Pengeluaran</div>
-        <div class="dh-nominal" style="font-size:16px;font-weight:800;color:var(--red);letter-spacing:-.2px">${rp(totalKeluarO)}</div>
+      <div style="background:var(--surface);border:1px solid var(--red-b);border-radius:14px;padding:14px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--text-l);letter-spacing:.6px">TOTAL PENGELUARAN</div>
+        <div style="font-size:18px;font-weight:700;color:var(--red);margin-top:6px">${rp(totalKeluarO)}</div>
       </div>
     </div>
     <div class="panel">

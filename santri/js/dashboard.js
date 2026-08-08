@@ -245,7 +245,7 @@ function renderDashboard(){
       : `<button class="btn btn-o btn-sm" style="opacity:.4;cursor:not-allowed" title="No WA tidak ada">📵</button>`;
     html+=`<tr class="row-reveal">
       <td style="color:var(--text-l);font-size:12px">${i+1}</td>
-      <td><div style="display:flex;align-items:center;gap:9px">
+      <td class="col-nama"><div style="display:flex;align-items:center;gap:9px">
         <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};overflow:hidden">${s.foto_url?'<img data-src="'+s.foto_url+'" class="lazy-img" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
         <div><div style="font-weight:600">${s.nama}</div><div style="font-size:11px;color:var(--text-l)">${s.catatan||''}</div></div>
       </div></td>

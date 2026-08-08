@@ -1,4 +1,15 @@
 // ===== INIT =====
+// Bungkus promise jaringan dengan batas waktu -- tanpa ini, koneksi yang lambat/
+// nyangkut bikin layar loading nunggu selamanya pas buka/masuk app lagi (baru bisa
+// lanjut kalau user refresh manual, kadang harus dobel). Kalau lewat batas waktu,
+// anggap "timedOut" dan lanjutkan alur normal alih-alih macet total.
+function withTimeout(promise, ms){
+  return Promise.race([
+    Promise.resolve(promise).then(result => ({...result, timedOut:false})),
+    new Promise(resolve => setTimeout(()=>resolve({timedOut:true}), ms))
+  ]);
+}
+
 (async function init(){
   // Deteksi otomatis lingkungan: di localhost (XAMPP) pakai API lokal (lihat api/
   // dan shared/supabase-client.js), di domain publik pakai Supabase asli -- satu
@@ -30,9 +41,13 @@
   // Init Supabase
   try{
     SB = supabase.createClient(CONFIG.url, CONFIG.key);
-    // Test connection
-    const {error} = await SB.from('santri').select('id',{count:'exact',head:true});
-    if(error && error.code === '42P01'){
+    // Test connection -- dikasih batas waktu 8 detik. Kalau nyangkut/timeout, JANGAN
+    // lempar ke layar setup database (data sebenarnya sudah ada, cuma jaringan lambat) --
+    // lanjut aja ke alur normal biar user gak nyangkut di loading screen selamanya.
+    const {error, timedOut} = await withTimeout(
+      SB.from('santri').select('id',{count:'exact',head:true}), 8000
+    );
+    if(!timedOut && error && error.code === '42P01'){
       // Tables don't exist yet, go to setup
       hideLoadingScreen();
       document.getElementById('pg-setup').style.display='flex';
@@ -57,14 +72,21 @@
     let ditolak = false;
     if(SESSION.role!=='ortu' && SESSION.user?.id){
       try{
+        // Dikasih batas waktu juga -- kalau nyangkut, JANGAN anggap ditolak (bisa
+        // salah nge-logout user yang sah cuma gara-gara jaringan lambat). Anggap
+        // saja belum sempat kecek, lanjutkan sesi yang tersimpan.
         if(SESSION.role!=='super'){
-          const {data:pg} = await SB.from('pengurus').select('force_logout,is_blocked').eq('id',SESSION.user.id).single();
-          if(pg?.force_logout || pg?.is_blocked) ditolak = true;
+          const {data:pg, timedOut} = await withTimeout(
+            SB.from('pengurus').select('force_logout,is_blocked').eq('id',SESSION.user.id).single(), 8000
+          );
+          if(!timedOut && (pg?.force_logout || pg?.is_blocked)) ditolak = true;
         }
         if(!ditolak){
           const sid = getDeviceSessionId();
-          const {data:ses} = await SB.from('login_sessions').select('revoked').eq('session_id', sid).maybeSingle();
-          if(ses?.revoked){
+          const {data:ses, timedOut} = await withTimeout(
+            SB.from('login_sessions').select('revoked').eq('session_id', sid).maybeSingle(), 8000
+          );
+          if(!timedOut && ses?.revoked){
             ditolak = true;
             SB.from('login_sessions').delete().eq('session_id', sid).then(()=>{}).catch(()=>{}); // bersihkan barisnya sendiri
           }

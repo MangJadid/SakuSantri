@@ -37,7 +37,7 @@ function renderTabelSantri(){
     html+=`<tr style="${isChecked?'background:#f0fdf4;':''}">
       <td class="cb-col" style="width:36px">${canBulk?`<input type="checkbox" ${isChecked?'checked':''} onchange="santriToggleOne(${s.id},this.checked)" style="accent-color:var(--green);cursor:pointer;width:16px;height:16px">`:''}</td>
       <td style="color:var(--text-l);font-size:12px">${i+1}</td>
-      <td onclick="${klikNamaMobile}"><div style="display:flex;align-items:center;gap:9px">
+      <td class="col-nama" onclick="${klikNamaMobile}"><div style="display:flex;align-items:center;gap:9px">
         <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
         <div><strong>${s.nama}</strong>${s.kelas?`<div style="font-size:11px;color:var(--text-l)">Kelas ${s.kelas}</div>`:''}
         </div>

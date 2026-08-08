@@ -168,6 +168,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 /* ── APP SHELL ───────────────────────────── */
 #pg-app{display:none;padding-top:68px}
+#pg-app.shown{display:block}
 
 /* ── HEADER ─────────────────────────────── */
 header{
@@ -223,7 +224,7 @@ header.hdr-hidden{transform:translateY(-100%)}
 }
 
 /* ── MAIN ────────────────────────────────── */
-main{max-width:1200px;margin:0 auto;padding:22px 18px}
+main{width:100%;max-width:1200px;margin:0 auto;padding:22px 18px;box-sizing:border-box}
 
 /* ── TABS ────────────────────────────────── */
 .tabs{
@@ -270,6 +271,155 @@ main{max-width:1200px;margin:0 auto;padding:22px 18px}
 .bnav-item:active{ transform:scale(.94); }
 @media(prefers-reduced-motion:reduce){
   .bnav-highlight,.bnav-ic{ transition:opacity .15s ease; }
+}
+
+/* ── SIDEBAR + TOPBAR (desktop, disembunyikan di HP) ──────────────────── */
+.sidebar{
+  display:none; width:256px; flex-shrink:0; flex-direction:column;
+  background:linear-gradient(180deg,var(--green-m),var(--green) 55%,#0e2c22);
+  position:sticky; top:0; height:100vh; overflow:hidden;
+  transition:width .22s ease;
+}
+.sidebar-head{ display:flex; align-items:center; gap:12px; padding:24px 20px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
+.sidebar-logo{
+  width:38px; height:38px; border-radius:11px; flex-shrink:0; overflow:hidden;
+  background:rgba(255,255,255,.1); border:1px solid var(--gold-l);
+  display:flex; align-items:center; justify-content:center;
+}
+.sidebar-logo img{ width:100%; height:100%; object-fit:contain; border-radius:9px; }
+.sidebar-brand-txt{ min-width:0; }
+.sidebar-brand-name{ font-family:'Lora',serif; font-weight:700; font-size:17px; color:#fdf9ee; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidebar-brand-sub{ font-size:8.5px; font-weight:700; color:var(--gold-l); letter-spacing:.5px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-transform:uppercase; }
+.sidebar-nav{ flex:1; overflow-y:auto; overflow-x:hidden; padding:18px 12px; display:flex; flex-direction:column; gap:22px; scrollbar-width:none; }
+.sidebar-nav::-webkit-scrollbar{ display:none; }
+.sidebar-group-label{ font-size:10px; font-weight:700; color:#7fa08e; letter-spacing:1.2px; padding:0 12px 8px; white-space:nowrap; }
+.sidebar-item{
+  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  padding:10px 12px; border-radius:10px; border:none; border-left:3px solid transparent;
+  background:transparent; color:#cfe0d5; cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif; transition:background .15s ease;
+}
+.sidebar-item:hover{ background:rgba(255,255,255,.08); }
+.sidebar-item.act{ background:rgba(255,255,255,.12); border-left-color:var(--gold-l); color:#fdf9ee; }
+.sidebar-item-ic{ width:20px; height:20px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#9fc0ac; }
+.sidebar-item.act .sidebar-item-ic{ color:var(--gold-l); }
+.sidebar-item-label{ font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidebar-badge{ margin-left:auto; background:var(--red); color:#fff; font-size:10.5px; font-weight:700; border-radius:20px; padding:1px 7px; flex-shrink:0; }
+.sidebar-foot{ padding:12px; border-top:1px solid rgba(255,255,255,.08); flex-shrink:0; }
+.sidebar-profile{ display:flex; align-items:center; gap:10px; padding:8px; border-radius:11px; cursor:pointer; transition:background .15s ease; }
+.sidebar-profile:hover{ background:rgba(255,255,255,.1); }
+.sidebar-av{
+  width:36px; height:36px; border-radius:50%; flex-shrink:0; overflow:hidden;
+  border:2px solid var(--gold-l); background:var(--green-b); color:var(--green-l);
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;
+}
+.sidebar-profile-txt{ min-width:0; flex:1; overflow:hidden; }
+.sidebar-profile-name{ font-size:13px; font-weight:700; color:#fdf9ee; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidebar-profile-role{ font-size:10.5px; color:#9fc0ac; white-space:nowrap; }
+.sidebar-collapse-btn{
+  width:100%; margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:10px;
+  color:#cfe0d5; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; transition:background .15s ease;
+}
+.sidebar-collapse-btn:hover{ background:rgba(255,255,255,.14); }
+.sidebar-collapse-btn svg{ flex-shrink:0; transition:transform .2s ease; }
+.sidebar-collapse-btn span{ font-size:12.5px; font-weight:600; white-space:nowrap; }
+
+body.sidebar-collapsed .sidebar{ width:76px; }
+body.sidebar-collapsed .sidebar-brand-txt,
+body.sidebar-collapsed .sidebar-group-label,
+body.sidebar-collapsed .sidebar-item-label,
+body.sidebar-collapsed .sidebar-badge,
+body.sidebar-collapsed .sidebar-profile-txt,
+body.sidebar-collapsed .sidebar-collapse-btn span{ display:none; }
+body.sidebar-collapsed .sidebar-collapse-btn svg{ transform:rotate(180deg); }
+body.sidebar-collapsed .sidebar-item{ justify-content:center; padding:10px; }
+body.sidebar-collapsed .sidebar-head{ justify-content:center; padding:24px 10px; }
+body.sidebar-collapsed .sidebar-profile{ justify-content:center; }
+
+.app-main-col{ display:flex; flex-direction:column; min-width:0; }
+.topbar{
+  display:none; align-items:center; justify-content:space-between; gap:20px;
+  padding:18px 32px; background:var(--bg); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:10;
+}
+.topbar-left{ display:flex; align-items:center; gap:22px; flex:1; min-width:0; }
+.topbar-title{ font-family:'Lora',serif; font-size:17px; font-weight:700; color:var(--green); white-space:nowrap; flex-shrink:0; }
+.topbar-search{ position:relative; flex:1; max-width:420px; }
+.topbar-search svg{ position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-xl); }
+.topbar-search input{
+  width:100%; box-sizing:border-box; padding:11px 14px 11px 38px; border-radius:12px;
+  border:1px solid var(--border); background:var(--surface); color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13.5px; outline:none; transition:border-color var(--transition);
+}
+.topbar-search input:focus{ border-color:var(--green-l); }
+.topbar-right{ display:flex; align-items:center; gap:14px; flex-shrink:0; }
+.topbar-bell{
+  position:relative; width:40px; height:40px; border-radius:11px;
+  background:var(--surface); border:1px solid var(--border); color:var(--green-l);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .15s ease;
+}
+.topbar-bell:hover{ background:var(--bg); }
+.topbar-bell-dot{ position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--red); border:2px solid var(--surface); }
+.topbar-divider{ width:1px; height:26px; background:var(--border); }
+.topbar-profile{ display:flex; align-items:center; gap:10px; cursor:pointer; }
+.topbar-av{
+  width:38px; height:38px; border-radius:50%; flex-shrink:0; overflow:hidden;
+  border:2px solid var(--gold-l); background:var(--green-b); color:var(--green-l);
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;
+}
+.topbar-profile-name{ font-size:13px; font-weight:700; color:var(--text); line-height:1.2; white-space:nowrap; }
+.topbar-profile-role{ font-size:11px; color:var(--text-xl); white-space:nowrap; }
+
+@media(min-width:641px){
+  #pg-app.shown{ display:flex; padding-top:0; }
+  header,.tabs,.bnav{ display:none !important; }
+  .sidebar{ display:flex; }
+  .topbar{ display:flex; }
+  .app-main-col{ flex:1; }
+  main{ padding:28px 32px 48px; }
+  .sgrid{ grid-template-columns:repeat(4,1fr); }
+}
+
+/* ── ISI LAYAR DESKTOP LEBAR (≥1024px): kartu/tabel/list dilebarin biar gak
+   nyisa area kosong gede kiri-kanan kayak mobile-view yang cuma di-stretch ── */
+@media(min-width:1024px){
+  main{ max-width:1600px; }
+  body.role-ortu main{ max-width:820px; } /* konten personal ortu -- gak usah selebar dashboard admin */
+
+  /* Dashboard: greeting + Total Saldo sejajar (bukan numpuk ke bawah) */
+  .dash-hero-row{ display:grid; grid-template-columns:1fr 320px; gap:18px; }
+  .dash-hero-row #dash-greeting{ margin-bottom:0; height:120px; }
+  .dash-hero-row #dash-stat-hero{ height:120px; }
+  .dash-hero-row .sc-hero{ height:100%; margin-bottom:0; }
+
+  /* Kobong & Pengurus: kartu udah grid auto-fill, cuma dilebarin kolom minimalnya */
+  .kgrid{ grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); }
+  .pgrid{ grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); }
+
+  /* Persetujuan (pending & riwayat) & Notifikasi: kartu mandiri, layak digrid */
+  #persetujuan-list,#riwayat-persetujuan-list{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:14px; align-items:start;
+  }
+  #notif-riwayat-list{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; align-items:start;
+  }
+  #persetujuan-list>div,#riwayat-persetujuan-list>div,#notif-riwayat-list>div{ margin-bottom:0 !important; }
+
+  /* Monitor: kartu per-pengurus digrid, kotak statistik jadi 4 kolom sejajar */
+  #monitor-content{ display:grid; grid-template-columns:repeat(auto-fill,minmax(380px,1fr)); gap:14px; align-items:start; text-align:left !important; }
+  #monitor-content>.panel{ margin-bottom:0 !important; }
+  #monitor-stats{ grid-template-columns:repeat(4,1fr) !important; }
+
+  /* Transaksi Massal: kolom nominal jangan ikut melar ngikutin lebar layar */
+  .massal-row{ grid-template-columns:1fr 180px !important; }
+
+  /* Tab isinya cuma 1 panel besar (form/antrean) -- jangan dilebarin sampe
+     sisi layar, cukup dikunci nyaman & ditengahin biar gak jadi form raksasa */
+  #sec-massal>.panel,#sec-naikkelas>.panel,#sec-notifikasi>.panel,
+  #sec-persetujuan>.panel,#sec-monitor>.panel{
+    max-width:1100px; margin-left:auto; margin-right:auto;
+  }
 }
 
 /* ── PANEL AKUN (geser dari kanan) ────────── */
@@ -456,7 +606,7 @@ tbody tr.row-reveal.is-visible{opacity:1;transform:translateY(0)}
 /* Kartu Total Saldo -- hero card di atas grid, bukan salah satu child-nya */
 .sc-hero{
   background:var(--green);border-radius:var(--rad-lg);
-  padding:18px 20px;margin-bottom:12px;
+  padding:16px 18px;margin-bottom:12px;
   display:flex;align-items:center;justify-content:space-between;gap:14px;
   box-shadow:0 8px 20px rgba(18,53,40,.25);
 }
@@ -507,6 +657,8 @@ tbody tr.row-reveal.is-visible{opacity:1;transform:translateY(0)}
 
 /* ── TABLE ───────────────────────────────── */
 .tw{overflow-x:auto;border-radius:0}
+#dash-ringkasan-panel .tw{scrollbar-width:none}
+#dash-ringkasan-panel .tw::-webkit-scrollbar{display:none}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{background:var(--green)}
 thead th{
@@ -519,6 +671,17 @@ tbody tr{border-bottom:1px solid var(--border);transition:background var(--trans
 tbody tr:hover{background:var(--green-p)}
 tbody tr:last-child{border-bottom:none}
 tbody td{padding:10px 14px;vertical-align:middle}
+
+/* Kunci kolom Nama saat scroll tabel ke samping -- opsional, toggle lewat tombol "Kunci Nama" */
+.freeze-toggle-btn svg{flex-shrink:0}
+body.freeze-nama .tw td.col-nama,
+body.freeze-nama .tw th.col-nama{
+  position:sticky;left:0;z-index:2;
+  background:var(--surface);
+  box-shadow:2px 0 6px rgba(0,0,0,.08);
+}
+body.freeze-nama .tw thead th.col-nama{background:var(--green);z-index:3}
+body.freeze-nama .tw tbody tr:hover td.col-nama{background:var(--green-p)}
 
 /* ── SALDO COLORS ───────────────────────── */
 .s-ok{color:var(--green-l);font-weight:700}
@@ -604,9 +767,10 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .fbar-full{grid-column:1/-1!important}
 
 /* COLLAPSIBLE FILTER PANEL */
-.ftog-row{display:flex;gap:8px;margin-bottom:10px}
-.ftog-row input{flex:1;margin-bottom:0;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color var(--transition);box-sizing:border-box}
+.ftog-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.ftog-row input{flex:1;min-width:160px;margin-bottom:0;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rad-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color var(--transition);box-sizing:border-box}
 .ftog-row input:focus{border-color:var(--green-l);box-shadow:0 0 0 3px rgba(45,143,86,.08)}
+.ftog-btns{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .ftog-btn{position:relative;display:flex;align-items:center;gap:6px;padding:9px 14px;border:1.5px solid var(--border);border-radius:var(--rad-sm);background:var(--surface);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color var(--transition);font-family:'Plus Jakarta Sans',sans-serif}
 .ftog-btn:hover{border-color:var(--green-l)}
 .ftog-btn.active{border-color:var(--green-l);background:rgba(45,143,86,.08);color:var(--green-l)}
@@ -907,8 +1071,6 @@ body.role-sekretariat .super-admin-only{display:none!important}
   body.has-bnav .mnav-grid{display:block}
   body:not(.has-bnav) .tabs{overflow-x:auto;width:100%;flex-wrap:nowrap;scrollbar-width:none}
   body:not(.has-bnav) .tabs::-webkit-scrollbar{display:none}
-  #dash-ringkasan-panel .tw{scrollbar-width:none}
-  #dash-ringkasan-panel .tw::-webkit-scrollbar{display:none}
   table{font-size:12px}
   thead th{padding:9px 10px;font-size:10px}
   tbody td{padding:9px 10px}

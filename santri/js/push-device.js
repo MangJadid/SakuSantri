@@ -120,7 +120,7 @@ function doLogout(){
   resetFPanel('riw', RIW_FILTER_IDS, ()=>{});
 
   document.body.classList.remove('role-super','role-pengurus','role-ortu');
-  document.getElementById('pg-app').style.display='none';
+  document.getElementById('pg-app').classList.remove('shown');
   document.getElementById('pg-login').style.display='flex';
   document.getElementById('ortu-nama').value='';
   document.getElementById('ortu-pin').value='';

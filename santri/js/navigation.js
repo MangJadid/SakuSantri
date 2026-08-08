@@ -1,3 +1,84 @@
+// Sidebar desktop -- menu dikelompokkan per kategori, item difilter otomatis
+// sesuai role (cuma ditampilkan kalau tab-nya beneran ada di #main-tabs).
+const SIDEBAR_GROUPS = [
+  { label:'Utama', items:[
+    {id:'dashboard', label:'Dashboard', icon:'home'},
+    {id:'detail', label:'Beranda', icon:'home'},
+    {id:'monitor', label:'Monitor', icon:'eye'},
+  ]},
+  { label:'Data Santri', items:[
+    {id:'santri', label:'Santri', icon:'users'},
+    {id:'kobong', label:'Kobong', icon:'home'},
+    {id:'naikkelas', label:'Naik Kelas', icon:'graduation-cap'},
+    {id:'pengurus', label:'Pengurus', icon:'person'},
+    {id:'profil', label:'Profil Santri', icon:'person'},
+  ]},
+  { label:'Keuangan', items:[
+    {id:'massal', label:'Transaksi', icon:'wallet'},
+    {id:'riwayat', label:'Riwayat', icon:'document'},
+    {id:'syahriyah', label:'Uang Syahriyah', icon:'document', badge:'badge-syahriyah-sb'},
+  ]},
+  { label:'Sistem', items:[
+    {id:'persetujuan', label:'Persetujuan', icon:'check-circle', badge:'badge-persetujuan-sb'},
+    {id:'notifikasi', label:'Notifikasi', icon:'bell', badge:'badge-notifikasi-tab-sb'},
+    {id:'pengaturan', label:'Pengaturan', icon:'settings'},
+  ]},
+];
+
+function buildSidebar(){
+  const nav = document.getElementById('sidebar-nav');
+  if(!nav) return;
+  let html = '';
+  SIDEBAR_GROUPS.forEach(g=>{
+    const items = g.items.filter(m=>document.getElementById('tab-'+m.id));
+    if(!items.length) return;
+    html += `<div class="sidebar-group"><div class="sidebar-group-label">${g.label}</div>`;
+    items.forEach(m=>{
+      html += `<button class="sidebar-item" id="sbar-${m.id}" onclick="showTab('${m.id}')">
+        <span class="sidebar-item-ic">${svgIcon(m.icon,18)}</span>
+        <span class="sidebar-item-label">${m.label}</span>
+        ${m.badge?`<span id="${m.badge}" class="sidebar-badge" style="display:none">0</span>`:''}
+      </button>`;
+    });
+    html += `</div>`;
+  });
+  nav.innerHTML = html;
+  syncSidebarActive();
+}
+
+const TAB_TITLES = {
+  dashboard:'Dashboard', santri:'Santri', massal:'Transaksi', riwayat:'Riwayat',
+  kobong:'Kobong', naikkelas:'Naik Kelas', pengurus:'Pengurus', persetujuan:'Persetujuan',
+  notifikasi:'Notifikasi', monitor:'Monitor', pengaturan:'Pengaturan',
+  detail:'Beranda', syahriyah:'Uang Syahriyah', profil:'Profil Santri',
+};
+
+function syncSidebarActive(){
+  const activeTab = document.querySelector('.tb.act');
+  const id = activeTab ? activeTab.id.replace('tab-','') : null;
+  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('act'));
+  if(id) document.getElementById('sbar-'+id)?.classList.add('act');
+  const titleEl = document.getElementById('topbar-title');
+  if(titleEl) titleEl.textContent = TAB_TITLES[id] || 'Dashboard';
+}
+
+// Kotak cari di topbar desktop -- kalau lagi di tab dashboard/santri, filter
+// langsung tabel yang aktif; kalau di tab lain, loncat ke tab Santri dulu.
+function topbarSearchGo(value){
+  let activeId = document.querySelector('.tb.act')?.id?.replace('tab-','');
+  if(activeId!=='dashboard' && activeId!=='santri' && value.trim()!==''){
+    showTab('santri');
+    activeId = 'santri';
+  }
+  if(activeId==='santri'){
+    const el = document.getElementById('santri-cari');
+    if(el){ el.value = value; renderTabelSantri(); }
+  } else if(activeId==='dashboard'){
+    const el = document.getElementById('dash-cari');
+    if(el){ el.value = value; renderDashboard(); }
+  }
+}
+
 // Menu selain dashboard/santri/massal/riwayat (4 itu masuk bottom nav di HP).
 // Dipakai buat grid "Fitur Lainnya" di dashboard -- icon + warna sesuai referensi.
 const MENU_LAINNYA = [
@@ -45,6 +126,7 @@ function buildTabs(){
   }
   tabs.innerHTML = t;
   buildMobileNav();
+  buildSidebar();
 }
 
 // Bottom nav (4 utama) + grid "Fitur Lainnya" di dashboard -- HP saja.
@@ -92,6 +174,10 @@ function buildMobileNav(){
 // Geser pill highlight ke tombol bottom-nav yang lagi aktif (ukur posisi asli,
 // bukan pecahan persen tetap -- jumlah tombol bisa beda-beda per role).
 function moveBnavHighlight(){
+  // Desktop: bottom-nav disembunyikan total, jangan baca offsetWidth/offsetLeft
+  // di sini -- itu bikin browser paksa hitung layout (reflow) tiap ganti tab,
+  // padahal hasilnya gak kepakai sama sekali karena elemennya display:none.
+  if(window.innerWidth > 640) return;
   const hl = document.getElementById('bnav-highlight');
   const active = document.querySelector('.bnav-item.act');
   if(!hl || !active) { if(hl) hl.style.opacity = '0'; return; }
@@ -123,6 +209,7 @@ function showTab(id){
   if(t) t.classList.add('act');
   document.getElementById('bnav-'+id)?.classList.add('act');
   moveBnavHighlight();
+  syncSidebarActive();
   if(id==='dashboard') renderDashboard();
   if(id==='santri') renderTabelSantri();
   if(id==='massal') renderMassal();

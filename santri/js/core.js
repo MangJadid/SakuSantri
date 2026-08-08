@@ -13,6 +13,30 @@
   }, {passive:true});
 })();
 
+// ===== KUNCI KOLOM NAMA (tabel dashboard & santri) -- opsional, tersimpan per-user =====
+function toggleFreezeNama(){
+  const active = document.body.classList.toggle('freeze-nama');
+  localStorage.setItem('freeze_nama_kolom', active ? '1' : '0');
+  document.querySelectorAll('.freeze-toggle-btn').forEach(b=>b.classList.toggle('active', active));
+}
+function initFreezeNama(){
+  const on = localStorage.getItem('freeze_nama_kolom') === '1';
+  if(!on) return;
+  document.body.classList.add('freeze-nama');
+  document.querySelectorAll('.freeze-toggle-btn').forEach(b=>b.classList.add('active'));
+}
+initFreezeNama();
+
+// ===== SIDEBAR DESKTOP: ciutkan/lebarkan -- tersimpan per-browser =====
+function toggleSidebarCollapse(){
+  const collapsed = document.body.classList.toggle('sidebar-collapsed');
+  localStorage.setItem('sidebar_collapsed', collapsed ? '1' : '0');
+}
+function initSidebarCollapse(){
+  if(localStorage.getItem('sidebar_collapsed') === '1') document.body.classList.add('sidebar-collapsed');
+}
+initSidebarCollapse();
+
 // ===== LOADING SCREEN: fade-out halus sebelum hilang =====
 function hideLoadingScreen(){
   const el = document.getElementById('pg-loading');

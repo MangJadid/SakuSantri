@@ -401,7 +401,7 @@ async function simpanSantri(){
   try {
     await loadAllData();
   } catch(errLoad) {
-    alert('[DEBUG] loadAllData ERROR:\n' + errLoad);
+    toast('Santri tersimpan, tapi gagal muat ulang data terbaru: '+(errLoad?.message||errLoad), false);
   }
   await loadSantriNames();
   renderTabelSantri();

@@ -14,12 +14,14 @@ async function updateBadgeNotifikasi(){
     const {data} = await SB.from('push_notifications').select('id',{count:'exact'}).gt('id', lastSeen);
     _notifBaruCount = data?.length||0;
   } catch(e){ _notifBaruCount = 0; }
-  ['badge-notifikasi-tab','badge-notifikasi-grid','badge-notif-bell'].forEach(elId=>{
+  ['badge-notifikasi-tab','badge-notifikasi-grid','badge-notif-bell','badge-notifikasi-tab-sb'].forEach(elId=>{
     const el = document.getElementById(elId);
     if(!el) return;
     el.style.display = _notifBaruCount>0 ? 'inline' : 'none';
     el.textContent = _notifBaruCount>9 ? '9+' : _notifBaruCount;
   });
+  const dot = document.getElementById('topbar-bell-dot');
+  if(dot) dot.style.display = _notifBaruCount>0 ? 'block' : 'none';
 }
 
 // Panel bel (baca-saja) buat role tanpa akses tab Notifikasi penuh (pengurus/

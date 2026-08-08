@@ -201,7 +201,7 @@ async function openDetailModal(id){
     </div>`;
 }
 
-function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;var hide=!el.classList.contains('dh-hidden');el.classList.toggle('dh-hidden');var mo=el.closest('.mb')||el.closest('.modal')||el.closest('.sec')||document;if(mo)mo.querySelectorAll('.dh-nominal').forEach(function(n){hide?n.classList.add('dh-hidden'):n.classList.remove('dh-hidden')});btn.innerHTML=hide?'&#128584;':'&#128065;'}
+function dhToggle(id,btn){var el=document.getElementById(id);if(!el)return;var hide=!el.classList.contains('dh-hidden');el.classList.toggle('dh-hidden');var mo=el.closest('.mb')||el.closest('.modal')||el.closest('.sec')||document;if(mo)mo.querySelectorAll('.dh-nominal').forEach(function(n){hide?n.classList.add('dh-hidden'):n.classList.remove('dh-hidden')});btn.innerHTML=svgIcon(hide?'eye-off':'eye',btn.offsetWidth>30?18:16)}
 function switchDetailTab(tab){
   const txContent = document.getElementById('tab-tx-content');
   const tagihanContent = document.getElementById('tab-tagihan-content');

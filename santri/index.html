@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Saku Santri">
-<link rel="stylesheet" href="./css/style.css?v=31">
+<link rel="stylesheet" href="./css/style.css?v=47">
 <meta name="theme-color" content="#0f5c52">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
@@ -119,9 +119,9 @@
     <h2>Data Uang Jajan Santri</h2>
     <p class="sub" id="login-sub">PONDOK PESANTREN AN-NUR</p>
     <div class="role-tabs">
-      <button class="rtab act" onclick="switchRole('ortu')" id="rt-ortu">👨‍👩‍👦 Orang Tua</button>
-      <button class="rtab" onclick="switchRole('pengurus')" id="rt-pengurus">👨‍💼 Pengurus</button>
-      <button class="rtab" onclick="switchRole('super')" id="rt-super">🛡️ Admin</button>
+      <button class="rtab act" onclick="switchRole('ortu')" id="rt-ortu">Orang Tua</button>
+      <button class="rtab" onclick="switchRole('pengurus')" id="rt-pengurus">Pengurus</button>
+      <button class="rtab" onclick="switchRole('super')" id="rt-super">Admin</button>
     </div>
     <div id="login-err" class="login-err"></div>
 
@@ -148,7 +148,7 @@
         <label>Password</label>
         <input type="password" id="pg-pass" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')loginPengurus()">
       </div>
-      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="loginPengurus()">🔐 Masuk</button>
+      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="loginPengurus()">Masuk</button>
     </div>
 
     <!-- SUPER ADMIN -->
@@ -161,7 +161,7 @@
         <label>Password</label>
         <input type="password" id="sa-pass" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')loginSuper()">
       </div>
-      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="loginSuper()">🛡️ Masuk sebagai Admin</button>
+      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="loginSuper()">Masuk sebagai Admin</button>
     </div>
 
     <div style="margin-top:16px;background:var(--gold-p);border:1px solid var(--gold-b);border-radius:10px;padding:10px 14px;font-size:11.5px;color:var(--text-m);line-height:1.6;text-align:center">
@@ -205,13 +205,63 @@
     </div>
   </header>
 
-  <div id="notif-bar" style="display:none" class="nb" id="notif-bar"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-logo"><img src="icon-192.png" alt="Logo Saku Santri"></div>
+      <div class="sidebar-brand-txt">
+        <div class="sidebar-brand-name">Saku Santri</div>
+        <div class="sidebar-brand-sub" id="sidebar-brand-sub">Pondok Pesantren</div>
+      </div>
+    </div>
+    <div class="sidebar-nav" id="sidebar-nav"></div>
+    <div class="sidebar-foot">
+      <div class="sidebar-profile" id="sidebar-profile-trigger" onclick="openAccountDrawer()">
+        <div class="sidebar-av" id="hdr-profil-av"></div>
+        <div class="sidebar-profile-txt">
+          <div class="sidebar-profile-name" id="sidebar-profile-name">—</div>
+          <div class="sidebar-profile-role" id="sidebar-profile-role">—</div>
+        </div>
+      </div>
+      <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Ciutkan sidebar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>Ciutkan</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main-col" id="app-main-col">
+    <div class="topbar" id="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:block"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="topbar-search" placeholder="Cari santri..." oninput="topbarSearchGo(this.value)">
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-bell" id="topbar-bell" onclick="openNotifBellPanel()" title="Notifikasi dari Admin" style="display:none">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="topbar-bell-dot" class="topbar-bell-dot" style="display:none"></span>
+        </button>
+        <div class="topbar-divider"></div>
+        <div class="topbar-profile" onclick="openAccountDrawer()">
+          <div class="topbar-av" id="topbar-av"></div>
+          <div class="topbar-profile-txt">
+            <div class="topbar-profile-name" id="topbar-profile-name">—</div>
+            <div class="topbar-profile-role" id="topbar-profile-role">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <div id="notif-bar" style="display:none" class="nb"></div>
 
   <main>
     <div class="tabs" id="main-tabs"></div>
 
     <!-- DASHBOARD -->
     <div class="sec" id="sec-dashboard">
+      <div class="dash-hero-row">
       <div id="dash-greeting" style="display:none;background:linear-gradient(135deg,var(--green) 0%,#0f3327 100%);border:1px solid rgba(201,162,39,.4);border-radius:var(--rad-lg);padding:22px 26px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden;box-shadow:0 12px 32px rgba(15,76,42,.22)">
         <div style="position:absolute;top:0;left:8%;right:8%;height:2px;background:linear-gradient(90deg,transparent,var(--gold-l),transparent)"></div>
         <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-family:'Amiri',serif;font-size:80px;opacity:.1;line-height:1;color:var(--gold-l)">﷽</div>
@@ -229,6 +279,7 @@
         </div>
       </div>
       <div id="dash-stat-hero"></div>
+      </div>
       <div class="sgrid" id="dash-stats"></div>
 
       <!-- Grid akses cepat -- HP saja, gantiin tab atas yang harus discroll -->
@@ -245,6 +296,11 @@
         <div class="pb">
           <div class="ftog-row">
             <input type="text" id="dash-cari" placeholder="🔍 Cari nama santri..." oninput="debounce(renderDashboardDebounced)()">
+          </div>
+          <div class="ftog-btns">
+            <button class="ftog-btn freeze-toggle-btn" onclick="toggleFreezeNama()" title="Kunci kolom nama saat scroll tabel ke samping">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Kunci Nama
+            </button>
             <button class="ftog-btn" id="ftog-dash" onclick="toggleFPanel('dash')">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="1.6" fill="currentColor"/><circle cx="15" cy="12" r="1.6" fill="currentColor"/><circle cx="9" cy="18" r="1.6" fill="currentColor"/></svg> Filter<span class="fb-badge" style="display:none">0</span>
             </button>
@@ -261,7 +317,7 @@
             <button class="freset-btn" onclick="resetFPanel('dash',DASH_FILTER_IDS,renderDashboard)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M8 16H3v5"/></svg> Reset Filter</button>
           </div></div>
           <div class="tw"><table>
-            <thead><tr><th>#</th><th>Santri</th><th>Kobong</th><th>Pemasukan</th><th>Pengeluaran</th><th>Saldo</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>#</th><th class="col-nama">Santri</th><th>Kobong</th><th>Pemasukan</th><th>Pengeluaran</th><th>Saldo</th><th>Aksi</th></tr></thead>
             <tbody id="dash-tbl"></tbody>
           </table></div>
         </div>
@@ -296,6 +352,11 @@
         <div class="pb">
           <div class="ftog-row">
             <input type="text" id="santri-cari" placeholder="🔍 Cari nama..." oninput="debounce(renderTabelSantriDebounced)()">
+          </div>
+          <div class="ftog-btns">
+            <button class="ftog-btn freeze-toggle-btn" onclick="toggleFreezeNama()" title="Kunci kolom nama saat scroll tabel ke samping">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Kunci Nama
+            </button>
             <button class="ftog-btn" id="ftog-santri" onclick="toggleFPanel('santri')">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="1.6" fill="currentColor"/><circle cx="15" cy="12" r="1.6" fill="currentColor"/><circle cx="9" cy="18" r="1.6" fill="currentColor"/></svg> Filter<span class="fb-badge" style="display:none">0</span>
             </button>
@@ -323,7 +384,7 @@
             </div>
           </div>
           <div class="tw" id="santri-tw"><table>
-            <thead><tr><th class="cb-col" style="width:36px"><input type="checkbox" id="santri-cb-all" onchange="santriToggleAll(this.checked)" style="display:none;accent-color:var(--green)"></th><th>#</th><th>Nama Santri</th><th>Kobong</th><th>PIN</th><th>Saldo</th><th>Aksi</th></tr></thead>
+            <thead><tr><th class="cb-col" style="width:36px"><input type="checkbox" id="santri-cb-all" onchange="santriToggleAll(this.checked)" style="display:none;accent-color:var(--green)"></th><th>#</th><th class="col-nama">Nama Santri</th><th>Kobong</th><th>PIN</th><th>Saldo</th><th>Aksi</th></tr></thead>
             <tbody id="santri-tbl"></tbody>
           </table></div>
           <div id="santri-pagination" style="display:flex;justify-content:center;gap:6px;margin-top:14px;flex-wrap:wrap"></div>
@@ -561,6 +622,8 @@
     <div class="sec" id="sec-naikkelas"></div>
 
   </main>
+
+  </div><!-- /app-main-col -->
 
   <!-- Bottom nav -- HP saja, 4 menu paling sering dipakai -->
   <nav class="bnav" id="bottom-nav"></nav>
@@ -1088,34 +1151,34 @@
 </div>
 
 
-<script src="./js/icons.js?v=1"></script>
-<script src="./js/core.js?v=14"></script>
-<script src="./js/init-setup.js?v=13"></script>
-<script src="./js/auth.js?v=13"></script>
-<script src="./js/navigation.js?v=16"></script>
-<script src="./js/dashboard.js?v=14"></script>
+<script src="./js/icons.js?v=2"></script>
+<script src="./js/core.js?v=16"></script>
+<script src="./js/init-setup.js?v=14"></script>
+<script src="./js/auth.js?v=16"></script>
+<script src="./js/navigation.js?v=19"></script>
+<script src="./js/dashboard.js?v=15"></script>
 <script src="./js/santri-helpers.js?v=11"></script>
-<script src="./js/santri-table.js?v=14"></script>
-<script src="./js/santri-detail.js?v=12"></script>
+<script src="./js/santri-table.js?v=15"></script>
+<script src="./js/santri-detail.js?v=13"></script>
 <script src="./js/transaksi.js?v=11"></script>
-<script src="./js/santri-crud.js?v=12"></script>
-<script src="./js/persetujuan.js?v=13"></script>
-<script src="./js/massal.js?v=13"></script>
+<script src="./js/santri-crud.js?v=13"></script>
+<script src="./js/persetujuan.js?v=14"></script>
+<script src="./js/massal.js?v=14"></script>
 <script src="./js/riwayat.js?v=11"></script>
 <script src="./js/kobong-asrama.js?v=12"></script>
 <script src="./js/pengurus.js?v=12"></script>
-<script src="./js/profil.js?v=14"></script>
+<script src="./js/profil.js?v=15"></script>
 <script src="./js/import.js?v=11"></script>
 <script src="./js/nisn-match.js?v=11"></script>
-<script src="./js/ortu.js?v=13"></script>
+<script src="./js/ortu.js?v=15"></script>
 <script src="./js/pengaturan.js?v=11"></script>
 <script src="./js/export-backup.js?v=12"></script>
 <script src="./js/rekening-wa.js?v=15"></script>
 <script src="./js/tutup-bulan.js?v=12"></script>
-<script src="./js/notifikasi.js?v=14"></script>
-<script src="./js/push-device.js?v=12"></script>
+<script src="./js/notifikasi.js?v=15"></script>
+<script src="./js/push-device.js?v=13"></script>
 <script src="./js/session-tracking.js?v=11"></script>
-<script src="./js/naik-kelas.js?v=12"></script>
+<script src="./js/naik-kelas.js?v=13"></script>
 <script src="./js/keuangan-monitor.js?v=12"></script>
 <script src="./js/massal-kobong.js?v=11"></script>
 
