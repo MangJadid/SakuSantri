@@ -287,8 +287,6 @@ async function renderProfilOrtu(){
   const asramaP = _kbP?.asrama?.nama || '—';
   const kelasP = _sObjP.kelas || santri.kelas || '—';
   const dapurP = _dapurMapP[_sObjP.dapur_id || santri.dapur_id] || _sObjP.dapur_id || santri.dapur_id || '—';
-  const tglMasukRaw = _sObjP.created_at || santri.created_at;
-  const tglMasukP = tglMasukRaw ? (()=>{ const d=new Date(tglMasukRaw); return `${d.getDate()} ${bNames[d.getMonth()]} ${d.getFullYear()}`; })() : '—';
   const nisnP = _sObjP.nisn || santri.nisn || '—';
 
   // Wali kobong -- pengurus yang mengelola santri ini (santri.created_by)
@@ -329,10 +327,9 @@ async function renderProfilOrtu(){
       ${infoRow('Kelas', 'Kelas '+kelasP)}
       ${infoRow('Asrama', asramaP)}
       ${infoRow('Kobong', kobongP)}
-      ${infoRow('Dapur', dapurP)}
       <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0">
-        <span style="font-size:12.5px;color:var(--text-l)">Tanggal Masuk</span>
-        <span style="font-size:13px;font-weight:600;color:var(--text)">${tglMasukP}</span>
+        <span style="font-size:12.5px;color:var(--text-l)">Dapur</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${dapurP}</span>
       </div>
     </div>
 
