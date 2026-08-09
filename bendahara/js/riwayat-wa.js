@@ -1,4 +1,5 @@
-function renderRiwayat(){
+function renderRiwayat(keepPage){
+  if(!keepPage) _pageState.riwayat = 1;
   const q=document.getElementById('cari-riwayat')?.value.toLowerCase()||'';
   const tahunF=document.getElementById('filter-tahun-riwayat')?.value||'';
   const bulanF=document.getElementById('filter-bulan-riwayat')?.value||'';
@@ -10,12 +11,13 @@ function renderRiwayat(){
     return t.status==='lunas'||t.status==='cicil';
   }).sort((a,b)=>(b.tgl_bayar||'').localeCompare(a.tgl_bayar||''));
 
-  const rows=filtered.map((t,i)=>{
+  const pageStart=((_pageState.riwayat||1)-1)*PAGE_SIZE;
+  const rows=paginate(filtered,'riwayat').map((t,i)=>{
     const s=getSantriById(t.santri_id)||{};
     return `<tr>
-      <td style="color:var(--text-l)">${i+1}</td>
+      <td style="color:var(--text-l)">${pageStart+i+1}</td>
       <td style="color:var(--text-l);font-size:12px">${fmtTgl(t.tgl_bayar)||'—'}</td>
-      <td><button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${s.nama||t.santri_nama||'—'}</button></td>
+      <td class="col-nama"><button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${s.nama||t.santri_nama||'—'}</button></td>
       <td><span class="badge badge-dapur">${getDapurEmoji(t.dapur_id)} ${getDapurNama(t.dapur_id)}</span></td>
       <td>${t.keterangan||'—'}</td>
       <td>${t.bulan||'—'}</td>
@@ -26,8 +28,7 @@ function renderRiwayat(){
 
   document.getElementById('riwayat-tbody').innerHTML=rows||'';
   document.getElementById('riwayat-empty').style.display=rows?'none':'block';
-  const pgEl=document.getElementById('riwayat-pagination');
-  if(pgEl) pgEl.innerHTML='';
+  renderPaginationUI('riwayat-pagination', filtered.length, 'riwayat', 'renderRiwayat(true)');
 }
 
 // ===== WA =====
@@ -120,7 +121,7 @@ function bukaWAMassal(source){
   if(kl) filterInfo.push(`Kelas: ${kl}`);
   if(bl) filterInfo.push(`Bulan: ${bl}`);
 
-  let html = filterInfo.length ? `<div style="font-size:11px;color:var(--text-l);margin-bottom:10px;padding:6px 10px;background:var(--bg2);border-radius:8px">🔧 Filter aktif: ${filterInfo.join(' · ')}</div>` : '';
+  let html = filterInfo.length ? `<div style="font-size:11px;color:var(--text-l);margin-bottom:10px;padding:6px 10px;background:var(--bg2);border-radius:8px;display:flex;align-items:center;gap:5px">${svgIcon('sliders',12)} Filter aktif: ${filterInfo.join(' · ')}</div>` : '';
   Object.entries(santriMap).forEach(([sid,tags])=>{
     const s=getSantriById(sid)||{};
     const total=tags.reduce((a,t)=>a+Number(t.nominal)-Number(t.nominal_bayar||0),0);
@@ -133,7 +134,7 @@ function bukaWAMassal(source){
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:13px;font-weight:700;color:var(--red)">${fmtRp(total)}</span>
-        ${hasWA?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${sid}','${bulanTag.split(',')[0].trim()}')">📱 Kirim</button>`:'<span style="font-size:11px;color:var(--text-l)">📵</span>'}
+        ${hasWA?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${sid}','${bulanTag.split(',')[0].trim()}')">${svgIcon('smartphone',12)} Kirim</button>`:`<span style="display:inline-flex;cursor:default;opacity:.5" title="No WA belum diinput">${svgIcon('smartphone',14)}</span>`}
       </div>
     </div>`;
   });

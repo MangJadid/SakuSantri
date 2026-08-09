@@ -275,6 +275,7 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   pengurus_id VARCHAR(50),
   username VARCHAR(100) UNIQUE,
   subscription JSON,
+  app_source VARCHAR(20),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -287,6 +288,7 @@ CREATE TABLE IF NOT EXISTS push_notifications (
   tipe VARCHAR(50),
   target_username VARCHAR(100),
   dikirim_oleh VARCHAR(100),
+  app_source VARCHAR(20),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

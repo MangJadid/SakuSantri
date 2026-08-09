@@ -52,7 +52,7 @@ function renderRekap(){
       const pct=d.total>0?Math.round(d.lunas/d.total*100):100;
       return `<tr>
         <td>${i+1}</td>
-        <td><button onclick="openDetailModal('${d.id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${d.nama}</button></td>
+        <td class="col-nama"><button onclick="openDetailModal('${d.id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${d.nama}</button></td>
         <td><span class="badge badge-bg">${d.kobong}</span></td>
         <td>${d.kelas}</td>
         <td><span class="badge badge-dapur">${getDapurEmoji(d.dapur_id)} ${getDapurNama(d.dapur_id)}</span></td>
@@ -62,10 +62,10 @@ function renderRekap(){
         <td style="color:var(--green)">${fmtRp(d.lunas)}</td>
         <td style="color:${d.tunggak>0?'var(--red)':'var(--green)'};font-weight:700">${fmtRp(d.tunggak)}</td>
         <td style="min-width:100px"><div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text-l);margin-top:2px">${pct}%</div></td>
-        <td><div style="display:flex;gap:4px">${d.tunggak>0?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${d.id}')">💰</button>`:''}<button class="btn btn-b btn-xs" onclick="openDetailModal('${d.id}')">📋</button>${d.tunggak>0?(d.no_wa?`<button class="btn btn-wa btn-xs" onclick="kirimWASantriRekap('${d.id}')">📱</button>`:'<span style="font-size:16px;cursor:default;opacity:.5" title="No WA belum diinput">📵</span>'):''}</div></td>
+        <td><div style="display:flex;gap:4px">${d.tunggak>0?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${d.id}')">${svgIcon('cash',12)}</button>`:''}<button class="btn btn-b btn-xs" onclick="openDetailModal('${d.id}')">${svgIcon('document',12)}</button>${d.tunggak>0?(d.no_wa?`<button class="btn btn-wa btn-xs" onclick="kirimWASantriRekap('${d.id}')">${svgIcon('smartphone',12)}</button>`:`<span style="display:inline-flex;cursor:default;opacity:.5" title="No WA belum diinput">${svgIcon('smartphone',14)}</span>`):''}</div></td>
       </tr>`;
     }).join('');
-    content.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Santri</th><th>Kobong</th><th>Kelas</th><th>Dapur</th><th>Uang Makan</th><th>Uang Listrik</th><th>Total Tagihan</th><th>Sudah Bayar</th><th>Tunggakan</th><th>Progres</th><th>Aksi</th></tr></thead><tbody>${rows||'<tr><td colspan="12"><div class="empty"><span class="ei">✅</span><p>Tidak ada tunggakan!</p></div></td></tr>'}</tbody></table></div>`;
+    content.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>#</th><th class="col-nama">Santri</th><th>Kobong</th><th>Kelas</th><th>Dapur</th><th>Uang Makan</th><th>Uang Listrik</th><th>Total Tagihan</th><th>Sudah Bayar</th><th>Tunggakan</th><th>Progres</th><th>Aksi</th></tr></thead><tbody>${rows||'<tr><td colspan="12"><div class="empty"><span class="ei">✅</span><p>Tidak ada tunggakan!</p></div></td></tr>'}</tbody></table></div>`;
   } else if(mode==='bulan'){
     const perBulan={};
     tagihanF.forEach(t=>{
@@ -133,7 +133,7 @@ function updateRekapSummary(tagihanF){
           <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Total Tagihan</div>
           <div style="font-size:17px;font-weight:800;color:var(--text)">${fmtRp(total)}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-            <span>🍽️ ${fmtRp(makan)}</span><span>⚡ ${fmtRp(listrik)}</span>
+            <span>${svgIcon('utensils',11)} ${fmtRp(makan)}</span><span>${svgIcon('zap',11)} ${fmtRp(listrik)}</span>
           </div>
           <div style="font-size:10px;color:var(--text-l);margin-top:2px">${tagihanF.length} tagihan</div>
         </div>
@@ -141,14 +141,14 @@ function updateRekapSummary(tagihanF){
           <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Terbayar</div>
           <div style="font-size:17px;font-weight:800;color:var(--green)">${fmtRp(lunas)}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-            <span>🍽️ ${fmtRp(Math.round(bayarMakan))}</span><span>⚡ ${fmtRp(Math.round(bayarListrik))}</span>
+            <span>${svgIcon('utensils',11)} ${fmtRp(Math.round(bayarMakan))}</span><span>${svgIcon('zap',11)} ${fmtRp(Math.round(bayarListrik))}</span>
           </div>
         </div>
         <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:12px 16px">
           <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Tunggakan</div>
           <div style="font-size:17px;font-weight:800;color:var(--red)">${fmtRp(tunggak)}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-            <span>🍽️ ${fmtRp(Math.round(tunggakMakan))}</span><span>⚡ ${fmtRp(Math.round(tunggakListrik))}</span>
+            <span>${svgIcon('utensils',11)} ${fmtRp(Math.round(tunggakMakan))}</span><span>${svgIcon('zap',11)} ${fmtRp(Math.round(tunggakListrik))}</span>
           </div>
         </div>
     </div>

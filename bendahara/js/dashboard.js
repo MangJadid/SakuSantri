@@ -5,7 +5,7 @@ function renderGreetingBendahara(){
   const jam = now.getHours();
   const sapa = jam < 11 ? 'Selamat Pagi' : jam < 15 ? 'Selamat Siang' : jam < 18 ? 'Selamat Sore' : 'Selamat Malam';
 
-  const nama = isKangAdmin() ? 'Kang Admin' : (SESSION?.nama || 'Bendahara');
+  const nama = isKangAdmin() ? 'Admin' : (SESSION?.nama || 'Bendahara');
   const inisial = nama.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
 
   // Avatar
@@ -84,14 +84,23 @@ function renderDashboard(){
     jumlah: santriAktif.filter(s=>String(s.dapur_id)===String(d.id)).length
   }));
 
+  // Kartu hero -- Total Terkumpul, di atas grid .stats
+  document.getElementById('dash-stat-hero').innerHTML=`
+    <div class="sc-hero">
+      <div>
+        <div class="sc-hero-label">Total Terkumpul</div>
+        <div class="sc-hero-val">${fmtRp(totalLunas)}</div>
+      </div>
+      <div class="sc-hero-ic">${svgIcon('cash',22)}</div>
+    </div>`;
+
   // Stat cards
   document.getElementById('dash-stats').innerHTML=`
-    <div class="sc"><div class="sci g">📋</div><div class="sil"><label>Total Tagihan</label><div class="val">${tagihanBulan.length}</div><small>${bulan}</small></div></div>
-    <div class="sc"><div class="sci g">✅</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small>${fmtRp(totalLunas)}</small></div></div>
-    <div class="sc"><div class="sci r">❌</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
-    <div class="sc"><div class="sci gg">💰</div><div class="sil"><label>Total Terkumpul</label><div class="val" style="color:var(--gold);font-size:${fitValPx(fmtRp(totalLunas))}px">${fmtRp(totalLunas)}</div><small>dari ${fmtRp(totalTagihan)}</small></div></div>
+    <div class="sc"><div class="sci g">${svgIcon('document',20)}</div><div class="sil"><label>Total Tagihan</label><div class="val">${tagihanBulan.length}</div><small>${bulan}</small></div></div>
+    <div class="sc"><div class="sci g">${svgIcon('check-circle',20)}</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small>${fmtRp(totalLunas)}</small></div></div>
+    <div class="sc"><div class="sci r">${svgIcon('circle-minus',20)}</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
     <div class="sc" style="grid-column:1/-1;background:linear-gradient(135deg,var(--green-p),#fff);border:1.5px solid var(--green-b)">
-      <div class="sci g">👥</div>
+      <div class="sci g">${svgIcon('users',20)}</div>
       <div class="sil" style="flex:1">
         <label>Total Santri Aktif</label>
         <div class="val" style="color:var(--green)">${santriDapur.length}</div>
@@ -351,7 +360,7 @@ function renderDashboard(){
     const statusBadge = t.status==='lunas'?`<span class="badge badge-lunas">✅ Lunas</span>`:t.status==='cicil'?`<span class="badge badge-cicil">⏳ Cicilan</span>`:`<span class="badge badge-belum">❌ Belum</span>`;
     return `<tr>
       <td style="color:var(--text-l)">${i+1}</td>
-      <td><div style="display:flex;align-items:center;gap:8px">
+      <td class="col-nama"><div style="display:flex;align-items:center;gap:8px">
         <div class="av" style="background:${avColor(s.nama||'')}22;color:${avColor(s.nama||'')}">${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama||'?')}</div>
         <button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;text-align:left;color:var(--text);padding:0">${s.nama||t.santri_nama||'—'}</button>
       </div></td>
@@ -370,7 +379,7 @@ function renderDashboard(){
     </tr>`;
   }).join('');
   document.getElementById('dash-tagihan-summary').innerHTML = rows.length
-    ? `<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Santri</th><th>Kelas</th><th>Kobong</th><th>Dapur</th><th>Bulan</th><th>Uang Makan</th><th>Uang Listrik</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    ? `<div class="tbl-wrap"><table><thead><tr><th>#</th><th class="col-nama">Santri</th><th>Kelas</th><th>Kobong</th><th>Dapur</th><th>Bulan</th><th>Uang Makan</th><th>Uang Listrik</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table></div>`
     : `<div class="empty"><span class="ei">📋</span><p>Belum ada tagihan bulan ini.</p></div>`;
 }
 

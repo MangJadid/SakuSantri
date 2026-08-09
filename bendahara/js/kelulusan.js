@@ -38,7 +38,7 @@ function renderKelulusan(){
     const bisaNaikJenjang = kelasNum===6||kelasNum===9||kelasNum===12;
     return `<tr>
       <td>${i+1}</td>
-      <td><button onclick="openDetailModal('${d.id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${d.nama}</button></td>
+      <td class="col-nama"><button onclick="openDetailModal('${d.id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${d.nama}</button></td>
       <td><span class="badge badge-bg">${kelas}</span></td>
       <td><span class="badge badge-bg">${kobongNama}</span></td>
       <td>${fmtRp(d.total)}</td>
@@ -46,9 +46,9 @@ function renderKelulusan(){
       <td style="color:${d.tunggak>0?'var(--red)':'var(--green)'};font-weight:700">${fmtRp(d.tunggak)}</td>
       <td><span class="badge ${d.bebas?'badge-lunas':'badge-belum'}">${d.bebas?'✅ Bebas':'❌ Tunggakan'}</span></td>
       <td style="display:flex;gap:4px;flex-wrap:wrap">
-        ${bisaNaikJenjang?`<button class="btn btn-p btn-xs" onclick="bukaNaikJenjang('${d.id}')">${kelasNum===12?'🎓 Lulus':'📈 Naik Jenjang'}</button>`:''}
-        ${d.bebas?`<button class="btn btn-p btn-xs" onclick="cetakSuratBebas('${d.id}','${d.nama}')">🎓 Surat</button>`:`<button class="btn btn-b btn-xs" onclick="bukaMoBayarMulti('${d.id}')">💰 Lunasi</button>`}
-        <button class="btn btn-d btn-xs" onclick="bukaSantriKeluar('${d.id}')">🚪 Keluar</button>
+        ${bisaNaikJenjang?`<button class="btn btn-p btn-xs" onclick="bukaNaikJenjang('${d.id}')">${kelasNum===12?svgIcon('graduation-cap',12)+' Lulus':svgIcon('trending-up',12)+' Naik Jenjang'}</button>`:''}
+        ${d.bebas?`<button class="btn btn-p btn-xs" onclick="cetakSuratBebas('${d.id}','${d.nama}')">${svgIcon('graduation-cap',12)} Surat</button>`:`<button class="btn btn-b btn-xs" onclick="bukaMoBayarMulti('${d.id}')">${svgIcon('cash',12)} Lunasi</button>`}
+        <button class="btn btn-d btn-xs" onclick="bukaSantriKeluar('${d.id}')">${svgIcon('log-out',12)} Keluar</button>
       </td>
     </tr>`;
   }).join('');
@@ -84,7 +84,7 @@ function bukaNaikJenjang(santriId){
     } else {
       warnEl.style.display='none';
       bebasEl.style.display='block';
-      bebasEl.innerHTML='🗑️ Santri bebas tunggakan dan siap diwisuda. Data akan <strong>dihapus permanen</strong> dari database.';
+      bebasEl.innerHTML=svgIcon('trash',13)+' Santri bebas tunggakan dan siap diwisuda. Data akan <strong>dihapus permanen</strong> dari database.';
     }
     openMo('mo-santri-keluar');
     return;
@@ -104,7 +104,7 @@ function bukaNaikJenjang(santriId){
   const njWarn = document.getElementById('nj-tunggakan-info');
   if(tunggak>0){
     njWarn.style.display='block';
-    njWarn.innerHTML=`⚠️ Masih punya tunggakan <strong>${fmtRp(tunggak)}</strong> — dilanjutkan ke jenjang berikutnya.`;
+    njWarn.innerHTML=`${svgIcon('alert-triangle',13)} Masih punya tunggakan <strong>${fmtRp(tunggak)}</strong> — dilanjutkan ke jenjang berikutnya.`;
   } else {
     njWarn.style.display='none';
   }
@@ -152,7 +152,7 @@ function bukaSantriKeluar(santriId){
     document.getElementById('sk-jumlah-tunggak').textContent = fmtRp(tunggak);
   } else {
     warnEl.style.display='none'; bebasEl.style.display='block';
-    bebasEl.innerHTML='🗑️ Santri bebas tunggakan. Data akan <strong>dihapus permanen</strong> dari database.';  }
+    bebasEl.innerHTML=svgIcon('trash',13)+' Santri bebas tunggakan. Data akan <strong>dihapus permanen</strong> dari database.';  }
   openMo('mo-santri-keluar');
 }
 

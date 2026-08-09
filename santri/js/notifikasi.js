@@ -11,7 +11,7 @@ async function updateBadgeNotifikasi(){
   if(!SESSION || SESSION.role==='ortu') { _notifBaruCount = 0; return; }
   try{
     const lastSeen = parseInt(localStorage.getItem(_notifLastSeenKey())||'0');
-    const {data} = await SB.from('push_notifications').select('id',{count:'exact'}).gt('id', lastSeen);
+    const {data} = await SB.from('push_notifications').select('id',{count:'exact'}).or('app_source.eq.santri,app_source.is.null').gt('id', lastSeen);
     _notifBaruCount = data?.length||0;
   } catch(e){ _notifBaruCount = 0; }
   ['badge-notifikasi-tab','badge-notifikasi-grid','badge-notif-bell','badge-notifikasi-tab-sb'].forEach(elId=>{
@@ -32,7 +32,7 @@ async function openNotifBellPanel(){
   openMo('mo-notif-bell');
   const listEl = document.getElementById('notif-bell-list');
   listEl.innerHTML = '<div class="empty"><span class="ei">🔔</span><p>Memuat...</p></div>';
-  const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  const { data: riwayat } = await SB.from('push_notifications').select('*').or('app_source.eq.santri,app_source.is.null').order('created_at', {ascending:false}).limit(20);
   _tandaiNotifikasiSudahDilihat(riwayat);
   if(!riwayat?.length){
     listEl.innerHTML = '<div class="empty"><span class="ei">🔔</span><p>Belum ada notifikasi</p></div>';
@@ -72,7 +72,7 @@ async function renderNotifikasi(){
   }
 
   // Riwayat notifikasi
-  const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  const { data: riwayat } = await SB.from('push_notifications').select('*').or('app_source.eq.santri,app_source.is.null').order('created_at', {ascending:false}).limit(20);
   _tandaiNotifikasiSudahDilihat(riwayat);
   const listEl = document.getElementById('notif-riwayat-list');
   if(listEl){
@@ -132,7 +132,8 @@ async function kirimNotifikasi(){
       body: JSON.stringify({
         judul, pesan, tipe,
         target_username: target || null,
-        dikirim_oleh: SESSION?.user?.username || 'admin'
+        dikirim_oleh: SESSION?.user?.username || 'admin',
+        app_source: 'santri'
       })
     });
     const data = await res.json();

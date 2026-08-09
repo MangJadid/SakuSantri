@@ -13,26 +13,27 @@ function konfirm(msg, fn, tipe='hapus', inputKonfirm=null){
   const inputLabel = document.getElementById('konfirm-input-label');
 
   if(tipe==='hapus'){
-    judul.innerHTML='🗑️ Konfirmasi Hapus';
+    judul.innerHTML=`${svgIcon('trash',18)} Konfirmasi Hapus`;
     ok.className='btn btn-d'; ok.textContent='Ya, Hapus';
     wrap.className='warn-box';
   } else if(tipe==='wa'){
-    judul.innerHTML='📲 Konfirmasi Kirim WA';
+    judul.innerHTML=`${svgIcon('smartphone',18)} Konfirmasi Kirim WA`;
     ok.className='btn btn-wa'; ok.textContent='Ya, Kirim';
     wrap.className='info-box';
   } else if(tipe==='generate'){
-    judul.innerHTML='⚡ Konfirmasi Generate';
+    judul.innerHTML=`${svgIcon('zap',18)} Konfirmasi Generate`;
     ok.className='btn btn-g'; ok.textContent='Ya, Generate';
     wrap.className='warn-box';
   } else if(tipe==='duplikat'){
-    judul.innerHTML='⚠️ Nama Serupa Ditemukan';
+    judul.innerHTML=`${svgIcon('alert-triangle',18)} Nama Serupa Ditemukan`;
     ok.className='btn btn-p'; ok.textContent='Tetap Tambahkan';
     wrap.className='warn-box';
   } else {
-    judul.innerHTML='⚠️ Konfirmasi';
+    judul.innerHTML=`${svgIcon('alert-triangle',18)} Konfirmasi`;
     ok.className='btn btn-g'; ok.textContent='Ya, Lanjutkan';
     wrap.className='warn-box';
   }
+  judul.style.display='flex'; judul.style.alignItems='center'; judul.style.gap='8px';
 
   wrap.innerHTML = msg;
 

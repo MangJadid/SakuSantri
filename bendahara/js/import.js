@@ -32,7 +32,7 @@ function renderImportPreview(){
   const rows=IMPORT_PARSED.map((r,i)=>{
     const ok=!!r.matchSantri;
     return `<tr style="background:${ok?'':'#fff8f8'}">
-      <td>${i+1}</td><td>${r.namaSantri} ${ok?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>'}</td>
+      <td>${i+1}</td><td class="col-nama">${r.namaSantri} ${ok?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>'}</td>
       <td>${r.jenis}</td><td>${r.bulan}</td><td>${fmtRp(r.nominal)}</td><td>${r.ket||'—'}</td>
       <td><span class="badge ${ok?'badge-lunas':'badge-belum'}">${ok?'✅ Siap':'⚠️ Perlu cek'}</span></td>
     </tr>`;
@@ -69,7 +69,7 @@ async function prosesImport(){
   const {error}=await SB.from('tagihan_pondok').insert(toInsert);
   if(error){ toast('❌ Gagal import: '+error.message); return; }
   toast(`✅ ${toInsert.length} tagihan diimport!`);
-  document.getElementById('import-log').innerHTML=`<div class="success-box">✅ Import selesai: <strong>${toInsert.length}</strong> tagihan ditambahkan.</div>`;
+  document.getElementById('import-log').innerHTML=`<div class="success-box">${svgIcon('check-circle',13)} Import selesai: <strong>${toInsert.length}</strong> tagihan ditambahkan.</div>`;
   IMPORT_PARSED=[]; document.getElementById('import-preview').style.display='none';
   document.getElementById('import-file').value='';
   await loadAllData(); fillSelects();

@@ -441,6 +441,13 @@ create policy "insert_authenticated" on settings for insert to authenticated wit
 create policy "update_authenticated" on settings for update to authenticated using (true);</textarea>
             <div style="margin-top:8px"><button class="btn btn-b btn-sm" onclick="navigator.clipboard.writeText(this.closest('div').previousElementSibling.value);toast('SQL migrasi disalin!')">📋 Salin SQL Migrasi</button></div>
           </div>
+          <div style="background:var(--gold-p);border:1px solid var(--gold-l);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:13px;font-weight:600;color:#7a5c00;margin-bottom:6px">🔔 Migrasi: Pisahkan Notifikasi per App (Bendahara vs Saku Santri)</div>
+            <div style="font-size:12px;color:var(--text-m);margin-bottom:10px;line-height:1.7">Jalankan SQL ini agar notifikasi & push notification yang dikirim dari Bendahara tidak lagi muncul/masuk ke Saku Santri (dan sebaliknya). Data lama tetap kepakai di kedua app, hanya kiriman baru ke depannya yang kepisah. <strong>Setelah ini, Edge Function "send-push" di Supabase juga wajib diupdate</strong> (destructure &amp; insert/filter kolom <code>app_source</code> dari body request) supaya kolom ini benar-benar kepakai — lewati bagian ini kalau sudah dijalankan dari Bendahara.</div>
+            <textarea readonly style="width:100%;height:56px;font-family:'DM Mono',monospace;font-size:11px;border:1.5px solid var(--border);border-radius:8px;padding:10px;resize:none;outline:none;background:var(--bg)">alter table push_notifications add column if not exists app_source text;
+alter table push_subscriptions add column if not exists app_source text;</textarea>
+            <div style="margin-top:8px"><button class="btn btn-b btn-sm" onclick="navigator.clipboard.writeText(this.closest('div').previousElementSibling.value);toast('SQL migrasi disalin!')">📋 Salin SQL</button></div>
+          </div>
           </div>
           </details>
           <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px">⚠️ Reset Konfigurasi</div>

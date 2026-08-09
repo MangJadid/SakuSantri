@@ -25,10 +25,10 @@ function onKonfigAsramaChange(){
   list.innerHTML='';
   const badge = document.getElementById('konfig-status-badge');
   if(rows.length){
-    badge.innerHTML = `<span class="badge badge-lunas">✅ Konfigurasi khusus aktif (${rows.length} jenis)</span>`;
+    badge.innerHTML = `<span class="badge badge-lunas" style="display:inline-flex;align-items:center;gap:5px">${svgIcon('check-circle',12)} Konfigurasi khusus aktif (${rows.length} jenis)</span>`;
     rows.forEach(r=>konfigTambahBaris(r.jenis, r.nominal));
   } else {
-    badge.innerHTML = `<span class="badge badge-belum">ℹ️ Belum ada konfigurasi — asrama ini pakai nominal Makan/Listrik global</span>`;
+    badge.innerHTML = `<span class="badge badge-belum" style="display:inline-flex;align-items:center;gap:5px">${svgIcon('help-circle',12)} Belum ada konfigurasi — asrama ini pakai nominal Makan/Listrik global</span>`;
   }
 }
 
@@ -44,7 +44,7 @@ function konfigTambahBaris(jenis='', nominal=''){
       style="width:130px;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"
       class="konfig-nominal">
     <button type="button" onclick="this.parentElement.remove()"
-      style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--red);font-size:14px">✕</button>
+      style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--red);display:inline-flex" title="Hapus">${svgIcon('x',13)}</button>
   `;
   list.appendChild(div);
 }

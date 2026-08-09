@@ -294,7 +294,7 @@ async function bukaMoBayarMulti(santriId){
   const depAda=document.getElementById('multi-deposit-ada');
   if(saldoDep>0){
     depAda.style.display='block';
-    depAda.innerHTML=`<div class="success-box">🏦 Saldo Deposit: <strong>${fmtRp(saldoDep)}</strong></div>`;
+    depAda.innerHTML=`<div class="success-box">${svgIcon('bank',13)} Saldo Deposit: <strong>${fmtRp(saldoDep)}</strong></div>`;
   } else depAda.style.display='none';
 
   document.getElementById('multi-bulan-list').innerHTML=tagBelum.map(t=>{
@@ -368,7 +368,7 @@ async function initDepositMode(){
 
   const saldoEl=document.getElementById('deposit-saldo-ada');
   if(saldoDep>0){
-    saldoEl.innerHTML=`<div class="success-box">🏦 Saldo deposit saat ini: <strong>${fmtRp(saldoDep)}</strong> (~${Math.floor(saldoDep/nomBulan)} bulan)</div>`;
+    saldoEl.innerHTML=`<div class="success-box">${svgIcon('bank',13)} Saldo deposit saat ini: <strong>${fmtRp(saldoDep)}</strong> (~${Math.floor(saldoDep/nomBulan)} bulan)</div>`;
   } else {
     saldoEl.innerHTML=`<div class="info-box">Belum ada deposit. Tambah deposit sekarang.</div>`;
   }
@@ -394,7 +394,7 @@ function updateDepositInfo(){
   const infoText=document.getElementById('deposit-info-text');
   if(nominal>0){
     infoEl.style.display='block';
-    infoText.innerHTML=`🏦 Deposit <strong>${fmtRp(nominal)}</strong> = <strong>${bulan} bulan</strong> tagihan${sisa>0?` + sisa ${fmtRp(sisa)}`:''}<br><small style="color:var(--text-m)">Otomatis terpotong saat generate tagihan berikutnya</small>`;
+    infoText.innerHTML=`${svgIcon('bank',13)} Deposit <strong>${fmtRp(nominal)}</strong> = <strong>${bulan} bulan</strong> tagihan${sisa>0?` + sisa ${fmtRp(sisa)}`:''}<br><small style="color:var(--text-m)">Otomatis terpotong saat generate tagihan berikutnya</small>`;
   } else infoEl.style.display='none';
 }
 
@@ -480,7 +480,7 @@ async function hapusTagihan(id){
 
 async function hapusSemuaTagihan(){
   if(_isLoading) return;
-  if(!isKangAdmin()){ toast('⛔ Hanya Kang Admin!'); return; }
+  if(!isKangAdmin()){ toast('⛔ Hanya Admin!'); return; }
   const total = ALL_TAGIHAN.length;
   if(!total){ toast('ℹ️ Tidak ada tagihan!'); return; }
   konfirm(
@@ -515,7 +515,7 @@ function renderHapusPanel(){
     asramaEl.innerHTML = ALL_ASRAMA.map(a=>`
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;padding:4px 0">
         <input type="checkbox" name="hapus-asrama" value="${a.id}" onchange="updateHapusPreview()" style="accent-color:var(--red);width:16px;height:16px">
-        🏛️ ${a.nama}
+        <span style="display:inline-flex;align-items:center;gap:5px">${svgIcon('home',13)} ${a.nama}</span>
       </label>`).join('');
   }
   // Populate kelas
@@ -620,18 +620,18 @@ function updateHapusPreview(){
   }
   prev.style.display='block';
   prev.innerHTML=`
-    <strong>🗑️ ${ids.length} tagihan</strong> akan dihapus:<br>
-    📅 <strong>${bulan||'Semua bulan '+tahun}</strong> &nbsp;·&nbsp; 🏛️ <strong>${asramaNama}</strong> &nbsp;·&nbsp; 🎓 <strong>${kelasNama}</strong><br>
+    <strong>${svgIcon('trash',13)} ${ids.length} tagihan</strong> akan dihapus:<br>
+    ${svgIcon('calendar',12)} <strong>${bulan||'Semua bulan '+tahun}</strong> &nbsp;·&nbsp; ${svgIcon('home',12)} <strong>${asramaNama}</strong> &nbsp;·&nbsp; ${svgIcon('graduation-cap',12)} <strong>${kelasNama}</strong><br>
     <span style="font-size:12px;margin-top:4px;display:block">
       ✅ Lunas: ${lunas} &nbsp;|&nbsp; ❌ Belum: ${belum} &nbsp;|&nbsp; ⏳ Cicilan: ${cicil}
-      ${lunas>0?`<br><span style="color:var(--red);font-weight:600">⚠️ Termasuk ${lunas} tagihan yang sudah lunas!</span>`:''}
+      ${lunas>0?`<br><span style="color:var(--red);font-weight:600">${svgIcon('alert-triangle',12)} Termasuk ${lunas} tagihan yang sudah lunas!</span>`:''}
     </span>`;
   btn.disabled=false; btn.style.opacity='1';
 }
 
 async function prosesHapusTagihanMassal(){
   if(_isLoading) return;
-  if(!isKangAdmin()){ toast('⛔ Hanya Kang Admin!'); return; }
+  if(!isKangAdmin()){ toast('⛔ Hanya Admin!'); return; }
   const ids = getHapusTargetIds();
   if(!ids.length){ toast('Tidak ada tagihan yang cocok!', false); return; }
   const tagihan = ALL_TAGIHAN.filter(t=>ids.includes(t.id));

@@ -33,16 +33,16 @@ function renderPiutangAlumni(){
             <strong style="font-size:14px;cursor:pointer;color:var(--green);text-decoration:underline" onclick="bukaMoRincianPiutang(${p.id})">${p.nama_santri}</strong>
             <span class="badge ${isLunas?'badge-lunas':'badge-belum'}">${isLunas?'✅ Lunas':'⏳ Belum Lunas'}</span>
           </div>
-          <div style="font-size:12px;color:var(--text-m)">🏠 ${p.kobong_nama||'—'} · Kelas ${p.kelas||'—'} · Keluar: ${tgl}</div>
-          ${p.catatan?`<div style="font-size:12px;color:var(--text-l);margin-top:3px">📝 ${p.catatan}</div>`:''}
-          ${tglLunas?`<div style="font-size:12px;color:var(--green);margin-top:3px">✅ Dilunasi: ${tglLunas}${p.catatan_lunas?' — '+p.catatan_lunas:''}</div>`:''}
+          <div style="font-size:12px;color:var(--text-m);display:flex;align-items:center;gap:5px">${svgIcon('home',12)} ${p.kobong_nama||'—'} · Kelas ${p.kelas||'—'} · Keluar: ${tgl}</div>
+          ${p.catatan?`<div style="font-size:12px;color:var(--text-l);margin-top:3px;display:flex;align-items:center;gap:5px">${svgIcon('edit',12)} ${p.catatan}</div>`:''}
+          ${tglLunas?`<div style="font-size:12px;color:var(--green);margin-top:3px;display:flex;align-items:center;gap:5px">${svgIcon('check-circle',12)} Dilunasi: ${tglLunas}${p.catatan_lunas?' — '+p.catatan_lunas:''}</div>`:''}
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:20px;font-weight:700;color:${isLunas?'var(--green)':'var(--red)'}">${fmtRp(p.total_piutang)}</div>
           <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end">
-            ${!isLunas?`<button class="btn btn-p btn-xs" onclick="bukaPiutangLunas('${p.id}')">✅ Tandai Lunas</button>`:''}
-            ${p.no_wa?`<button class="btn btn-wa btn-xs" onclick="kirimWAPiutang('${p.id}')">📱 WA</button>`:''}
-            <button class="btn btn-d btn-xs" onclick="hapusPiutang('${p.id}','${(p.nama_santri||'').replace(/'/g,'')}')">🗑️</button>
+            ${!isLunas?`<button class="btn btn-p btn-xs" onclick="bukaPiutangLunas('${p.id}')">${svgIcon('check-circle',12)} Tandai Lunas</button>`:''}
+            ${p.no_wa?`<button class="btn btn-wa btn-xs" onclick="kirimWAPiutang('${p.id}')">${svgIcon('smartphone',12)} WA</button>`:''}
+            <button class="btn btn-d btn-xs" onclick="hapusPiutang('${p.id}','${(p.nama_santri||'').replace(/'/g,'')}')" title="Hapus">${svgIcon('trash',13)}</button>
           </div>
         </div>
       </div>

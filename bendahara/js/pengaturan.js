@@ -47,7 +47,7 @@ function renderAsramaCheckList(){
   if(!ALL_ASRAMA||!ALL_ASRAMA.length){ el.innerHTML='<span style="font-size:12px;color:var(--text-l)">Belum ada asrama.</span>'; return; }
   el.innerHTML=ALL_ASRAMA.map(a=>`
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)">
-      <input type="checkbox" name="gen-asrama" value="${a.id}" style="accent-color:var(--green);width:16px;height:16px"> 🏛️ ${a.nama}
+      <input type="checkbox" name="gen-asrama" value="${a.id}" style="accent-color:var(--green);width:16px;height:16px"> <span style="display:inline-flex;align-items:center;gap:5px">${svgIcon('home',13)} ${a.nama}</span>
     </label>`).join('');
 }
 
@@ -103,11 +103,11 @@ function updateGenPreview(){
 
   prev.style.display='block';
   prev.innerHTML=`
-    <strong>&#128203; Preview Generate:</strong><br>
-    &#127963;&#65039; Asrama: <strong>${asramaNama}</strong><br>
-    &#128197; Bulan: <strong>${bulanList.map(b=>b+' '+tahun).join(', ')}</strong><br>
-    &#128101; Santri: <strong>${santriCount}</strong> &times; <strong>${bulanList.length} bulan</strong> = <strong>${total} tagihan</strong><br>
-    ${santriTanpaDapur>0?`<small style="color:var(--red)">⚠️ ${santriTanpaDapur} santri tanpa dapur tidak akan di-generate</small><br>`:''}
+    <strong>${svgIcon('document',13)} Preview Generate:</strong><br>
+    ${svgIcon('home',12)} Asrama: <strong>${asramaNama}</strong><br>
+    ${svgIcon('calendar',12)} Bulan: <strong>${bulanList.map(b=>b+' '+tahun).join(', ')}</strong><br>
+    ${svgIcon('users',12)} Santri: <strong>${santriCount}</strong> &times; <strong>${bulanList.length} bulan</strong> = <strong>${total} tagihan</strong><br>
+    ${santriTanpaDapur>0?`<small style="color:var(--red)">${svgIcon('alert-triangle',12)} ${santriTanpaDapur} santri tanpa dapur tidak akan di-generate</small><br>`:''}
     <small style="color:var(--text-l)">* Santri yang sudah punya tagihan bulan tersebut akan dilewati</small>`;
 }
 
@@ -574,6 +574,17 @@ create policy "select_public_settings" on settings for select
   using (key not in ('super_pass','super_user'));
 create policy "select_secrets_authenticated" on settings for select to authenticated using (true);
 create policy "insert_authenticated" on settings for insert to authenticated with check (true);
-create policy "update_authenticated" on settings for update to authenticated using (true);`;
+create policy "update_authenticated" on settings for update to authenticated using (true);
+
+-- Migrasi: Pisahkan Notifikasi per App (Bendahara vs Saku Santri)
+-- Notifikasi & subscription push lama (app_source masih kosong) tetap
+-- kelihatan/kepakai di kedua app, yang baru ke depannya otomatis kepisah
+-- sesuai app pengirimnya.
+-- CATATAN: Edge Function "send-push" di Supabase juga WAJIB diupdate
+-- (destructure & insert/filter kolom app_source dari body request) supaya
+-- kolom ini benar-benar kepakai -- lewati bagian ini kalau sudah dijalankan
+-- dari Saku Santri.
+alter table push_notifications add column if not exists app_source text;
+alter table push_subscriptions add column if not exists app_source text;`;
 }
 

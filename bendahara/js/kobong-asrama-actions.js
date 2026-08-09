@@ -29,10 +29,10 @@ function bukaMoRincianPiutang(id){
   document.getElementById('rincian-piutang-total').textContent = fmtRp(p.total_piutang||0);
   document.getElementById('rincian-piutang-info').innerHTML = `
     <div style="font-weight:700;font-size:15px;margin-bottom:6px">${p.nama_santri}</div>
-    <div style="font-size:12px;color:var(--text-m)">🏠 ${p.kobong_nama||'—'} · Kelas ${p.kelas||'—'}</div>
-    <div style="font-size:12px;color:var(--text-m)">📅 Keluar: ${tgl}</div>
-    <div style="margin-top:6px"><span class="badge ${isLunas?'badge-lunas':'badge-belum'}">${isLunas?'✅ Lunas':'⏳ Belum Lunas'}</span></div>
-    ${p.catatan?`<div style="font-size:12px;color:var(--text-m);margin-top:4px">📝 ${p.catatan}</div>`:''}
+    <div style="font-size:12px;color:var(--text-m);display:flex;align-items:center;gap:5px">${svgIcon('home',12)} ${p.kobong_nama||'—'} · Kelas ${p.kelas||'—'}</div>
+    <div style="font-size:12px;color:var(--text-m);display:flex;align-items:center;gap:5px">${svgIcon('calendar',12)} Keluar: ${tgl}</div>
+    <div style="margin-top:6px"><span class="badge ${isLunas?'badge-lunas':'badge-belum'}" style="display:inline-flex;align-items:center;gap:4px">${isLunas?svgIcon('check-circle',12):svgIcon('clock',12)} ${isLunas?'Lunas':'Belum Lunas'}</span></div>
+    ${p.catatan?`<div style="font-size:12px;color:var(--text-m);margin-top:4px;display:flex;align-items:center;gap:5px">${svgIcon('edit',12)} ${p.catatan}</div>`:''}
   `;
   const rincian = p.rincian;
   const listEl = document.getElementById('rincian-piutang-list');

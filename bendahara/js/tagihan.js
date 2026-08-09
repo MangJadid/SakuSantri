@@ -8,17 +8,17 @@ function updateTagihanBulanInfo(){
   const belum = tgBulanIni.filter(t=>t.status!=='lunas').length;
   const total = tgBulanIni.length;
   el.innerHTML = `
-    <span style="font-size:12px;background:var(--green-p);color:var(--green);border:1px solid var(--green-b);border-radius:20px;padding:3px 10px;font-weight:600">
-      📅 ${bulan}
+    <span style="font-size:12px;background:var(--green-p);color:var(--green);border:1px solid var(--green-b);border-radius:20px;padding:3px 10px;font-weight:600;display:inline-flex;align-items:center;gap:4px">
+      ${svgIcon('calendar',12)} ${bulan}
     </span>
-    <span style="font-size:12px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-weight:600">
-      ✅ Lunas: ${lunas} santri
+    <span style="font-size:12px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-weight:600;display:inline-flex;align-items:center;gap:4px">
+      ${svgIcon('check-circle',12)} Lunas: ${lunas} santri
     </span>
-    <span style="font-size:12px;background:#fff5f5;color:var(--red);border:1px solid #fecaca;border-radius:20px;padding:3px 10px;font-weight:600">
-      ❌ Belum: ${belum} santri
+    <span style="font-size:12px;background:#fff5f5;color:var(--red);border:1px solid #fecaca;border-radius:20px;padding:3px 10px;font-weight:600;display:inline-flex;align-items:center;gap:4px">
+      ${svgIcon('circle-minus',12)} Belum: ${belum} santri
     </span>
-    <span style="font-size:12px;background:var(--bg);color:var(--text-m);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-weight:600">
-      📊 Total: ${total}
+    <span style="font-size:12px;background:var(--bg);color:var(--text-m);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-weight:600;display:inline-flex;align-items:center;gap:4px">
+      ${svgIcon('trending-up',12)} Total: ${total}
     </span>
   `;
 }
@@ -42,7 +42,8 @@ function _pecahBayar(list){
   return {bayarMakan, bayarListrik};
 }
 
-function renderTagihanTable(){
+function renderTagihanTable(keepPage){
+  if(!keepPage) _pageState.tagihan = 1;
   const q=document.getElementById('cari-tagihan')?.value.toLowerCase()||'';
   const asramaF=document.getElementById('filter-asrama-tagihan')?.value||'';
   const tahunF=document.getElementById('filter-tahun-tagihan')?.value||'';
@@ -65,13 +66,14 @@ function renderTagihanTable(){
     return true;
   });
 
-  const rows=filtered.map((t,i)=>{
+  const pageStart=((_pageState.tagihan||1)-1)*PAGE_SIZE;
+  const rows=paginate(filtered,'tagihan').map((t,i)=>{
     const s=getSantriById(t.santri_id)||{};
     const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const statusBadge=t.status==='lunas'?`<span class="badge badge-lunas">✅ Lunas</span>`:t.status==='cicil'?`<span class="badge badge-cicil">⏳ Cicilan</span>`:`<span class="badge badge-belum">❌ Belum</span>`;
     return `<tr>
-      <td style="color:var(--text-l)">${i+1}</td>
-      <td><div style="display:flex;align-items:center;gap:8px">
+      <td style="color:var(--text-l)">${pageStart+i+1}</td>
+      <td class="col-nama"><div style="display:flex;align-items:center;gap:8px">
         <div class="av" style="background:${avColor(s.nama||'')}22;color:${avColor(s.nama||'')}">${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama||'?')}</div>
         <button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;text-align:left;color:var(--text);padding:0">${s.nama||t.santri_nama||'—'}</button>
       </div></td>
@@ -84,9 +86,9 @@ function renderTagihanTable(){
       <td><strong>${fmtRp(t.nominal)}</strong></td>
       <td>${statusBadge}</td>
       <td style="display:flex;gap:4px">
-        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="bukaMoBayar('${t.id}')">💰 Bayar</button>`:''}
-        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulanAktif()}')">📱</button>`:''}
-        ${isKangAdmin()?`<button class="btn btn-d btn-xs" onclick="hapusTagihan('${t.id}')">🗑</button>`:''}
+        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="bukaMoBayar('${t.id}')">${svgIcon('cash',12)} Bayar</button>`:''}
+        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulanAktif()}')">${svgIcon('smartphone',12)}</button>`:''}
+        ${isKangAdmin()?`<button class="btn btn-d btn-xs" onclick="hapusTagihan('${t.id}')">${svgIcon('trash',12)}</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -113,7 +115,7 @@ function renderTagihanTable(){
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Total Tagihan</div>
         <div style="font-size:17px;font-weight:800;color:var(--text)">${fmtRp(totalNom)}</div>
         <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-          <span>🍽️ ${fmtRp(totalMakan)}</span><span>⚡ ${fmtRp(totalListrik)}</span>
+          <span>${svgIcon('utensils',11)} ${fmtRp(totalMakan)}</span><span>${svgIcon('zap',11)} ${fmtRp(totalListrik)}</span>
         </div>
         <div style="font-size:10px;color:var(--text-l);margin-top:2px">${filtered.length} tagihan · ✅${jmlLunas} ⏳${jmlCicil} ❌${jmlBelum}</div>
       </div>
@@ -121,24 +123,24 @@ function renderTagihanTable(){
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Terbayar</div>
         <div style="font-size:17px;font-weight:800;color:var(--green)">${fmtRp(totalBayar)}</div>
         <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-          <span>🍽️ ${fmtRp(Math.round(bayarMakan))}</span><span>⚡ ${fmtRp(Math.round(bayarListrik))}</span>
+          <span>${svgIcon('utensils',11)} ${fmtRp(Math.round(bayarMakan))}</span><span>${svgIcon('zap',11)} ${fmtRp(Math.round(bayarListrik))}</span>
         </div>
       </div>
       <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:12px 16px">
         <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Tunggakan</div>
         <div style="font-size:17px;font-weight:800;color:var(--red)">${fmtRp(totalTunggak)}</div>
         <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-          <span>🍽️ ${fmtRp(Math.round(tunggakMakan))}</span><span>⚡ ${fmtRp(Math.round(tunggakListrik))}</span>
+          <span>${svgIcon('utensils',11)} ${fmtRp(Math.round(tunggakMakan))}</span><span>${svgIcon('zap',11)} ${fmtRp(Math.round(tunggakListrik))}</span>
         </div>
       </div>
     </div>`;
 
-  const tagihanPgEl=document.getElementById('tagihan-pagination');
-  if(tagihanPgEl) tagihanPgEl.innerHTML='';
+  renderPaginationUI('tagihan-pagination', filtered.length, 'tagihan', 'renderTagihanTable(true)');
 }
 
 // ===== SANTRI TABLE =====
-function renderSantri(){
+function renderSantri(keepPage){
+  if(!keepPage) _pageState.santri = 1;
   const q=document.getElementById('cari-santri')?.value.toLowerCase()||'';
   const asramaF=document.getElementById('filter-asrama-santri')?.value||'';
   const kobongF=document.getElementById('filter-kobong-santri')?.value||'';
@@ -159,13 +161,26 @@ function renderSantri(){
   const empty=document.getElementById('santri-empty');
 
   if(!filtered.length){
-    grid.innerHTML=''; empty.style.display='block'; return;
+    grid.innerHTML=''; empty.style.display='block';
+    renderPaginationUI('santri-pagination', 0, 'santri', 'renderSantri(true)');
+    return;
   }
   empty.style.display='none';
 
-  const rows=filtered.map((s,i)=>{
+  // Kelompokkan tagihan per santri sekali di awal (bukan filter linear di dalam
+  // loop) -- ALL_TAGIHAN bisa ribuan baris (riwayat berbulan-bulan), filter
+  // per-baris santri di dalam .map() jadi O(n×m) dan kerasa lag pas ganti tab.
+  const tagihanBySantri = new Map();
+  ALL_TAGIHAN.forEach(t=>{
+    const key = String(t.santri_id);
+    if(!tagihanBySantri.has(key)) tagihanBySantri.set(key, []);
+    tagihanBySantri.get(key).push(t);
+  });
+
+  const pageStart=((_pageState.santri||1)-1)*PAGE_SIZE;
+  const rows=paginate(filtered,'santri').map((s,i)=>{
     const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
-    const tagSantri=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(s.id));
+    const tagSantri=tagihanBySantri.get(String(s.id))||[];
     const totalTagihan=tagSantri.reduce((a,t)=>a+Number(t.nominal),0);
     const totalBayar=tagSantri.filter(t=>t.status==='lunas').reduce((a,t)=>a+Number(t.nominal_bayar||t.nominal),0);
     const totalTunggak=tagSantri.filter(t=>t.status!=='lunas').reduce((a,t)=>a+(Number(t.nominal)-Number(t.nominal_bayar||0)),0);
@@ -174,8 +189,8 @@ function renderSantri(){
       ?`<span class="badge badge-belum">❌ ${fmtRp(totalTunggak)}</span>`
       :`<span class="badge badge-lunas">✅ Lunas</span>`;
     return `<tr>
-      <td style="color:var(--text-l);font-size:12px">${i+1}</td>
-      <td>
+      <td style="color:var(--text-l);font-size:12px">${pageStart+i+1}</td>
+      <td class="col-nama">
         <div style="display:flex;align-items:center;gap:10px">
           <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};width:38px;height:38px;flex-shrink:0">
             ${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:avLetter(s.nama)}
@@ -195,8 +210,8 @@ function renderSantri(){
       <td>${statusBadge}</td>
       <td>
         <div style="display:flex;gap:5px">
-          <button class="btn btn-b btn-xs" onclick="openDetailModal('${s.id}')">📋 Detail</button>
-          ${hasTunggak?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${s.id}')">💰</button>`:''}
+          <button class="btn btn-b btn-xs" onclick="openDetailModal('${s.id}')">${svgIcon('document',12)} Detail</button>
+          ${hasTunggak?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${s.id}')">${svgIcon('cash',12)}</button>`:''}
         </div>
       </td>
     </tr>`;
@@ -204,13 +219,12 @@ function renderSantri(){
 
   grid.innerHTML=`<div class="tbl-wrap"><table>
     <thead><tr>
-      <th>#</th><th>Nama Santri</th><th>Kobong</th><th>Dapur</th><th>Total Tagihan</th><th>Status</th><th>Aksi</th>
+      <th>#</th><th class="col-nama">Nama Santri</th><th>Kobong</th><th>Dapur</th><th>Total Tagihan</th><th>Status</th><th>Aksi</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 
-  const santriPgEl=document.getElementById('santri-pagination');
-  if(santriPgEl) santriPgEl.innerHTML='';
+  renderPaginationUI('santri-pagination', filtered.length, 'santri', 'renderSantri(true)');
 }
 
 // ===== DETAIL SANTRI MODAL (Universal) =====
@@ -326,8 +340,8 @@ async function openDetailModal(santriId){
             ${sisa>0&&t.status!=='belum'?`<div style="font-size:11px;color:var(--red)">Sisa: ${fmtRp(sisa)}</div>`:''}
           </div>
           ${statusBadge}
-          ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="closeMo('mo-detail');bukaMoBayar('${t.id}')">💰</button>`:''}
-          <button class="btn btn-xs" style="background:#fee2e2;color:var(--red);border:1px solid #fecaca" onclick="hapusTagihanDetail('${t.id}','${(t.bulan||'').replace(/'/g,'')}')">🗑</button>
+          ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="closeMo('mo-detail');bukaMoBayar('${t.id}')">${svgIcon('cash',12)}</button>`:''}
+          <button class="btn btn-xs" style="background:#fee2e2;color:var(--red);border:1px solid #fecaca" onclick="hapusTagihanDetail('${t.id}','${(t.bulan||'').replace(/'/g,'')}')">${svgIcon('trash',12)}</button>
         </div>
       </div>`;
     }).join('');
@@ -354,12 +368,12 @@ async function openDetailModal(santriId){
         <div style="color:rgba(255,255,255,.5);font-size:11px;margin-top:3px;text-align:center">Kelas ${s.kelas||'—'} · ${asramaNama||'—'}</div>
       </div>
       <div style="display:flex;justify-content:center;gap:8px;padding:0 20px 14px;position:relative;z-index:1;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.85);font-weight:500">🍽️ ${getDapurNama(s.dapur_id)}</div>
-        <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.85);font-weight:500">🏠 ${kobongNama}</div>
+        <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.85);font-weight:500">${svgIcon('utensils',11)} ${getDapurNama(s.dapur_id)}</div>
+        <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.85);font-weight:500">${svgIcon('home',11)} ${kobongNama}</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1px 1fr;background:rgba(0,0,0,.25);border-top:1px solid rgba(255,255,255,.1);padding:14px 20px;position:relative;z-index:1">
         <div style="text-align:center">
-          <div style="color:rgba(${hasTunggak?'255,120,120':'74,222,128'},.8);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">${hasTunggak?'⚠️ Sisa Tagihan':'✅ Status'}</div>
+          <div style="color:rgba(${hasTunggak?'255,120,120':'74,222,128'},.8);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:flex;align-items:center;justify-content:center;gap:4px">${hasTunggak?svgIcon('alert-triangle',10)+' Sisa Tagihan':svgIcon('check-circle',10)+' Status'}</div>
           <div style="color:${hasTunggak?'#ff8a8a':'#4ADE80'};font-size:19px;font-weight:900;letter-spacing:-.5px">${hasTunggak?fmtRp(totalSisa):'Lunas'}</div>
           <div style="color:rgba(255,255,255,.4);font-size:9.5px;margin-top:3px">${hasTunggak?'Ada tunggakan':'Semua terbayar'}</div>
         </div>
@@ -375,7 +389,7 @@ async function openDetailModal(santriId){
     ${saldoDeposit>0?`
     <div style="background:var(--gold-p);border:1.5px solid var(--gold-b);border-radius:16px;padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
       <div>
-        <div style="font-size:10.5px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">🏦 Saldo Deposit</div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">${svgIcon('bank',12)} Saldo Deposit</div>
         <div style="font-size:26px;font-weight:800;color:var(--gold);letter-spacing:-.5px">${fmtRp(saldoDeposit)}</div>
       </div>
       <div style="text-align:right">
@@ -398,20 +412,20 @@ async function openDetailModal(santriId){
 
     <!-- TOMBOL AKSI - lebar penuh -->
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
-      ${hasTunggak?`<button class="btn btn-p" style="width:100%;justify-content:center;padding:14px;font-size:14px;border-radius:12px" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}')">💰 Bayar Tagihan</button>`:''}
+      ${hasTunggak?`<button class="btn btn-p" style="width:100%;justify-content:center;padding:14px;font-size:14px;border-radius:12px" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}')">${svgIcon('cash',14)} Bayar Tagihan</button>`:''}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <button class="btn btn-g" style="justify-content:center;padding:12px;border-radius:12px" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}');setTimeout(()=>switchModeTab('deposit'),300)">🏦 Deposit</button>
-        <button class="btn btn-b" style="justify-content:center;padding:12px;border-radius:12px" onclick="bukaModalGeneratePerSantri('${santriId}')">⚡ Generate</button>
-        ${hasWA&&hasTunggak?`<button class="btn btn-wa" style="justify-content:center;padding:12px;border-radius:12px" onclick="kirimWASantri('${santriId}','${bulanAktif()}')">📱 WA Tagihan</button>`:''}
-        <button class="btn btn-d" style="justify-content:center;padding:12px;border-radius:12px;${hasWA&&hasTunggak?'':'grid-column:1/-1'}" onclick="bukaModalHapusTagihanSantri('${santriId}')">🗑️ Hapus Tagihan</button>
+        <button class="btn btn-g" style="justify-content:center;padding:12px;border-radius:12px" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}');setTimeout(()=>switchModeTab('deposit'),300)">${svgIcon('bank',14)} Deposit</button>
+        <button class="btn btn-b" style="justify-content:center;padding:12px;border-radius:12px" onclick="bukaModalGeneratePerSantri('${santriId}')">${svgIcon('zap',14)} Generate</button>
+        ${hasWA&&hasTunggak?`<button class="btn btn-wa" style="justify-content:center;padding:12px;border-radius:12px" onclick="kirimWASantri('${santriId}','${bulanAktif()}')">${svgIcon('smartphone',14)} WA Tagihan</button>`:''}
+        <button class="btn btn-d" style="justify-content:center;padding:12px;border-radius:12px;${hasWA&&hasTunggak?'':'grid-column:1/-1'}" onclick="bukaModalHapusTagihanSantri('${santriId}')">${svgIcon('trash',14)} Hapus Tagihan</button>
       </div>
     </div>
 
     <!-- RIWAYAT TAGIHAN -->
     <div style="background:var(--white);border:1.5px solid var(--border-l);border-radius:16px;overflow:hidden">
       <div style="padding:16px 20px;border-bottom:1px solid var(--border-l);background:var(--green-p);display:flex;align-items:center;gap:8px">
-        <span style="font-size:16px">📜</span>
-        <span style="font-family:'Amiri',serif;font-size:17px;font-weight:700;color:var(--green)">Riwayat Tagihan</span>
+        ${svgIcon('document',16)}
+        <span style="font-family:'Lora',serif;font-size:17px;font-weight:700;color:var(--green)">Riwayat Tagihan</span>
       </div>
       <div style="padding:16px 20px">${riwayatHtml}</div>
     </div>

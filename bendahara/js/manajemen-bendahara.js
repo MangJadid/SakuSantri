@@ -29,8 +29,8 @@ async function renderManajemenBendahara(){
         <div class="asrama-chips" style="margin-top:6px">${chips}</div>
       </div>
       <div class="akun-actions">
-        <button class="btn btn-b btn-xs" onclick="editAkun(${a.id})">✏️</button>
-        <button class="btn btn-d btn-xs" onclick="hapusAkun(${a.id})">🗑</button>
+        <button class="btn btn-b btn-xs" onclick="editAkun(${a.id})" title="Edit">${svgIcon('edit',13)}</button>
+        <button class="btn btn-d btn-xs" onclick="hapusAkun(${a.id})" title="Hapus">${svgIcon('trash',13)}</button>
       </div>
     </div>`;
   }).join('')+'</div>';

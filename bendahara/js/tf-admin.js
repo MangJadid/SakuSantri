@@ -71,7 +71,7 @@ function renderTFAdmin(){
 
     const dllHtml = Object.entries(dllRekap).map(([ket,total])=>`
       <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:10px;padding:12px;text-align:center">
-        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">📌 ${ket}</div>
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${svgIcon('tag',11)} ${ket}</div>
         <div style="font-size:16px;font-weight:700;color:#475569">${fmtRp(total)}</div>
       </div>
     `).join('');
@@ -83,24 +83,24 @@ function renderTFAdmin(){
       </div>
       ${dapurHtml}
       <div style="background:#fefce8;border:1.5px solid #fde047;border-radius:10px;padding:12px;text-align:center">
-        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">⚡ Listrik</div>
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${svgIcon('zap',11)} Listrik</div>
         <div style="font-size:16px;font-weight:700;color:#a16207">${fmtRp(totalListrik)}</div>
       </div>
       ${totalSppMts?`<div style="background:#fdf4ff;border:1.5px solid #e879f9;border-radius:10px;padding:12px;text-align:center">
-        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">📚 SPP MTs</div>
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${svgIcon('graduation-cap',11)} SPP MTs</div>
         <div style="font-size:16px;font-weight:700;color:#7e22ce">${fmtRp(totalSppMts)}</div>
       </div>`:''}
       ${totalSppMa?`<div style="background:#fdf4ff;border:1.5px solid #e879f9;border-radius:10px;padding:12px;text-align:center">
-        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">📚 SPP MA</div>
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${svgIcon('graduation-cap',11)} SPP MA</div>
         <div style="font-size:16px;font-weight:700;color:#7e22ce">${fmtRp(totalSppMa)}</div>
       </div>`:''}
       <div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:10px;padding:12px;text-align:center">
-        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">💵 Uang Jajan</div>
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${svgIcon('cash',11)} Uang Jajan</div>
         <div style="font-size:16px;font-weight:700;color:#c2410c">${fmtRp(totalJajan)}</div>
       </div>
       ${dllHtml}
       ${totalSisa!==0?`<div style="background:${totalSisa>0?'#f0fdf4':'#fef2f2'};border:1.5px solid ${totalSisa>0?'#bbf7d0':'#fecaca'};border-radius:10px;padding:12px;text-align:center">
-        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${totalSisa>0?'💰 Sisa':'⚠️ Kekurangan'}</div>
+        <div style="font-size:11px;color:var(--text-m);font-weight:600;text-transform:uppercase">${totalSisa>0?svgIcon('cash',11)+' Sisa':svgIcon('alert-triangle',11)+' Kekurangan'}</div>
         <div style="font-size:16px;font-weight:700;color:${totalSisa>0?'var(--green)':'var(--red)'}">${fmtRp(Math.abs(totalSisa))}</div>
       </div>`:''}
     `;
@@ -128,23 +128,23 @@ function renderTFAdmin(){
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
             ${bulanArr.map(b=>`<span class="badge badge-lunas" style="font-size:11px">${b}</span>`).join('')}
           </div>
-          <div style="font-size:12px;color:var(--text-m);margin-bottom:6px">📅 ${tgl}${tf.catatan?' · 📝 '+tf.catatan:''}</div>
+          <div style="font-size:12px;color:var(--text-m);margin-bottom:6px">${svgIcon('calendar',11)} ${tgl}${tf.catatan?' · '+svgIcon('edit',11)+' '+tf.catatan:''}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${tf.uang_makan?`<span style="font-size:11px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:2px 8px;color:#0369a1">🍽️${dNama?' '+dNama:''}: ${fmtRp(tf.uang_makan)}</span>`:''}
-            ${tf.listrik?`<span style="font-size:11px;background:#fefce8;border:1px solid #fde047;border-radius:6px;padding:2px 8px;color:#a16207">⚡ ${fmtRp(tf.listrik)}</span>`:''}
-            ${tf.spp_mts?`<span style="font-size:11px;background:#fdf4ff;border:1px solid #e879f9;border-radius:6px;padding:2px 8px;color:#7e22ce">📚 MTs: ${fmtRp(tf.spp_mts)}</span>`:''}
-            ${tf.spp_ma?`<span style="font-size:11px;background:#fdf4ff;border:1px solid #e879f9;border-radius:6px;padding:2px 8px;color:#7e22ce">📚 MA: ${fmtRp(tf.spp_ma)}</span>`:''}
-            ${tf.uang_jajan?`<span style="font-size:11px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:2px 8px;color:#c2410c">💵 ${fmtRp(tf.uang_jajan)}</span>`:''}
-            ${tf.dll?JSON.parse(tf.dll).map(i=>`<span style="font-size:11px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:2px 8px;color:#475569">📌 ${i.ket}: ${fmtRp(i.nominal)}</span>`).join(''):''}
+            ${tf.uang_makan?`<span style="font-size:11px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:2px 8px;color:#0369a1">${svgIcon('utensils',10)}${dNama?' '+dNama:''}: ${fmtRp(tf.uang_makan)}</span>`:''}
+            ${tf.listrik?`<span style="font-size:11px;background:#fefce8;border:1px solid #fde047;border-radius:6px;padding:2px 8px;color:#a16207">${svgIcon('zap',10)} ${fmtRp(tf.listrik)}</span>`:''}
+            ${tf.spp_mts?`<span style="font-size:11px;background:#fdf4ff;border:1px solid #e879f9;border-radius:6px;padding:2px 8px;color:#7e22ce">${svgIcon('graduation-cap',10)} MTs: ${fmtRp(tf.spp_mts)}</span>`:''}
+            ${tf.spp_ma?`<span style="font-size:11px;background:#fdf4ff;border:1px solid #e879f9;border-radius:6px;padding:2px 8px;color:#7e22ce">${svgIcon('graduation-cap',10)} MA: ${fmtRp(tf.spp_ma)}</span>`:''}
+            ${tf.uang_jajan?`<span style="font-size:11px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:2px 8px;color:#c2410c">${svgIcon('cash',10)} ${fmtRp(tf.uang_jajan)}</span>`:''}
+            ${tf.dll?JSON.parse(tf.dll).map(i=>`<span style="font-size:11px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:2px 8px;color:#475569">${svgIcon('tag',10)} ${i.ket}: ${fmtRp(i.nominal)}</span>`).join(''):''}
             ${sisa!==0?`<span style="font-size:11px;background:${sisa>0?'#f0fdf4':'#fef2f2'};border:1px solid ${sisa>0?'#bbf7d0':'#fecaca'};border-radius:6px;padding:2px 8px;color:${sisa>0?'var(--green)':'var(--red)'}">
-              ${sisa>0?'💰':'⚠️'}: ${fmtRp(Math.abs(sisa))}</span>`:''}
+              ${sisa>0?svgIcon('cash',10):svgIcon('alert-triangle',10)}: ${fmtRp(Math.abs(sisa))}</span>`:''}
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:18px;font-weight:700;color:var(--green)">${fmtRp(tf.total_tf)}</div>
           <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
-            <button class="btn btn-b btn-xs" onclick="editTFAdmin(${tf.id})">✏️</button>
-            <button class="btn btn-d btn-xs" onclick="hapusTFAdmin(${tf.id},'${(tf.nama_santri||'').replace(/'/g,'')}')">🗑️</button>
+            <button class="btn btn-b btn-xs" onclick="editTFAdmin(${tf.id})">${svgIcon('edit',12)}</button>
+            <button class="btn btn-d btn-xs" onclick="hapusTFAdmin(${tf.id},'${(tf.nama_santri||'').replace(/'/g,'')}')">${svgIcon('trash',12)}</button>
           </div>
         </div>
       </div>
@@ -330,7 +330,7 @@ function tfTambahDll(ket='', nominal=''){
       style="width:120px;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"
       class="tf-dll-nominal" oninput="tfHitungSisa()">
     <button type="button" onclick="this.parentElement.remove();tfHitungSisa()"
-      style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--red);font-size:14px">✕</button>
+      style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--red);display:inline-flex" title="Hapus">${svgIcon('x',13)}</button>
   `;
   list.appendChild(div);
 }
@@ -484,7 +484,7 @@ function printTFAdmin(){
   });
   const dllRekapHtml = Object.entries(dllRekap).map(([ket,total])=>`
     <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
-      <div style="font-size:10px;color:#666;font-weight:600">📌 ${ket.toUpperCase()}</div>
+      <div style="font-size:10px;color:#666;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px">${svgIcon('tag',11)} ${ket.toUpperCase()}</div>
       <div style="font-size:14px;font-weight:700">${fmtRp(total)}</div>
     </div>
   `).join('');
@@ -553,19 +553,19 @@ function printTFAdmin(){
         </div>
         ${dapurRekapHtml}
         <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:#666;font-weight:600">⚡ LISTRIK</div>
+          <div style="font-size:10px;color:#666;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px">${svgIcon('zap',11)} LISTRIK</div>
           <div style="font-size:14px;font-weight:700">${fmtRp(totalListrik)}</div>
         </div>
         <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:#666;font-weight:600">📚 SPP MTs</div>
+          <div style="font-size:10px;color:#666;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px">${svgIcon('graduation-cap',11)} SPP MTs</div>
           <div style="font-size:14px;font-weight:700">${fmtRp(totalSppMts)}</div>
         </div>
         <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:#666;font-weight:600">📚 SPP MA</div>
+          <div style="font-size:10px;color:#666;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px">${svgIcon('graduation-cap',11)} SPP MA</div>
           <div style="font-size:14px;font-weight:700">${fmtRp(totalSppMa)}</div>
         </div>
         <div style="border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:#666;font-weight:600">💵 UANG JAJAN</div>
+          <div style="font-size:10px;color:#666;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px">${svgIcon('cash',11)} UANG JAJAN</div>
           <div style="font-size:14px;font-weight:700">${fmtRp(totalJajan)}</div>
         </div>
         ${dllRekapHtml}

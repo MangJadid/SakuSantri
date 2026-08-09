@@ -128,7 +128,7 @@ function previewFoto(input){
 }
 function hapusFoto(){
   fotoBase64=null; fotoFile=null;
-  document.getElementById('foto-preview').innerHTML='👤';
+  document.getElementById('foto-preview').innerHTML=svgIcon('person',28);
   document.getElementById('s-foto').value='';
   document.getElementById('hapus-foto-btn').style.display='none';
 }

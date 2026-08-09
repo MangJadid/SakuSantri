@@ -1,4 +1,33 @@
 const { createClient } = supabase;
+
+// ===== HEADER AUTO-HIDE ON SCROLL (HP) -- turun sembunyi, tarik dikit ke atas langsung muncul lagi, kayak Instagram =====
+(function(){
+  let lastY = window.scrollY || 0;
+  window.addEventListener('scroll', () => {
+    if(window.innerWidth > 640) return; // desktop: header selalu tampil
+    const hdr = document.querySelector('header');
+    if(!hdr) return;
+    const y = window.scrollY || document.documentElement.scrollTop || 0;
+    if(y > lastY && y > 80) hdr.classList.add('hdr-hidden');
+    else if(y < lastY) hdr.classList.remove('hdr-hidden');
+    lastY = y;
+  }, {passive:true});
+})();
+
+// ===== KUNCI KOLOM NAMA (tabel) -- opsional, tersimpan per-user =====
+function toggleFreezeNama(){
+  const active = document.body.classList.toggle('freeze-nama');
+  localStorage.setItem('freeze_nama_kolom_bd', active ? '1' : '0');
+  document.querySelectorAll('.freeze-toggle-btn').forEach(b=>b.classList.toggle('active', active));
+}
+function initFreezeNama(){
+  const on = localStorage.getItem('freeze_nama_kolom_bd') === '1';
+  if(!on) return;
+  document.body.classList.add('freeze-nama');
+  document.querySelectorAll('.freeze-toggle-btn').forEach(b=>b.classList.add('active'));
+}
+initFreezeNama();
+
 // ===== SHA-256 HELPER =====
 async function sha256(str){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -104,7 +133,7 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
         try{
           const {data:chk} = await SB.from('bendahara_users').select('force_logout,is_blocked').eq('id',SESSION.id).single();
           if(chk?.force_logout || chk?.is_blocked){
-            toast('⚠️ Anda telah di-logout oleh Kang Admin', false);
+            toast('⚠️ Anda telah di-logout oleh Admin', false);
             setTimeout(()=>doLogout(), 2000);
           }
         }catch(e){}
@@ -132,7 +161,7 @@ async function ensureSuperAccount(){
       const randomPass = Array.from(bytes, b => chars[b % chars.length]).join('');
       await SB.from('bendahara_users').upsert({
         username:'admin', password_hash:await sha256(randomPass),
-        nama_tampilan:'Kang Admin / Bendahara Utama', role:'super', dapur_id:null
+        nama_tampilan:'Admin / Bendahara Utama', role:'super', dapur_id:null
       },{onConflict:'username'});
       alert('🔑 Akun Admin pertama dibuat otomatis:\n\nUsername: admin\nPassword: '+randomPass+'\n\nCatat password ini SEKARANG — pesan ini hanya muncul sekali. Segera login lalu ganti password lewat menu Ganti Password.');
     }
@@ -201,7 +230,7 @@ async function doLogin(){
       } catch(e){}
     }
 
-    if(data.is_blocked){ hideLoginOverlay(); showLoginErr('⛔ Akun diblokir. Hubungi Kang Admin.'); return; }
+    if(data.is_blocked){ hideLoginOverlay(); showLoginErr('⛔ Akun diblokir. Hubungi Admin.'); return; }
 
     if(data.force_logout){ await SB.from('bendahara_users').update({force_logout:false}).eq('id',data.id); }
     const {data:akses} = await SB.from('bendahara_akses').select('*').eq('bendahara_id',data.id);
@@ -225,7 +254,7 @@ async function doLogin(){
         try{
           const {data:chk} = await SB.from('bendahara_users').select('force_logout,is_blocked').eq('id',SESSION.id).single();
           if(chk?.force_logout || chk?.is_blocked){
-            toast('⚠️ Anda telah di-logout oleh Kang Admin', false);
+            toast('⚠️ Anda telah di-logout oleh Admin', false);
             setTimeout(()=>doLogout(), 2000);
           }
         }catch(e){}
@@ -241,7 +270,7 @@ async function doLoginAdmin(){
   const user = document.getElementById('admin-user').value.trim();
   const pass = document.getElementById('admin-pass').value;
   if(!user||!pass){ showLoginErr('⚠️ Isi username dan password!'); return; }
-  showLoginOverlay('Memverifikasi Kang Admin...');
+  showLoginOverlay('Memverifikasi Admin...');
   try {
     // Coba login via Supabase Auth dulu (tidak perlu baca tabel settings sama sekali)
     const email = user + '@annur.internal';
@@ -255,13 +284,13 @@ async function doLoginAdmin(){
       // Daftarkan ke Supabase Auth
       try{
         await SB.auth.signUp({ email, password: pass,
-          options: { data: { username: user, nama: 'Kang Admin', role: 'kangadmin' } }
+          options: { data: { username: user, nama: 'Admin', role: 'kangadmin' } }
         });
         await SB.auth.signInWithPassword({ email, password: pass });
       } catch(e){}
     }
 
-    SESSION = {role:'kangadmin', nama:'Kang Admin', username:user, dapur_id:null, akses_asrama:[]};
+    SESSION = {role:'kangadmin', nama:'Admin', username:user, dapur_id:null, akses_asrama:[]};
     saveSession(); trackActivity();
     MONITOR_INTERVAL = setInterval(async()=>{
       await trackActivity();
@@ -269,7 +298,7 @@ async function doLoginAdmin(){
         try{
           const {data:chk} = await SB.from('bendahara_users').select('force_logout,is_blocked').eq('id',SESSION.id).single();
           if(chk?.force_logout || chk?.is_blocked){
-            toast('⚠️ Anda telah di-logout oleh Kang Admin', false);
+            toast('⚠️ Anda telah di-logout oleh Admin', false);
             setTimeout(()=>doLogout(), 2000);
           }
         }catch(e){}
@@ -290,9 +319,9 @@ function showLoginErr(msg){
 // ===== ENTER APP =====
 async function enterApp(){
   const isAdmin = isKangAdmin();
-  document.getElementById('pg-app').style.display='block';
+  document.getElementById('pg-app').classList.add('shown');
   document.getElementById('hdr-bulan').textContent = CONFIG.bulan_aktif||BULAN_AKTIF_DEFAULT;
-  document.getElementById('hdr-role').textContent = isAdmin ? '👑 Kang Admin' : ('🍳 '+(SESSION.dapur_ids&&SESSION.dapur_ids.length>0?SESSION.dapur_ids.map(did=>getDapurNama(did)).join(', '):SESSION.nama||'Pengelola'));
+  document.getElementById('hdr-role').textContent = isAdmin ? '👑 Admin' : ('🍳 '+(SESSION.dapur_ids&&SESSION.dapur_ids.length>0?SESSION.dapur_ids.map(did=>getDapurNama(did)).join(', '):SESSION.nama||'Pengelola'));
 
   if(!isAdmin) ACTIVE_DAPUR = (SESSION.dapur_ids&&SESSION.dapur_ids.length===1)?SESSION.dapur_ids[0]:null;
 
@@ -306,7 +335,16 @@ async function enterApp(){
   fillSelects();
   showTab('dashboard');
   updateHeaderProfilAv(); // tampilkan tombol Profil di header
+  updateSidebarProfileBD(); // isi nama/role/avatar sidebar+topbar desktop
+  // Tampilkan tombol menu akun & lonceng notifikasi di header (mobile-only-el yang atur tampil/sembunyinya per lebar layar)
+  const btnAccTrigger = document.getElementById('btn-acc-trigger-bd');
+  if(btnAccTrigger) btnAccTrigger.style.removeProperty('display');
+  const btnBellBD = document.getElementById('btn-notif-bell-bd');
+  if(btnBellBD) btnBellBD.style.removeProperty('display');
+  const topbarBellBD = document.getElementById('topbar-bell-bd');
+  if(topbarBellBD) topbarBellBD.style.display = 'flex';
   updateBadgeNotifikasiBD();
+  setTimeout(()=>registerPushNotificationBD(), 2000);
   hideLoginOverlay();
 }
 
@@ -361,6 +399,7 @@ async function _loadAllDataCore(){
     santri = santri.filter(s=>dapurSet.has(String(s.dapur_id)));
   }
   ALL_SANTRI = santri;
+  _santriByIdCache = null;
 
   let tagihan = r1.data||[];
   const santriIds = new Set(ALL_SANTRI.map(s=>String(s.id)));
@@ -413,7 +452,43 @@ function getDapurNama(id){ return DAPUR_LIST.find(d=>d.id===id)?.nama||'—'; }
 function getDapurEmoji(id){ return DAPUR_LIST.find(d=>d.id===id)?.emoji||'🍳'; }
 function getAsramaNama(id){ return ALL_ASRAMA.find(a=>String(a.id)===String(id))?.nama||'—'; }
 function getKobongNama(id){ return ALL_KOBONG.find(k=>String(k.id)===String(id))?.nama||'—'; }
-function getSantriById(id){ return ALL_SANTRI.find(s=>String(s.id)===String(id)); }
+// Cache lookup santri by-id -- dipanggil dari dalam loop di banyak tempat
+// (renderTagihanTable dst), .find() linear di array ratusan santri x ribuan
+// baris tagihan itu yang bikin lag pas ganti tab. Map di-invalidate manual
+// tiap ALL_SANTRI di-assign ulang (lihat _loadAllDataCore).
+let _santriByIdCache = null;
+function getSantriById(id){
+  if(!_santriByIdCache) _santriByIdCache = new Map(ALL_SANTRI.map(s=>[String(s.id), s]));
+  return _santriByIdCache.get(String(id));
+}
+
+// ===== PAGINASI (tabel Tagihan/Santri/Riwayat bisa ratusan-ribuan baris --
+// cuma render 1 halaman sekaligus biar gak berat tiap ganti tab/filter) =====
+const PAGE_SIZE = 50;
+const _pageState = {};
+function paginate(list, key){
+  const page = _pageState[key] || 1;
+  const start = (page-1)*PAGE_SIZE;
+  return list.slice(start, start+PAGE_SIZE);
+}
+function renderPaginationUI(containerId, totalItems, key, renderCall){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const totalPages = Math.max(1, Math.ceil(totalItems/PAGE_SIZE));
+  let page = _pageState[key] || 1;
+  if(page>totalPages){ page=totalPages; _pageState[key]=page; }
+  if(totalPages<=1){ el.innerHTML=''; return; }
+  const goto = p => `_pageState['${key}']=${p};${renderCall}`;
+  const btn = (p,label,disabled,active) => `<button class="pg-btn ${active?'act':''}" ${disabled?'disabled':''} onclick="${goto(p)}">${label}</button>`;
+  let html = btn(page-1,'‹',page<=1,false);
+  const maxBtns=7;
+  let startP=Math.max(1,page-Math.floor(maxBtns/2));
+  let endP=Math.min(totalPages,startP+maxBtns-1);
+  startP=Math.max(1,endP-maxBtns+1);
+  for(let p=startP;p<=endP;p++) html+=btn(p,String(p),false,p===page);
+  html += btn(page+1,'›',page>=totalPages,false);
+  el.innerHTML = html;
+}
 
 function getSantriFiltered(){
   if(ACTIVE_DAPUR) return ALL_SANTRI.filter(s=>String(s.dapur_id)===String(ACTIVE_DAPUR));
@@ -430,16 +505,6 @@ const avColors=['#1a5c3a','#2471a3','#6c3483','#b8860b','#c0392b','#16a085','#8e
 function avColor(n){ if(!n) return avColors[0]; let h=0; for(let i=0;i<n.length;i++) h=(h+n.charCodeAt(i)*31)%avColors.length; return avColors[h]; }
 function avLetter(n){ return n?n[0].toUpperCase():'?'; }
 function fmtRp(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
-// Ukuran font otomatis mengecil kalau teks nilainya makin panjang (cegah card kepotong/wrap aneh di HP)
-function fitValPx(text, base=22, min=12){
-  const len = String(text).length;
-  if(len<=7) return base;
-  if(len<=9) return base-3;
-  if(len<=11) return base-6;
-  if(len<=13) return Math.max(min, base-8);
-  if(len<=16) return Math.max(min-1, base-10);
-  return Math.max(min-2, 9);
-}
 function today(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function fmtTgl(s){ if(!s) return '—'; try{ return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return s; } }
 
@@ -505,25 +570,26 @@ function buildTabs(){
   const isAdmin=isKangAdmin();
   const tabs=document.getElementById('main-tabs');
   let t='';
-  if(hasAkses('dashboard')) t+=tab('dashboard','📊 Dashboard');
-  if(hasAkses('tagihan')) t+=tab('tagihan','📋 Tagihan');
-  if(hasAkses('santri')) t+=tab('santri','👥 Santri');
-  if(hasAkses('rekap')) t+=tab('rekap','📊 Rekap Tunggakan');
-  if(hasAkses('kelulusan')) t+=tab('kelulusan','🎓 Kelulusan');
-  if(hasAkses('riwayat')) t+=tab('riwayat','📜 Riwayat');
-  if(hasAkses('tfadmin')) t+=tab('tfadmin','💸 TF Admin');
-  if(hasAkses('import')) t+=tab('import','📥 Import');
-  if(hasAkses('kobong')) t+=tab('kobong','🏠 Kobong');
+  if(hasAkses('dashboard')) t+=tab('dashboard',svgIcon('home',14)+' Dashboard');
+  if(hasAkses('tagihan')) t+=tab('tagihan',svgIcon('document',14)+' Tagihan');
+  if(hasAkses('santri')) t+=tab('santri',svgIcon('users',14)+' Santri');
+  if(hasAkses('rekap')) t+=tab('rekap',svgIcon('trending-up',14)+' Rekap Tunggakan');
+  if(hasAkses('kelulusan')) t+=tab('kelulusan',svgIcon('graduation-cap',14)+' Kelulusan');
+  if(hasAkses('riwayat')) t+=tab('riwayat',svgIcon('document',14)+' Riwayat');
+  if(hasAkses('tfadmin')) t+=tab('tfadmin',svgIcon('bank',14)+' TF Admin');
+  if(hasAkses('import')) t+=tab('import',svgIcon('upload',14)+' Import');
+  if(hasAkses('kobong')) t+=tab('kobong',svgIcon('home',14)+' Kobong');
   if(isAdmin){
-    t+=tab('manajemen','👥 Manajemen Bendahara');
-    t+=tab('monitor','👁️ Monitor');
-    t+=tab('tanpaDapur','🍽️ Tanpa Dapur');
-    t+=tab('generate','⚡ Generate Tagihan');
-    t+=tab('notifikasi','🔔 Notifikasi');
-    t+=tab('pengaturan','⚙️ Pengaturan');
+    t+=tab('manajemen',svgIcon('users',14)+' Manajemen Bendahara');
+    t+=tab('monitor',svgIcon('eye',14)+' Monitor');
+    t+=tab('tanpaDapur',svgIcon('alert-triangle',14)+' Tanpa Dapur');
+    t+=tab('generate',svgIcon('refresh',14)+' Generate Tagihan');
+    t+=tab('notifikasi',svgIcon('bell',14)+' Notifikasi');
+    t+=tab('pengaturan',svgIcon('settings',14)+' Pengaturan');
   }
   tabs.innerHTML=t;
   buildMobileNavBD();
+  buildSidebarBD();
 
   // Set SQL migrasi di pengaturan
   if(isAdmin){
@@ -533,21 +599,132 @@ function buildTabs(){
 }
 function tab(id,l){ return `<button class="tb" id="tab-${id}" onclick="showTab('${id}')">${l}</button>`; }
 
+// ===== SIDEBAR DESKTOP: menu dikelompokkan per kategori, item difilter otomatis
+// sesuai akses (cuma ditampilkan kalau tab-nya beneran ada di #main-tabs) =====
+const SIDEBAR_GROUPS_BD = [
+  { label:'Utama', items:[
+    {id:'dashboard', label:'Dashboard', icon:'home'},
+  ]},
+  { label:'Tagihan & Pembayaran', items:[
+    {id:'tagihan', label:'Tagihan', icon:'document'},
+    {id:'riwayat', label:'Riwayat', icon:'document'},
+    {id:'tfadmin', label:'TF Admin', icon:'bank'},
+    {id:'import', label:'Import', icon:'upload'},
+  ]},
+  { label:'Data Santri', items:[
+    {id:'santri', label:'Santri', icon:'users'},
+    {id:'kobong', label:'Kobong', icon:'home'},
+    {id:'rekap', label:'Rekap Tunggakan', icon:'trending-up'},
+    {id:'kelulusan', label:'Kelulusan', icon:'graduation-cap'},
+  ]},
+  { label:'Administrasi', items:[
+    {id:'manajemen', label:'Manajemen Bendahara', icon:'users'},
+    {id:'monitor', label:'Monitor', icon:'eye'},
+    {id:'tanpaDapur', label:'Tanpa Dapur', icon:'alert-triangle'},
+    {id:'generate', label:'Generate Tagihan', icon:'refresh'},
+    {id:'notifikasi', label:'Notifikasi', icon:'bell'},
+    {id:'pengaturan', label:'Pengaturan', icon:'settings'},
+  ]},
+];
+
+function buildSidebarBD(){
+  const nav = document.getElementById('sidebar-nav-bd');
+  if(!nav) return;
+  let html = '';
+  SIDEBAR_GROUPS_BD.forEach(g=>{
+    const items = g.items.filter(m=>document.getElementById('tab-'+m.id));
+    if(!items.length) return;
+    html += `<div class="sidebar-group"><div class="sidebar-group-label">${g.label}</div>`;
+    items.forEach(m=>{
+      html += `<button class="sidebar-item" id="sbar-bd-${m.id}" onclick="showTab('${m.id}')">
+        <span class="sidebar-item-ic">${svgIcon(m.icon,18)}</span>
+        <span class="sidebar-item-label">${m.label}</span>
+      </button>`;
+    });
+    html += `</div>`;
+  });
+  nav.innerHTML = html;
+  syncSidebarActiveBD();
+}
+
+const TAB_TITLES_BD = {
+  dashboard:'Dashboard', tagihan:'Tagihan', santri:'Santri', rekap:'Rekap Tunggakan',
+  kelulusan:'Kelulusan', riwayat:'Riwayat', tfadmin:'TF Admin', import:'Import',
+  kobong:'Kobong', manajemen:'Manajemen Bendahara', monitor:'Monitor',
+  tanpaDapur:'Tanpa Dapur', generate:'Generate Tagihan', notifikasi:'Notifikasi', pengaturan:'Pengaturan',
+};
+
+function syncSidebarActiveBD(){
+  const activeTab = document.querySelector('.tb.act');
+  const id = activeTab ? activeTab.id.replace('tab-','') : null;
+  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('act'));
+  if(id) document.getElementById('sbar-bd-'+id)?.classList.add('act');
+  const titleEl = document.getElementById('topbar-title-bd');
+  if(titleEl) titleEl.textContent = TAB_TITLES_BD[id] || 'Dashboard';
+}
+
+// Kotak cari di topbar desktop -- filter langsung tabel tab aktif kalau ada
+// search box-nya, kalau tidak loncat ke tab Tagihan dulu.
+const BD_TOPBAR_SEARCH_MAP = {
+  tagihan: {input:'cari-tagihan', fn:()=>renderTagihanTable()},
+  santri: {input:'cari-santri', fn:()=>renderSantri()},
+  rekap: {input:'cari-rekap', fn:()=>renderRekap()},
+  kelulusan: {input:'cari-kelulusan', fn:()=>renderKelulusan()},
+  tfadmin: {input:'cari-tf', fn:()=>renderTFAdmin()},
+  riwayat: {input:'cari-riwayat', fn:()=>renderRiwayat()},
+};
+function topbarSearchGoBD(value){
+  let activeId = document.querySelector('.tb.act')?.id?.replace('tab-','');
+  if(!BD_TOPBAR_SEARCH_MAP[activeId] && value.trim()!==''){
+    showTab('tagihan');
+    activeId = 'tagihan';
+  }
+  const cfg = BD_TOPBAR_SEARCH_MAP[activeId];
+  if(cfg){
+    const el = document.getElementById(cfg.input);
+    if(el){ el.value = value; cfg.fn(); }
+  }
+}
+
+// ===== SIDEBAR DESKTOP: ciutkan/lebarkan -- tersimpan per-browser =====
+function toggleSidebarCollapseBD(){
+  const collapsed = document.body.classList.toggle('sidebar-collapsed');
+  localStorage.setItem('sidebar_collapsed_bd', collapsed ? '1' : '0');
+}
+function initSidebarCollapseBD(){
+  if(localStorage.getItem('sidebar_collapsed_bd') === '1') document.body.classList.add('sidebar-collapsed');
+}
+initSidebarCollapseBD();
+
+// Sidebar + topbar desktop -- nama/role/avatar, dipanggil sekali di enterApp().
+function updateSidebarProfileBD(){
+  if(!SESSION) return;
+  const isAdmin = isKangAdmin();
+  const nama = SESSION.nama || 'Pengguna';
+  const roleLabel = isAdmin ? 'Admin' : 'Pengelola Dapur';
+  ['sidebar-profile-name-bd','topbar-profile-name-bd'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = nama; });
+  ['sidebar-profile-role-bd','topbar-profile-role-bd'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = roleLabel; });
+  const initial = (nama||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  ['sidebar-av-bd','topbar-av-bd'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = initial; });
+  const subEl = document.getElementById('sidebar-brand-sub-bd');
+  if(subEl) subEl.textContent = CONFIG.pesantren_nama || 'Pondok Pesantren';
+}
+
 // ===== MOBILE NAV: bottom nav (5 utama) + grid "Fitur Lainnya" (HP saja) =====
 // Diporting 1:1 dari pola Saku Santri: dibangun dari tab yang SUDAH ada di
 // #main-tabs, otomatis ikut aturan akses (hasAkses/isAdmin) yang sama.
 const MENU_LAINNYA_BD = [
-  {id:'rincianDapur', label:'Rincian Dapur', icon:'📊', c:'gg', action:'toggleRincianDapurBD()'},
-  {id:'kelulusan', label:'Kelulusan', icon:'🎓', c:'p'},
-  {id:'tfadmin', label:'TF Admin', icon:'💸', c:'gg'},
-  {id:'import', label:'Import', icon:'📥', c:'b'},
-  {id:'kobong', label:'Kobong', icon:'🏠', c:'g'},
-  {id:'manajemen', label:'Manajemen', icon:'👥', c:'g'},
-  {id:'monitor', label:'Monitor', icon:'👁️', c:'b'},
-  {id:'tanpaDapur', label:'Tanpa Dapur', icon:'🍽️', c:'r'},
-  {id:'generate', label:'Generate Tagihan', icon:'⚡', c:'gg'},
-  {id:'notifikasi', label:'Notifikasi', icon:'🔔', c:'gg'},
-  {id:'pengaturan', label:'Pengaturan', icon:'⚙️', c:'r'},
+  {id:'rincianDapur', label:'Rincian Dapur', icon:svgIcon('trending-up'), c:'gg', action:'toggleRincianDapurBD()'},
+  {id:'kelulusan', label:'Kelulusan', icon:svgIcon('graduation-cap'), c:'p'},
+  {id:'tfadmin', label:'TF Admin', icon:svgIcon('bank'), c:'gg'},
+  {id:'import', label:'Import', icon:svgIcon('upload'), c:'b'},
+  {id:'kobong', label:'Kobong', icon:svgIcon('home'), c:'g'},
+  {id:'manajemen', label:'Manajemen', icon:svgIcon('users'), c:'g'},
+  {id:'monitor', label:'Monitor', icon:svgIcon('eye'), c:'b'},
+  {id:'tanpaDapur', label:'Tanpa Dapur', icon:svgIcon('alert-triangle'), c:'r'},
+  {id:'generate', label:'Generate Tagihan', icon:svgIcon('refresh'), c:'gg'},
+  {id:'notifikasi', label:'Notifikasi', icon:svgIcon('bell'), c:'gg'},
+  {id:'pengaturan', label:'Pengaturan', icon:svgIcon('settings'), c:'r'},
 ];
 
 function buildMobileNavBD(){
@@ -557,11 +734,11 @@ function buildMobileNavBD(){
   document.body.classList.add('has-bnav');
 
   const primer = [
-    {id:'dashboard', label:'Dashboard', icon:'📊'},
-    {id:'tagihan', label:'Tagihan', icon:'📋'},
-    {id:'santri', label:'Santri', icon:'👥'},
-    {id:'rekap', label:'Tunggakan', icon:'📊'},
-    {id:'riwayat', label:'Riwayat', icon:'📜'},
+    {id:'dashboard', label:'Dashboard', icon:svgIcon('home',20)},
+    {id:'tagihan', label:'Tagihan', icon:svgIcon('document',20)},
+    {id:'santri', label:'Santri', icon:svgIcon('users',20)},
+    {id:'rekap', label:'Tunggakan', icon:svgIcon('trending-up',20)},
+    {id:'riwayat', label:'Riwayat', icon:svgIcon('document',20)},
   ].filter(m => document.getElementById('tab-'+m.id));
 
   bnav.innerHTML = '<span class="bnav-highlight" id="bnav-highlight-bd"></span>' + primer.map(m => `
@@ -590,6 +767,10 @@ function toggleRincianDapurBD(){
 }
 
 function moveBnavHighlightBD(){
+  // Desktop: bottom-nav disembunyikan total, jangan baca offsetWidth/offsetLeft
+  // di sini -- itu bikin browser paksa hitung layout (reflow) tiap ganti tab,
+  // padahal hasilnya gak kepakai sama sekali karena elemennya display:none.
+  if(window.innerWidth > 640) return;
   const hl = document.getElementById('bnav-highlight-bd');
   const active = document.querySelector('#bottom-nav-bd .bnav-item.act');
   if(!hl || !active) { if(hl) hl.style.opacity = '0'; return; }
@@ -605,7 +786,7 @@ function openAccountDrawerBD(){
   av.textContent = (SESSION.nama||'P').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
   document.getElementById('acc-name-bd').textContent = SESSION.nama || 'Pengguna';
   document.getElementById('acc-user-bd').textContent = '@' + (SESSION.username || '—');
-  document.getElementById('acc-role-badge-bd').textContent = isAdmin ? '👑 Kang Admin' : '🍳 Pengelola Dapur';
+  document.getElementById('acc-role-badge-bd').textContent = isAdmin ? '👑 Admin' : '🍳 Pengelola Dapur';
   document.getElementById('acc-dapur-bd').textContent = isAdmin
     ? 'Semua Dapur'
     : (SESSION.dapur_ids && SESSION.dapur_ids.length ? SESSION.dapur_ids.map(id=>getDapurNama(id)).join(', ') : '—');
@@ -613,12 +794,12 @@ function openAccountDrawerBD(){
 
   const waAdminUrl = `https://wa.me/6287789179398?text=${encodeURIComponent('Assalamualaikum, saya '+(SESSION.nama||'bendahara')+' butuh bantuan terkait aplikasi Bendahara.')}`;
   const items = [
-    {ic:'👤', title:'Profil Saya', sub:'Lihat & edit profil', onclick:"closeAccountDrawerBD();bukaModalProfil()"},
+    {ic:svgIcon('person'), title:'Profil Saya', sub:'Lihat & edit profil', onclick:"closeAccountDrawerBD();bukaModalProfil()"},
   ];
   if(isAdmin){
-    items.push({ic:'⚙️', title:'Pengaturan', sub:'Preferensi aplikasi', onclick:"closeAccountDrawerBD();showTab('pengaturan')"});
+    items.push({ic:svgIcon('settings'), title:'Pengaturan', sub:'Preferensi aplikasi', onclick:"closeAccountDrawerBD();showTab('pengaturan')"});
   }
-  items.push({ic:'❓', title:'Bantuan', sub:'Hubungi admin via WhatsApp', onclick:`closeAccountDrawerBD();window.open('${waAdminUrl}','_blank')`});
+  items.push({ic:svgIcon('help-circle'), title:'Bantuan', sub:'Hubungi admin via WhatsApp', onclick:`closeAccountDrawerBD();window.open('${waAdminUrl}','_blank')`});
 
   document.getElementById('acc-menu-bd').innerHTML = items.map(m => `
     <button class="acc-menu-item" onclick="${m.onclick}">
@@ -645,7 +826,7 @@ async function updateBadgeNotifikasiBD(){
   if(!SESSION){ _notifBaruCountBD = 0; return; }
   try{
     const lastSeen = parseInt(localStorage.getItem(_notifLastSeenKeyBD())||'0');
-    const {data} = await SB.from('push_notifications').select('id',{count:'exact'}).gt('id', lastSeen);
+    const {data} = await SB.from('push_notifications').select('id',{count:'exact'}).or('app_source.eq.bendahara,app_source.is.null').gt('id', lastSeen);
     _notifBaruCountBD = data?.length||0;
   } catch(e){ _notifBaruCountBD = 0; }
   const el = document.getElementById('badge-notif-bell-bd');
@@ -653,13 +834,15 @@ async function updateBadgeNotifikasiBD(){
     el.style.display = _notifBaruCountBD>0 ? 'inline' : 'none';
     el.textContent = _notifBaruCountBD>9 ? '9+' : _notifBaruCountBD;
   }
+  const dot = document.getElementById('topbar-bell-dot-bd');
+  if(dot) dot.style.display = _notifBaruCountBD>0 ? 'block' : 'none';
 }
 
 async function openNotifBellPanelBD(){
   openMo('mo-notif-bell-bd');
   const listEl = document.getElementById('notif-bell-list-bd');
   listEl.innerHTML = '<div class="empty"><span class="ei">🔔</span><p>Memuat...</p></div>';
-  const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  const { data: riwayat } = await SB.from('push_notifications').select('*').or('app_source.eq.bendahara,app_source.is.null').order('created_at', {ascending:false}).limit(20);
   if(riwayat?.length){
     const maxId = Math.max(...riwayat.map(n=>n.id));
     localStorage.setItem(_notifLastSeenKeyBD(), String(maxId));
@@ -704,7 +887,7 @@ async function renderNotifikasiBD(){
       sel.innerHTML += `<option value="${a.username}">${a.nama_tampilan||a.username}</option>`;
     });
   }
-  const { data: riwayat } = await SB.from('push_notifications').select('*').order('created_at', {ascending:false}).limit(20);
+  const { data: riwayat } = await SB.from('push_notifications').select('*').or('app_source.eq.bendahara,app_source.is.null').order('created_at', {ascending:false}).limit(20);
   const listEl = document.getElementById('notif-riwayat-list-bd');
   if(!listEl) return;
   if(!riwayat?.length){ listEl.innerHTML='<div style="color:var(--text-l);font-size:13px;text-align:center;padding:16px">Belum ada notifikasi dikirim</div>'; return; }
@@ -745,7 +928,8 @@ async function kirimNotifikasiBD(){
       body: JSON.stringify({
         judul, pesan, tipe,
         target_username: target || null,
-        dikirim_oleh: SESSION?.username || 'kangadmin'
+        dikirim_oleh: SESSION?.username || 'kangadmin',
+        app_source: 'bendahara'
       })
     });
     const data = await res.json();
@@ -774,7 +958,7 @@ async function hapusNotifikasiBD(id){
 function showTab(id){
   const isAdmin=isKangAdmin();
   // Cek role dari hdr-role sebagai fallback jika SESSION belum siap
-  const isAdminFallback = document.getElementById('hdr-role')?.textContent?.includes('Kang Admin');
+  const isAdminFallback = document.getElementById('hdr-role')?.textContent?.includes('Admin');
   if(['pengaturan','manajemen','monitor','tanpaDapur','generate','notifikasi'].includes(id) && !isAdmin && !isAdminFallback) return;
 
   // Reset filter saat pindah tab
@@ -787,6 +971,7 @@ function showTab(id){
   if(s) s.classList.add('act'); if(t) t.classList.add('act');
   document.getElementById('bnav-bd-'+id)?.classList.add('act');
   moveBnavHighlightBD();
+  syncSidebarActiveBD();
   if(id==='dashboard') renderDashboard();
   if(id==='tagihan') renderTagihanTable();
   if(id==='santri') renderSantri();

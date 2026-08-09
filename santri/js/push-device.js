@@ -98,6 +98,7 @@ async function simpanSubscription(sub){
     pengurus_id: pengurusId,
     username: username,
     subscription: sub.toJSON(),
+    app_source: 'santri',
     updated_at: new Date().toISOString()
   }, { onConflict: 'username' });
 }
