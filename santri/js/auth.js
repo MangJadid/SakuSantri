@@ -328,17 +328,34 @@ async function loadSantriForRole(){
   }
 }
 
+// Ambil SEMUA transaksi (bukan cuma N terbaru) pakai pagination -- Supabase
+// batasi 1000 baris per request, kalau gak di-paging riwayat lama diam-diam
+// kepotong begitu jumlah transaksi tembus limit (mis. cuma kebawa dari
+// tanggal tertentu ke atas). Pola sama persis dengan export-backup.js.
+async function fetchAllTx(queryBuilder){
+  const PAGE = 1000;
+  let all=[], from=0;
+  while(true){
+    const {data, error} = await queryBuilder().range(from, from+PAGE-1);
+    if(error) throw error;
+    all = all.concat(data||[]);
+    if(!data || data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
 async function loadTxForRole(){
   if(SESSION.role==='ortu') return [];
   if(SESSION.role==='super'||SESSION.role==='pengawas'){
-    const {data} = await SB.from('transaksi').select('*,santri(nama,kobong(id,nama))').order('tanggal',{ascending:false}).order('created_at',{ascending:false}).limit(500);
-    return data||[];
+    return await fetchAllTx(()=>SB.from('transaksi').select('*,santri(nama,kobong(id,nama))')
+      .order('tanggal',{ascending:false}).order('created_at',{ascending:false}).order('id',{ascending:false}));
   }
   if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'||SESSION.role==='pengurus'){
     const sids = ALL_SANTRI.map(s=>s.id);
     if(!sids.length) return [];
-    const {data} = await SB.from('transaksi').select('*,santri(nama,kobong(id,nama))').in('santri_id',sids).order('tanggal',{ascending:false}).limit(1000);
-    return data||[];
+    return await fetchAllTx(()=>SB.from('transaksi').select('*,santri(nama,kobong(id,nama))').in('santri_id',sids)
+      .order('tanggal',{ascending:false}).order('id',{ascending:false}));
   }
   return [];
 }

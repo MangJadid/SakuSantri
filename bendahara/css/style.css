@@ -348,6 +348,9 @@ body.sidebar-collapsed .sidebar-profile{ justify-content:center; }
 .topbar-profile-name{ font-size:13px; font-weight:700; color:var(--text); line-height:1.2; white-space:nowrap; }
 .topbar-profile-role{ font-size:11px; color:var(--text-xl); white-space:nowrap; }
 
+/* === MAIN LAYOUT === */
+main{max-width:1280px;margin:0 auto;padding:28px 20px}
+
 @media(min-width:641px){
   #pg-app.shown{ display:flex; padding-top:0; }
   header,.tabs,.bnav{ display:none !important; }
@@ -361,7 +364,7 @@ body.sidebar-collapsed .sidebar-profile{ justify-content:center; }
 /* ── ISI LAYAR DESKTOP LEBAR (≥1024px): kartu/list dilebarin biar gak nyisa
    area kosong gede kiri-kanan kayak mobile-view yang cuma di-stretch ── */
 @media(min-width:1024px){
-  main{ max-width:1600px; }
+  main{ max-width:1600px; margin:0 auto; padding:22px 32px; }
 
   /* Piutang Alumni, TF Admin, Notifikasi -- kartu masih ditumpuk satu kolom,
      digrid biar kepakai ruangnya (mirror pola yang sama di Saku Santri) */
@@ -372,15 +375,25 @@ body.sidebar-collapsed .sidebar-profile{ justify-content:center; }
   #notif-riwayat-list-bd{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; align-items:start; }
   #notif-riwayat-list-bd>div{ margin-bottom:0 !important; }
 
-  /* Tab isinya cuma panel form (checklist/setting) -- jangan dilebarin sampe
-     sisi layar, cukup dikunci nyaman & ditengahin biar gak jadi form raksasa */
-  #sec-generate,#sec-pengaturan,#sec-import{
-    max-width:1300px; margin-left:auto; margin-right:auto;
-  }
+  /* Kobong: kartu di dalam tiap accordion asrama udah auto-fill, cuma
+     dilebarin kolom minimalnya biar gak nyisa gede pas di-expand */
+  #asrama-kobong-grid-bend .asrama-block-body>div{ grid-template-columns:repeat(auto-fill,minmax(240px,1fr)) !important; }
+
+  /* Generate Tagihan: 2 panel (Konfigurasi + Generate) disandingkan biar
+     kepakai lebar layarnya, bukan ditumpuk vertikal kayak di HP */
+  #sec-generate.act{ display:grid; grid-template-columns:minmax(320px,420px) 1fr; gap:20px; align-items:start; }
+
+  /* Notifikasi: form kirim di kiri, Riwayat Notifikasi di kanan -- dua-duanya
+     kepakai lebar layar sekaligus, bukan numpuk ke bawah jadi form kurus */
+  #sec-notifikasi .notif-pb{ display:grid; grid-template-columns:minmax(320px,420px) 1fr; gap:28px; align-items:start; }
+  #sec-notifikasi .notif-riwayat-col{ margin-top:0 !important; }
 }
 
-/* === MAIN LAYOUT === */
-main{max-width:1280px;margin:0 auto;padding:28px 20px}
+/* Monitor eksternal sangat lebar (>=1700px): kasih napas ekstra di kiri-kanan */
+@media(min-width:1700px){
+  main{ padding:22px 48px; }
+}
+
 .tabs{
   display:flex;gap:2px;background:var(--white);
   border:1px solid var(--border-l);border-radius:var(--rad);
@@ -407,7 +420,7 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 .panel{
   background:var(--white);border:1px solid var(--border-l);
   border-radius:var(--rad);box-shadow:var(--sh);
-  overflow:hidden;margin-bottom:24px;
+  overflow:hidden;margin-bottom:24px;width:100%;box-sizing:border-box;
   transition:box-shadow .2s
 }
 .panel:hover{box-shadow:var(--shh)}
@@ -422,6 +435,7 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
   display:flex;align-items:center;gap:9px;font-weight:700
 }
 .pb{padding:20px 22px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
 @media(max-width:640px){.two{grid-template-columns:1fr}}
 
 /* === STAT CARDS === */

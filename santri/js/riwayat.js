@@ -24,7 +24,7 @@ function renderRiwayat(){
     const kn=t.santri?.kobong?.nama||'—';
     html+=`<tr>
       <td style="font-size:11.5px;color:var(--text-l);white-space:nowrap">${fmtTanggal(t.tanggal)}</td>
-      <td><strong>${t.santri?.nama||'—'}</strong></td>
+      <td class="col-nama"><strong>${t.santri?.nama||'—'}</strong></td>
       <td><span class="badge bg" style="font-size:10.5px">${kn}</span></td>
       <td>${t.keterangan||'—'}</td>
       <td class="s-ok">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>

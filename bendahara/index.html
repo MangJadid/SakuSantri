@@ -6,7 +6,7 @@
 <title>Bendahara — Pondok Pesantren An-Nur</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="./css/style.css?v=8">
+<link rel="stylesheet" href="./css/style.css?v=10">
 <meta name="apple-mobile-web-app-title" content="Bendahara An-Nur">
 <meta name="theme-color" content="#1a5c3a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -699,32 +699,34 @@
     <div class="sec" id="sec-notifikasi">
       <div class="panel">
         <div class="ph"><h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-3px"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Kirim Notifikasi</h2></div>
-        <div class="pb">
-          <div class="fg">
-            <label>Jenis Notifikasi</label>
-            <select id="notif-tipe-bd" onchange="onNotifTipeChangeBD()">
-              <option value="bebas">📢 Pesan Bebas</option>
-              <option value="tutup_bulan">📅 Pengingat Tutup Bulan</option>
-            </select>
+        <div class="pb notif-pb">
+          <div class="notif-form-col">
+            <div class="fg">
+              <label>Jenis Notifikasi</label>
+              <select id="notif-tipe-bd" onchange="onNotifTipeChangeBD()">
+                <option value="bebas">📢 Pesan Bebas</option>
+                <option value="tutup_bulan">📅 Pengingat Tutup Bulan</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Judul</label>
+              <input type="text" id="notif-judul-bd" placeholder="Judul notifikasi...">
+            </div>
+            <div class="fg">
+              <label>Pesan</label>
+              <textarea id="notif-pesan-bd" rows="4" placeholder="Isi pesan notifikasi..." style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+            </div>
+            <div class="fg">
+              <label>Kirim ke</label>
+              <select id="notif-target-bd">
+                <option value="">Semua Pengelola</option>
+              </select>
+            </div>
+            <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px" onclick="kirimNotifikasiBD()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Kirim Notifikasi
+            </button>
           </div>
-          <div class="fg">
-            <label>Judul</label>
-            <input type="text" id="notif-judul-bd" placeholder="Judul notifikasi...">
-          </div>
-          <div class="fg">
-            <label>Pesan</label>
-            <textarea id="notif-pesan-bd" rows="4" placeholder="Isi pesan notifikasi..." style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
-          </div>
-          <div class="fg">
-            <label>Kirim ke</label>
-            <select id="notif-target-bd">
-              <option value="">Semua Pengelola</option>
-            </select>
-          </div>
-          <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px" onclick="kirimNotifikasiBD()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Kirim Notifikasi
-          </button>
-          <div style="margin-top:24px">
+          <div class="notif-riwayat-col" style="margin-top:24px">
             <div style="font-size:13px;font-weight:700;color:var(--text-m);margin-bottom:10px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg> Riwayat Notifikasi</div>
             <div id="notif-riwayat-list-bd"></div>
           </div>
