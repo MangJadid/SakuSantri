@@ -357,7 +357,12 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
   .sidebar{ display:flex; }
   .topbar{ display:flex; }
   .app-main-col{ flex:1; min-width:0; }
-  main{ padding:28px 32px 48px; }
+  /* main punya "margin:0 auto" dari rule dasar (buat mobile/tablet yang
+     ditengahin). Begitu jadi flex child di sini, auto-margin itu bikin
+     main SHRINK ke lebar kontennya lalu ditengahin -- bukan stretch ngisi
+     kolom -- persis kenapa tampilan kelihatan kayak versi mobile yang
+     cuma ditaro di tengah layar desktop. Matiin auto-margin-nya. */
+  main{ padding:28px 32px 48px; margin-left:0; margin-right:0; }
   .dapur-bar{ position:static; top:auto; }
 }
 
