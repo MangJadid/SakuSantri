@@ -364,6 +364,13 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
      cuma ditaro di tengah layar desktop. Matiin auto-margin-nya. */
   main{ padding:28px 32px 48px; margin-left:0; margin-right:0; }
   .dapur-bar{ position:static; top:auto; }
+
+  /* Kunci Nama cuma perlu di HP (tabel sempit, sering discroll ke samping) --
+     di desktop tabel udah selebar layar jadi tombolnya gak kepake */
+  .freeze-toggle-btn{ display:none !important; }
+  body.freeze-nama .tbl-wrap td.col-nama{ position:static; box-shadow:none; background:transparent; }
+  body.freeze-nama .tbl-wrap th.col-nama{ position:static; box-shadow:none; background:var(--green); }
+  body.freeze-nama .tbl-wrap tbody tr:hover td.col-nama{ background:var(--green-p); }
 }
 
 /* ── ISI LAYAR DESKTOP LEBAR (≥1024px): kartu/list dilebarin biar gak nyisa
