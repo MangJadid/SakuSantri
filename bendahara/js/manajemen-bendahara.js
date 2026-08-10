@@ -12,7 +12,7 @@ async function renderManajemenBendahara(){
     } catch(e){ console.error(e); }
   }
   if(!ALL_AKUN.length){ content.innerHTML='<div class="empty"><span class="ei">👥</span><p>Belum ada akun bendahara.</p></div>'; return; }
-  content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">`+
+  content.innerHTML=`<div class="akun-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">`+
   ALL_AKUN.map(a=>{
     const aksesA=ALL_AKSES.filter(x=>x.bendahara_id===a.id);
     const chips=aksesA.map(x=>`<span class="asrama-chip">${x.asrama_nama||getAsramaNama(x.asrama_id)}</span>`).join('')||'<span style="font-size:11px;color:var(--text-l)">Semua asrama</span>';

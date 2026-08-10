@@ -362,30 +362,44 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 }
 
 /* ── ISI LAYAR DESKTOP LEBAR (≥1024px): kartu/list dilebarin biar gak nyisa
-   area kosong gede kiri-kanan kayak mobile-view yang cuma di-stretch ── */
+   area kosong gede kiri-kanan kayak mobile-view yang cuma di-stretch.
+   Ngikutin acuan desain (Claude Design "App tampilan upgrade"): main TANPA
+   max-width cap sama sekali -- isi selalu 100% lebar layar yang tersisa
+   setelah sidebar, bukan dibatasi lalu ditengahin. ── */
 @media(min-width:1024px){
-  main{ max-width:1600px; margin:0 auto; padding:22px 32px; }
+  main{ max-width:none; padding:22px 32px; }
 
   /* Piutang Alumni, TF Admin, Notifikasi -- kartu masih ditumpuk satu kolom,
-     digrid biar kepakai ruangnya (mirror pola yang sama di Saku Santri) */
-  #piutang-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:10px; align-items:start; }
+     digrid biar kepakai ruangnya. Pakai auto-fit (bukan auto-fill): auto-fill
+     bikin kolom "hantu" kosong kalau item dikit, jadi kartu yang ada gak
+     ikut melebar walau container-nya lebar -- itu penyebab kartu keliatan
+     kecil padahal layar masih kosong di kanan. auto-fit motong kolom kosong
+     itu, jadi kartu yang ada beneran ngisi 100% lebar. */
+  #piutang-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:10px; align-items:start; }
   #piutang-list>div{ margin-bottom:0 !important; }
-  #tf-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(380px,1fr)); gap:14px; align-items:start; }
+  #tf-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:14px; align-items:start; }
   #tf-list>div{ margin-bottom:0 !important; }
-  #notif-riwayat-list-bd{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; align-items:start; }
+  #notif-riwayat-list-bd{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:12px; align-items:start; }
   #notif-riwayat-list-bd>div{ margin-bottom:0 !important; }
 
-  /* Kobong: kartu di dalam tiap accordion asrama udah auto-fill, cuma
-     dilebarin kolom minimalnya biar gak nyisa gede pas di-expand */
-  #asrama-kobong-grid-bend .asrama-block-body>div{ grid-template-columns:repeat(auto-fill,minmax(240px,1fr)) !important; }
+  /* Kobong: daftar asrama sendiri jadi grid 3 kolom tetap (bukan ditumpuk
+     satu-satu ke bawah kayak sebelumnya) -- asrama yang lagi di-expand
+     ngisi satu baris penuh biar kobong di dalamnya kebagian ruang */
+  #asrama-kobong-grid-bend{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; align-items:start; }
+  #asrama-kobong-grid-bend .asrama-block{ margin-bottom:0; }
+  #asrama-kobong-grid-bend .asrama-block.expanded{ grid-column:1 / -1; }
+  #asrama-kobong-grid-bend .asrama-block-body>div{ grid-template-columns:repeat(auto-fit,minmax(220px,1fr)) !important; }
 
-  /* Generate Tagihan: 2 panel (Konfigurasi + Generate) disandingkan biar
-     kepakai lebar layarnya, bukan ditumpuk vertikal kayak di HP */
-  #sec-generate.act{ display:grid; grid-template-columns:minmax(320px,420px) 1fr; gap:20px; align-items:start; }
+  /* Manajemen Bendahara: grid 3 kolom tetap, sama kayak Kobong -- ngejamin
+     selalu ngisi penuh berapa pun jumlah akunnya */
+  .akun-grid{ grid-template-columns:repeat(3,1fr) !important; }
 
-  /* Notifikasi: form kirim di kiri, Riwayat Notifikasi di kanan -- dua-duanya
-     kepakai lebar layar sekaligus, bukan numpuk ke bawah jadi form kurus */
-  #sec-notifikasi .notif-pb{ display:grid; grid-template-columns:minmax(320px,420px) 1fr; gap:28px; align-items:start; }
+  /* Generate Tagihan: 2 panel (Konfigurasi + Generate) disandingkan 50/50 */
+  #sec-generate.act{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+
+  /* Notifikasi: form kirim di kiri, Riwayat Notifikasi (lebih lebar dikit)
+     di kanan -- dua-duanya kepakai lebar layar sekaligus */
+  #sec-notifikasi .notif-pb{ display:grid; grid-template-columns:1fr 1.2fr; gap:28px; align-items:start; }
   #sec-notifikasi .notif-riwayat-col{ margin-top:0 !important; }
 }
 
