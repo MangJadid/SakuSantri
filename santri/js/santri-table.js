@@ -28,7 +28,8 @@ function renderTabelSantri(){
   });
 
   let html='';
-  filtered.forEach((s,i)=>{
+  const pageStart=((_pageState.santri||1)-1)*PAGE_SIZE;
+  paginate(filtered,'santri').forEach((s,i)=>{
     const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const sc = s.saldo<0?'s-minus':s.saldo===0?'s-nol':s.saldo<kritis?'s-warn':'s-ok';
     const isChecked = _bulkSelected.has(s.id);
@@ -36,7 +37,7 @@ function renderTabelSantri(){
     const klikNamaMobile = `if(window.innerWidth<=640) openDetailModal(${s.id})`;
     html+=`<tr style="${isChecked?'background:#f0fdf4;':''}">
       <td class="cb-col" style="width:36px">${canBulk?`<input type="checkbox" ${isChecked?'checked':''} onchange="santriToggleOne(${s.id},this.checked)" style="accent-color:var(--green);cursor:pointer;width:16px;height:16px">`:''}</td>
-      <td style="color:var(--text-l);font-size:12px">${i+1}</td>
+      <td style="color:var(--text-l);font-size:12px">${pageStart+i+1}</td>
       <td class="col-nama" onclick="${klikNamaMobile}"><div style="display:flex;align-items:center;gap:9px">
         <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};overflow:hidden">${s.foto_url?'<img src="'+s.foto_url+'" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
         <div><strong>${s.nama}</strong>${s.kelas?`<div style="font-size:11px;color:var(--text-l)">Kelas ${s.kelas}</div>`:''}
@@ -59,8 +60,7 @@ function renderTabelSantri(){
 
   updateBulkBar();
 
-  const pgEl = document.getElementById('santri-pagination');
-  if(pgEl) pgEl.innerHTML = '';
+  renderPaginationUI('santri-pagination', filtered.length, 'santri', 'renderTabelSantri()');
   setTimeout(activateLazyLoad, 50);
 }
 

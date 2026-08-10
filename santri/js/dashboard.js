@@ -236,7 +236,8 @@ function renderDashboard(){
   }
 
   let html='';
-  filtered.forEach((s,i)=>{
+  const pageStart=((_pageState.dash||1)-1)*PAGE_SIZE;
+  paginate(filtered,'dash').forEach((s,i)=>{
     const k = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const sc = s.saldo<0?'s-minus':s.saldo===0?'s-nol':s.saldo<kritis?'s-warn':'s-ok';
     const isKritis = s.saldo>=0 && s.saldo<kritis || s.saldo<0;
@@ -244,7 +245,7 @@ function renderDashboard(){
       ? `<button class="btn btn-wa btn-sm" onclick="kirimWASantri(${s.id})" title="Kirim WA ke ${s.no_wa}">📲</button>`
       : `<button class="btn btn-o btn-sm" style="opacity:.4;cursor:not-allowed" title="No WA tidak ada">📵</button>`;
     html+=`<tr class="row-reveal">
-      <td style="color:var(--text-l);font-size:12px">${i+1}</td>
+      <td style="color:var(--text-l);font-size:12px">${pageStart+i+1}</td>
       <td class="col-nama"><div style="display:flex;align-items:center;gap:9px">
         <div class="av" style="background:${avColor(s.nama)}22;color:${avColor(s.nama)};overflow:hidden">${s.foto_url?'<img data-src="'+s.foto_url+'" class="lazy-img" style="width:100%;height:100%;object-fit:cover">':avLetter(s.nama)}</div>
         <div><div style="font-weight:600">${s.nama}</div><div style="font-size:11px;color:var(--text-l)">${s.catatan||''}</div></div>
@@ -257,6 +258,7 @@ function renderDashboard(){
     </tr>`;
   });
   document.getElementById('dash-tbl').innerHTML = html||`<tr><td colspan="7"><div class="empty"><span class="ei">🔍</span><p>Tidak ada data</p></div></td></tr>`;
+  renderPaginationUI('dash-pagination', filtered.length, 'dash', 'renderDashboard()');
 
   const kritisAdaWA = filtered.filter(s=>(s.saldo<kritis)&&s.no_wa).length;
   const btnWaSemuaDash = document.getElementById('btn-wa-semua');

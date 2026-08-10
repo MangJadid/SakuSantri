@@ -20,7 +20,7 @@ function renderRiwayat(){
   });
 
   let html='';
-  filtered.forEach(t=>{
+  paginate(filtered,'riwayat').forEach(t=>{
     const kn=t.santri?.kobong?.nama||'—';
     html+=`<tr>
       <td style="font-size:11.5px;color:var(--text-l);white-space:nowrap">${fmtTanggal(t.tanggal)}</td>
@@ -34,7 +34,6 @@ function renderRiwayat(){
   });
   document.getElementById('riw-tbl').innerHTML=html||`<tr><td colspan="7"><div class="empty"><span class="ei">📜</span><p>Tidak ada riwayat</p></div></td></tr>`;
 
-  const pgEl=document.getElementById('riw-pagination');
-  if(pgEl) pgEl.innerHTML='';
+  renderPaginationUI('riw-pagination', filtered.length, 'riwayat', 'renderRiwayat()');
 }
 

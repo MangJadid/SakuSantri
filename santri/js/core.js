@@ -119,6 +119,33 @@ const renderDashboardDebounced = ()=>{ renderDashboard(); };
 const renderRiwayatDebounced = ()=>{ renderRiwayat(); };
 const COLORS = ['#1a5c3a','#2471a3','#6c3483','#c0392b','#e67e22','#148f77','#1e8449','#2980b9','#8e44ad','#c0392b','#d35400','#16a085'];
 
+// ===== PAGINATION (client-side, biar tabel ratusan baris gak lag) =====
+const PAGE_SIZE = 80;
+const _pageState = {};
+function paginate(list, key){
+  const page = _pageState[key] || 1;
+  const start = (page-1)*PAGE_SIZE;
+  return list.slice(start, start+PAGE_SIZE);
+}
+function renderPaginationUI(containerId, totalItems, key, renderCall){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const totalPages = Math.max(1, Math.ceil(totalItems/PAGE_SIZE));
+  let page = _pageState[key] || 1;
+  if(page>totalPages){ page=totalPages; _pageState[key]=page; }
+  if(totalPages<=1){ el.innerHTML=''; return; }
+  const goto = p => `_pageState['${key}']=${p};${renderCall}`;
+  const btn = (p,label,disabled,active) => `<button class="pg-btn ${active?'act':''}" ${disabled?'disabled':''} onclick="${goto(p)}">${label}</button>`;
+  let html = btn(page-1,'‹',page<=1,false);
+  const maxBtns=7;
+  let startP=Math.max(1,page-Math.floor(maxBtns/2));
+  let endP=Math.min(totalPages,startP+maxBtns-1);
+  startP=Math.max(1,endP-maxBtns+1);
+  for(let p=startP;p<=endP;p++) html+=btn(p,String(p),false,p===page);
+  html += btn(page+1,'›',page>=totalPages,false);
+  el.innerHTML = html;
+}
+
 // ===== UTILS =====
 const rp = v => 'Rp '+Math.abs(v||0).toLocaleString('id-ID');
 

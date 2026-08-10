@@ -688,6 +688,17 @@ body.freeze-nama .tw th.col-nama{
 body.freeze-nama .tw thead th.col-nama{background:var(--green);z-index:3}
 body.freeze-nama .tw tbody tr:hover td.col-nama{background:var(--green-p)}
 
+/* ── PAGINATION ─────────────────────────── */
+.pagination{display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.pg-btn{
+  padding:7px 13px;border:1.5px solid var(--border);background:var(--surface);
+  border-radius:9px;font-size:12px;cursor:pointer;
+  font-family:inherit;color:var(--text-m);transition:all .2s
+}
+.pg-btn:hover{border-color:var(--green-l);color:var(--green);background:var(--green-p)}
+.pg-btn.act{background:var(--green);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(13,79,53,.25)}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed}
+
 /* ── SALDO COLORS ───────────────────────── */
 .s-ok{color:var(--green-l);font-weight:700}
 .s-warn{color:#d97706;font-weight:700}
