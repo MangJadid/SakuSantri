@@ -10,6 +10,7 @@ function renderRekap(){
   const kelasF=document.getElementById('filter-kelas-rekap')?.value||'';
   const waliF=document.getElementById('filter-wali-rekap')?.value||'';
   const content=document.getElementById('rekap-content');
+  document.getElementById('rekap-pagination').innerHTML='';
 
   // Filter tagihan berdasarkan filter yang dipilih
   let tagihanF=getTagihanFiltered().filter(t=>{
@@ -48,10 +49,11 @@ function renderRekap(){
     if(statusF==='lunas') data=data.filter(d=>d.tunggak<=0);
     data.sort((a,b)=>b.tunggak-a.tunggak);
 
-    const rows=data.map((d,i)=>{
+    const pageStart=((_pageState.rekap||1)-1)*PAGE_SIZE;
+    const rows=paginate(data,'rekap').map((d,i)=>{
       const pct=d.total>0?Math.round(d.lunas/d.total*100):100;
       return `<tr>
-        <td>${i+1}</td>
+        <td>${pageStart+i+1}</td>
         <td class="col-nama"><button onclick="openDetailModal('${d.id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${d.nama}</button></td>
         <td><span class="badge badge-bg">${d.kobong}</span></td>
         <td>${d.kelas}</td>
@@ -66,6 +68,7 @@ function renderRekap(){
       </tr>`;
     }).join('');
     content.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>#</th><th class="col-nama">Santri</th><th>Kobong</th><th>Kelas</th><th>Dapur</th><th>Uang Makan</th><th>Uang Listrik</th><th>Total Tagihan</th><th>Sudah Bayar</th><th>Tunggakan</th><th>Progres</th><th>Aksi</th></tr></thead><tbody>${rows||'<tr><td colspan="12"><div class="empty"><span class="ei">✅</span><p>Tidak ada tunggakan!</p></div></td></tr>'}</tbody></table></div>`;
+    renderPaginationUI('rekap-pagination', data.length, 'rekap', 'renderRekap()');
   } else if(mode==='bulan'){
     const perBulan={};
     tagihanF.forEach(t=>{

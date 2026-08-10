@@ -29,7 +29,8 @@ function renderKelulusan(){
   if(filterL==='tunggak') data=data.filter(d=>!d.bebas);
   data.sort((a,b)=>a.nama.localeCompare(b.nama));
 
-  const rows=data.map((d,i)=>{
+  const pageStart=((_pageState.kelulusan||1)-1)*PAGE_SIZE;
+  const rows=paginate(data,'kelulusan').map((d,i)=>{
     const s=getSantriById(d.id)||{};
     const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
     const kelas=s.kelas||'—';
@@ -37,7 +38,7 @@ function renderKelulusan(){
     const kelasNum=parseInt(s.kelas)||0;
     const bisaNaikJenjang = kelasNum===6||kelasNum===9||kelasNum===12;
     return `<tr>
-      <td>${i+1}</td>
+      <td>${pageStart+i+1}</td>
       <td class="col-nama"><button onclick="openDetailModal('${d.id}')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--green)">${d.nama}</button></td>
       <td><span class="badge badge-bg">${kelas}</span></td>
       <td><span class="badge badge-bg">${kobongNama}</span></td>
@@ -53,6 +54,7 @@ function renderKelulusan(){
     </tr>`;
   }).join('');
   document.getElementById('kelulusan-tbody').innerHTML=rows||`<tr><td colspan="9"><div class="empty"><span class="ei">🎓</span><p>Tidak ada data.</p></div></td></tr>`;
+  renderPaginationUI('kelulusan-pagination', data.length, 'kelulusan', 'renderKelulusan()');
 }
 
 // ===== NAIK JENJANG =====
