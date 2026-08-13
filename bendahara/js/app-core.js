@@ -520,6 +520,10 @@ function adjustTabsStickyPos(){
 }
 
 // ===== DAPUR BAR =====
+// Filter Dapur cuma relevan di Dashboard -- munculnya diatur di showTab(),
+// di sini cuma nentuin APAKAH user ini boleh liat dapur bar sama sekali
+// (role/akses), disimpan di _dapurBarEligibleBD.
+let _dapurBarEligibleBD = false;
 function buildDapurBar(){
   const isAdmin = isKangAdmin();
   const bar = document.getElementById('dapur-bar');
@@ -528,7 +532,7 @@ function buildDapurBar(){
   // Pengelola: tampilkan dapur bar jika punya akses lebih dari 1 dapur
   if(!isAdmin){
     if(SESSION.dapur_ids && SESSION.dapur_ids.length>1){
-      bar.style.display='flex';
+      _dapurBarEligibleBD = true;
       let t=`<button class="dtab act" id="dtab-all" onclick="setActiveDapur(null,this)">🌐 Semua Dapur</button>`;
       SESSION.dapur_ids.forEach(did=>{
         const d=DAPUR_LIST.find(x=>String(x.id)===String(did));
@@ -536,6 +540,7 @@ function buildDapurBar(){
       });
       tabs.innerHTML=t; ACTIVE_DAPUR=null;
     } else {
+      _dapurBarEligibleBD = false;
       bar.style.display='none';
       if(SESSION.dapur_ids && SESSION.dapur_ids.length===1) ACTIVE_DAPUR=SESSION.dapur_ids[0];
     }
@@ -543,12 +548,22 @@ function buildDapurBar(){
   }
 
   // Kang Admin: tampilkan semua dapur
-  bar.style.display='flex';
+  _dapurBarEligibleBD = true;
   let t=`<button class="dtab act" id="dtab-all" onclick="setActiveDapur(null,this)">🌐 Semua Dapur</button>`;
   DAPUR_LIST.forEach(d=>{
     t+=`<button class="dtab" id="dtab-${d.id}" onclick="setActiveDapur('${d.id}',this)">${d.emoji} ${d.nama}</button>`;
   });
   tabs.innerHTML=t;
+}
+
+// Filter Dapur cuma perlu keliatan di Dashboard -- di tab lain cuma makan
+// tempat di bawah header tanpa manfaat (data tab lain difilter lewat filter
+// panel masing-masing, bukan dapur bar global).
+function updateDapurBarVisibilityBD(tabId){
+  const bar = document.getElementById('dapur-bar');
+  if(!bar) return;
+  bar.style.display = (_dapurBarEligibleBD && tabId==='dashboard') ? 'flex' : 'none';
+  adjustTabsStickyPos();
 }
 
 function setActiveDapur(id,el){
@@ -972,6 +987,7 @@ function showTab(id){
   document.getElementById('bnav-bd-'+id)?.classList.add('act');
   moveBnavHighlightBD();
   syncSidebarActiveBD();
+  updateDapurBarVisibilityBD(id);
   if(id==='dashboard') renderDashboard();
   if(id==='tagihan') renderTagihanTable();
   if(id==='santri') renderSantri();
