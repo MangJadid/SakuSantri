@@ -520,6 +520,30 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 .sil small{font-size:11.5px;color:var(--text-l);font-weight:500;word-break:keep-all;overflow-wrap:normal;display:inline-block}
 @media(max-width:480px){.sil .val{font-size:18px}}
 
+/* Aksen khas pesantren di kartu stat Dashboard -- porting 1:1 dari Saku
+   Santri, dibatasi ke #sec-dashboard aja biar gak nyampur ke .sc dipakai
+   di tab lain (TF Admin, Monitor, dst) */
+#sec-dashboard .sc{
+  border-top:2.5px solid var(--gold-l);
+  background:linear-gradient(180deg,#fffdf6,var(--surface) 60%);
+}
+#sec-dashboard .sc:hover{box-shadow:0 10px 24px rgba(184,130,10,.14)}
+#sec-dashboard .sc.sc-warn{background:var(--warn-bg);border:1px solid var(--warn-border)}
+#sec-dashboard .sc.sc-warn .sci{background:rgba(255,255,255,.6);color:var(--warn-ic)}
+#sec-dashboard .sc.sc-danger{background:var(--danger-bg2);border:1px solid var(--danger-border2)}
+#sec-dashboard .sc.sc-danger .sci{background:rgba(255,255,255,.6);color:var(--red)}
+#sec-dashboard .panel{position:relative;border-color:var(--gold-b)}
+#sec-dashboard .panel::before{
+  content:'';position:absolute;top:0;left:8%;right:8%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold-l),transparent);
+}
+#sec-dashboard .ph h2{position:relative;padding-left:14px}
+#sec-dashboard .ph h2::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:4px;height:16px;border-radius:2px;
+  background:linear-gradient(180deg,var(--green-l),var(--gold-l));
+}
+
 /* Kartu hero -- Total Terkumpul, di atas grid .stats, bukan salah satu child-nya */
 .sc-hero{
   background:var(--green);border-radius:var(--rad-lg);

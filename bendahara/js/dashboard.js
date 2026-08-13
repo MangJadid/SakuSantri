@@ -98,7 +98,7 @@ function renderDashboard(){
   document.getElementById('dash-stats').innerHTML=`
     <div class="sc"><div class="sci g">${svgIcon('document',20)}</div><div class="sil"><label>Total Tagihan</label><div class="val">${tagihanBulan.length}</div><small>${bulan}</small></div></div>
     <div class="sc"><div class="sci g">${svgIcon('check-circle',20)}</div><div class="sil"><label>Sudah Lunas</label><div class="val" style="color:var(--green)">${lunas.length}</div><small>${fmtRp(totalLunas)}</small></div></div>
-    <div class="sc"><div class="sci r">${svgIcon('circle-minus',20)}</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
+    <div class="sc sc-danger"><div class="sci r">${svgIcon('circle-minus',20)}</div><div class="sil"><label>Belum Bayar</label><div class="val" style="color:var(--red)">${belum.length}</div><small>${fmtRp(belum.reduce((a,t)=>a+Number(t.nominal),0))}</small></div></div>
     <div class="sc" style="grid-column:1/-1;background:linear-gradient(135deg,var(--green-p),#fff);border:1.5px solid var(--green-b)">
       <div class="sci g">${svgIcon('users',20)}</div>
       <div class="sil" style="flex:1">
