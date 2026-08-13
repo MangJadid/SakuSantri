@@ -35,7 +35,7 @@
   --border:#e7e2d3;--border-m:#d9d2bb;
 
   /* Tokens */
-  --rad:16px;--rad-sm:7px;--rad-md:12px;--rad-lg:16px;--rad-xl:20px;
+  --rad:10px;--rad-sm:7px;--rad-md:12px;--rad-lg:16px;--rad-xl:20px;
   --canvas:#eef1ec;
   --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
   --sh-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
@@ -54,7 +54,7 @@
   --sh-gold:0 4px 20px rgba(138,109,31,.20);}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--canvas);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
 /* === SCROLLBAR === */
 ::-webkit-scrollbar{width:5px;height:5px}
@@ -223,18 +223,19 @@ header::after{
 
 /* === DAPUR BAR === */
 .dapur-bar{
-  background:var(--bg);border-bottom:1px solid var(--border-l);
-  padding:14px 16px;display:none;align-items:center;gap:10px;flex-wrap:nowrap;
+  background:var(--white);border-bottom:1px solid var(--border-l);
+  padding:7px 16px;display:none;align-items:center;gap:8px;flex-wrap:nowrap;
   position:sticky;top:66px;z-index:91;box-sizing:border-box;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
   transition:transform .25s cubic-bezier(.23,1,.32,1)
 }
 header.hdr-hidden + .dapur-bar{transform:translateY(-58px)}
-.dapur-bar-label{font-size:10.5px;color:var(--text-l);font-weight:700;white-space:nowrap;letter-spacing:.6px;text-transform:uppercase;flex-shrink:0}
-.dapur-tabs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:1px}
+.dapur-bar-label{font-size:10px;color:var(--text-l);font-weight:700;white-space:nowrap;letter-spacing:.4px;text-transform:uppercase;flex-shrink:0}
+.dapur-tabs{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:1px}
 .dapur-tabs::-webkit-scrollbar{display:none}
 .dtab{
-  padding:7px 15px;border:1px solid var(--border);background:var(--white);
-  border-radius:20px;font-size:12.5px;font-weight:700;cursor:pointer;
+  padding:4px 12px;border:1.5px solid var(--border);background:var(--white);
+  border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;
   transition:all .2s;color:var(--text-m);white-space:nowrap;flex-shrink:0
 }
 .dtab:hover{border-color:var(--green-l);color:var(--green);background:var(--green-p)}
@@ -371,6 +372,24 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
   body.freeze-nama .tbl-wrap td.col-nama{ position:static; box-shadow:none; background:transparent; }
   body.freeze-nama .tbl-wrap th.col-nama{ position:static; box-shadow:none; background:var(--green); }
   body.freeze-nama .tbl-wrap tbody tr:hover td.col-nama{ background:var(--green-p); }
+
+  /* Token visual yang dicocokin ke acuan desain (radius lebih bulat, dapur
+     pill lebih gede, dst) -- CUMA buat sidebar+topbar desktop. Sebelumnya
+     ini diubah global lewat --rad dan bocor ke HP, bikin kartu/pill
+     kegedean di mobile. Definisi dasar di atas tetap ukuran HP yang asli;
+     di sini di-override lagi khusus desktop.
+     CATATAN: .panel/.ph/.sc SENGAJA gak di-override di sini -- base
+     rule-nya ada di bawah (section PANEL/STAT CARDS), lebih telat di
+     urutan file, jadi bakal menang lawan override di sini walau media
+     query-nya kena (equal specificity = urutan file terakhir menang,
+     gak peduli di dalam media query atau nggak). Override buat 3 itu
+     ada di media query kedua, taruh SETELAH base rule-nya masing-masing. */
+  :root{ --rad:16px; }
+  body{ background:var(--canvas); }
+  .dapur-bar{ background:var(--bg); padding:14px 16px; gap:10px; box-shadow:none; }
+  .dapur-bar-label{ font-size:10.5px; letter-spacing:.6px; }
+  .dapur-tabs{ gap:8px; }
+  .dtab{ padding:7px 15px; border-width:1px; border-radius:20px; font-size:12.5px; font-weight:700; }
 }
 
 /* ── ISI LAYAR DESKTOP LEBAR (≥1024px): kartu/list dilebarin biar gak nyisa
@@ -444,15 +463,16 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 
 /* === PANEL === */
 .panel{
-  background:var(--bg);border:1px solid var(--border-l);
-  border-radius:18px;box-shadow:var(--sh);
+  background:var(--white);border:1px solid var(--border-l);
+  border-radius:var(--rad);box-shadow:var(--sh);
   overflow:hidden;margin-bottom:24px;width:100%;box-sizing:border-box;
   transition:box-shadow .2s
 }
 .panel:hover{box-shadow:var(--shh)}
 .ph{
-  padding:20px 22px;border-bottom:1px solid var(--border-l);
+  padding:16px 22px;border-bottom:1px solid var(--border-l);
   display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(to right,var(--green-p),rgba(248,255,251,.5));
   flex-wrap:wrap;gap:10px
 }
 .ph h2{
@@ -467,10 +487,10 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
 .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px}
 @media(min-width:900px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .sc{
-  background:var(--bg);border:1px solid var(--border-l);
-  border-radius:var(--rad);padding:18px 20px;
+  background:var(--white);border:1px solid var(--border-l);
+  border-radius:var(--rad);padding:14px 16px;
   display:flex;align-items:center;gap:12px;
-  transition:all .25s ease;
+  box-shadow:var(--sh);transition:all .25s ease;
   position:relative;overflow:hidden;min-width:0
 }
 .sc::before{
@@ -479,6 +499,15 @@ main{max-width:1280px;margin:0 auto;padding:28px 20px}
   background:currentColor;opacity:.04;pointer-events:none
 }
 .sc:hover{box-shadow:var(--shh);transform:translateY(-2px)}
+
+/* Lanjutan override desktop dari @media(min-width:641px) di atas -- .panel/
+   .ph/.sc harus di-override DI SINI (setelah base rule-nya), bukan di media
+   query pertama, biar beneran menang di urutan cascade. */
+@media(min-width:641px){
+  .panel{ background:var(--bg); border-radius:18px; }
+  .ph{ padding:20px 22px; background:none; }
+  .sc{ background:var(--bg); padding:18px 20px; box-shadow:none; }
+}
 .sci{
   width:42px;height:42px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
