@@ -357,8 +357,16 @@ body.sidebar-collapsed .sidebar-profile{ justify-content:center; }
 .topbar-profile-name{ font-size:13px; font-weight:700; color:var(--text); line-height:1.2; white-space:nowrap; }
 .topbar-profile-role{ font-size:11px; color:var(--text-xl); white-space:nowrap; }
 
-/* === MAIN LAYOUT === */
-main{max-width:1280px;margin:0 auto;padding:28px 20px}
+/* === MAIN LAYOUT ===
+   .app-main-col{display:flex;flex-direction:column} SENGAJA gak dibungkus
+   media query (lihat definisi-nya di atas) -- jalan di SEMUA lebar layar,
+   termasuk HP. Itu artinya main SELALU jadi flex child-nya, di mobile
+   ataupun desktop. margin:0 auto di bawah ini kalau dibiarin bakal bikin
+   main nyusut ke lebar kontennya sendiri lalu ditengahin (bukan stretch
+   ngisi kolom) -- persis bug yang sama kayak yang ketemu di desktop, cuma
+   ternyata kejadian juga di HP karena flex context-nya emang unconditional.
+   Makanya margin dikunci 0 di sini juga, bukan cuma di breakpoint desktop. */
+main{max-width:1280px;margin:0;padding:28px 20px}
 
 @media(min-width:641px){
   #pg-app.shown{ display:flex; padding-top:0; }
