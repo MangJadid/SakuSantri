@@ -373,8 +373,8 @@ function renderDashboard(){
       <td><strong>${fmtRp(t.nominal)}</strong></td>
       <td>${statusBadge}</td>
       <td>
-        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="bukaMoBayar('${t.id}')">💰 Bayar</button>`:''}
-        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs" style="margin-left:4px" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulan}')">📱</button>`:''}
+        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="bukaMoBayar('${t.id}')">💰 Bayar</button>`:''}
+        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs mutating-only" style="margin-left:4px" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulan}')">📱</button>`:''}
       </td>
     </tr>`;
   }).join('');

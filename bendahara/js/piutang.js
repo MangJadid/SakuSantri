@@ -25,7 +25,7 @@ function renderPiutangAlumni(){
     const tglLunas = p.tgl_lunas ? new Date(p.tgl_lunas).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : null;
     return `<div style="border:1.5px solid ${isLunas?'var(--green-b)':'var(--border)'};border-radius:12px;padding:14px 16px;margin-bottom:10px;background:${isLunas?'var(--green-p)':'#fff'}">
       <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;padding-top:2px">
+        <div class="mutating-only" style="display:flex;align-items:center;padding-top:2px">
           <input type="checkbox" class="piutang-cb" data-id="${p.id}" onchange="_updatePiutangHapusMassal()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--red)">
         </div>
         <div style="flex:1;min-width:0">
@@ -40,9 +40,9 @@ function renderPiutangAlumni(){
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:20px;font-weight:700;color:${isLunas?'var(--green)':'var(--red)'}">${fmtRp(p.total_piutang)}</div>
           <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end">
-            ${!isLunas?`<button class="btn btn-p btn-xs" onclick="bukaPiutangLunas('${p.id}')">${svgIcon('check-circle',12)} Tandai Lunas</button>`:''}
-            ${p.no_wa?`<button class="btn btn-wa btn-xs" onclick="kirimWAPiutang('${p.id}')">${svgIcon('smartphone',12)} WA</button>`:''}
-            <button class="btn btn-d btn-xs" onclick="hapusPiutang('${p.id}','${(p.nama_santri||'').replace(/'/g,'')}')" title="Hapus">${svgIcon('trash',13)}</button>
+            ${!isLunas?`<button class="btn btn-p btn-xs mutating-only" onclick="bukaPiutangLunas('${p.id}')">${svgIcon('check-circle',12)} Tandai Lunas</button>`:''}
+            ${p.no_wa?`<button class="btn btn-wa btn-xs mutating-only" onclick="kirimWAPiutang('${p.id}')">${svgIcon('smartphone',12)} WA</button>`:''}
+            <button class="btn btn-d btn-xs mutating-only" onclick="hapusPiutang('${p.id}','${(p.nama_santri||'').replace(/'/g,'')}')" title="Hapus">${svgIcon('trash',13)}</button>
           </div>
         </div>
       </div>

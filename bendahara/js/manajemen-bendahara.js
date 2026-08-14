@@ -29,8 +29,8 @@ async function renderManajemenBendahara(){
         <div class="asrama-chips" style="margin-top:6px">${chips}</div>
       </div>
       <div class="akun-actions">
-        <button class="btn btn-b btn-xs" onclick="editAkun(${a.id})" title="Edit">${svgIcon('edit',13)}</button>
-        <button class="btn btn-d btn-xs" onclick="hapusAkun(${a.id})" title="Hapus">${svgIcon('trash',13)}</button>
+        <button class="btn btn-b btn-xs mutating-only" onclick="editAkun(${a.id})" title="Edit">${svgIcon('edit',13)}</button>
+        <button class="btn btn-d btn-xs mutating-only" onclick="hapusAkun(${a.id})" title="Hapus">${svgIcon('trash',13)}</button>
       </div>
     </div>`;
   }).join('')+'</div>';
@@ -81,6 +81,7 @@ function editAkun(id){
   // Set role
   const roleEl=document.getElementById('akun-role');
   if(roleEl) roleEl.value=a.role||'pengelola_dapur';
+  syncAkunFiturVisibility(a.role||'pengelola_dapur');
   // Set akses fitur
   let selFitur=[];
   try{ const af=JSON.parse(a.akses_fitur||'null'); selFitur=Array.isArray(af)?af:[]; }catch(e){}
@@ -112,6 +113,19 @@ function setDefaultAksesFitur(role){
   document.querySelectorAll('input[name="akun-fitur"]').forEach(c=>{
     c.checked = defaults.includes(c.value);
   });
+  syncAkunFiturVisibility(role);
+}
+
+// Pengawas selalu liat semua tab (gak lewat akses_fitur) -- sembunyiin
+// checklist fitur biar gak keliatan seolah itu ngaruh buat role ini.
+// Dipisah dari setDefaultAksesFitur() karena editAkun() perlu manggil ini
+// tanpa ikut nge-reset checkbox fitur yang udah tersimpan.
+function syncAkunFiturVisibility(role){
+  const isPengawasRole = role==='pengawas';
+  const fgFitur = document.getElementById('fg-akun-fitur');
+  const noteEl = document.getElementById('akun-pengawas-note');
+  if(fgFitur) fgFitur.style.display = isPengawasRole ? 'none' : '';
+  if(noteEl) noteEl.style.display = isPengawasRole ? 'block' : 'none';
 }
 
 async function simpanAkun(){

@@ -143,8 +143,8 @@ function renderTFAdmin(){
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:18px;font-weight:700;color:var(--green)">${fmtRp(tf.total_tf)}</div>
           <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
-            <button class="btn btn-b btn-xs" onclick="editTFAdmin(${tf.id})">${svgIcon('edit',12)}</button>
-            <button class="btn btn-d btn-xs" onclick="hapusTFAdmin(${tf.id},'${(tf.nama_santri||'').replace(/'/g,'')}')">${svgIcon('trash',12)}</button>
+            <button class="btn btn-b btn-xs mutating-only" onclick="editTFAdmin(${tf.id})">${svgIcon('edit',12)}</button>
+            <button class="btn btn-d btn-xs mutating-only" onclick="hapusTFAdmin(${tf.id},'${(tf.nama_santri||'').replace(/'/g,'')}')">${svgIcon('trash',12)}</button>
           </div>
         </div>
       </div>

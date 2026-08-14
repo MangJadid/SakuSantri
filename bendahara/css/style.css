@@ -64,6 +64,15 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%;
    kepotong (gak keliatan) daripada minta discroll horizontal. */
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;max-width:100vw}
 
+/* === ROLE: PENGAWAS (read-only) ===
+   Akun pengawas liat tab yang sama kayak admin (diatur di JS lewat
+   canViewAllTabsBD()), tapi gak boleh ubah data apa pun -- semua tombol
+   yang bisa nambah/edit/hapus/bayar/generate/kirim ditandain class
+   "mutating-only" (di HTML statis ATAU di string HTML yang di-generate JS),
+   terus disembunyikan serentak lewat satu rule ini. Pengecualian: edit
+   profil sendiri (foto/nama/no WA) TETAP boleh -- gak dikasih class ini. */
+body.role-pengawas .mutating-only{display:none!important}
+
 /* === SCROLLBAR === */
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}

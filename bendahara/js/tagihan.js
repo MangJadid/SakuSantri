@@ -86,9 +86,9 @@ function renderTagihanTable(keepPage){
       <td><strong>${fmtRp(t.nominal)}</strong></td>
       <td>${statusBadge}</td>
       <td style="display:flex;gap:4px">
-        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="bukaMoBayar('${t.id}')">${svgIcon('cash',12)} Bayar</button>`:''}
-        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulanAktif()}')">${svgIcon('smartphone',12)}</button>`:''}
-        ${isKangAdmin()?`<button class="btn btn-d btn-xs" onclick="hapusTagihan('${t.id}')">${svgIcon('trash',12)}</button>`:''}
+        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="bukaMoBayar('${t.id}')">${svgIcon('cash',12)} Bayar</button>`:''}
+        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs mutating-only" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulanAktif()}')">${svgIcon('smartphone',12)}</button>`:''}
+        ${isKangAdmin()?`<button class="btn btn-d btn-xs mutating-only" onclick="hapusTagihan('${t.id}')">${svgIcon('trash',12)}</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -211,7 +211,7 @@ function renderSantri(keepPage){
       <td>
         <div style="display:flex;gap:5px">
           <button class="btn btn-b btn-xs" onclick="openDetailModal('${s.id}')">${svgIcon('document',12)} Detail</button>
-          ${hasTunggak?`<button class="btn btn-p btn-xs" onclick="bukaMoBayarMulti('${s.id}')">${svgIcon('cash',12)}</button>`:''}
+          ${hasTunggak?`<button class="btn btn-p btn-xs mutating-only" onclick="bukaMoBayarMulti('${s.id}')">${svgIcon('cash',12)}</button>`:''}
         </div>
       </td>
     </tr>`;
@@ -340,8 +340,8 @@ async function openDetailModal(santriId){
             ${sisa>0&&t.status!=='belum'?`<div style="font-size:11px;color:var(--red)">Sisa: ${fmtRp(sisa)}</div>`:''}
           </div>
           ${statusBadge}
-          ${t.status!=='lunas'?`<button class="btn btn-p btn-xs" onclick="closeMo('mo-detail');bukaMoBayar('${t.id}')">${svgIcon('cash',12)}</button>`:''}
-          <button class="btn btn-xs" style="background:#fee2e2;color:var(--red);border:1px solid #fecaca" onclick="hapusTagihanDetail('${t.id}','${(t.bulan||'').replace(/'/g,'')}')">${svgIcon('trash',12)}</button>
+          ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="closeMo('mo-detail');bukaMoBayar('${t.id}')">${svgIcon('cash',12)}</button>`:''}
+          <button class="btn btn-xs mutating-only" style="background:#fee2e2;color:var(--red);border:1px solid #fecaca" onclick="hapusTagihanDetail('${t.id}','${(t.bulan||'').replace(/'/g,'')}')">${svgIcon('trash',12)}</button>
         </div>
       </div>`;
     }).join('');
@@ -412,12 +412,12 @@ async function openDetailModal(santriId){
 
     <!-- TOMBOL AKSI - lebar penuh -->
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
-      ${hasTunggak?`<button class="btn btn-p" style="width:100%;justify-content:center;padding:14px;font-size:14px;border-radius:12px" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}')">${svgIcon('cash',14)} Bayar Tagihan</button>`:''}
+      ${hasTunggak?`<button class="btn btn-p mutating-only" style="width:100%;justify-content:center;padding:14px;font-size:14px;border-radius:12px" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}')">${svgIcon('cash',14)} Bayar Tagihan</button>`:''}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <button class="btn btn-g" style="justify-content:center;padding:12px;border-radius:12px" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}');setTimeout(()=>switchModeTab('deposit'),300)">${svgIcon('bank',14)} Deposit</button>
-        <button class="btn btn-b" style="justify-content:center;padding:12px;border-radius:12px" onclick="bukaModalGeneratePerSantri('${santriId}')">${svgIcon('zap',14)} Generate</button>
-        ${hasWA&&hasTunggak?`<button class="btn btn-wa" style="justify-content:center;padding:12px;border-radius:12px" onclick="kirimWASantri('${santriId}','${bulanAktif()}')">${svgIcon('smartphone',14)} WA Tagihan</button>`:''}
-        <button class="btn btn-d" style="justify-content:center;padding:12px;border-radius:12px;${hasWA&&hasTunggak?'':'grid-column:1/-1'}" onclick="bukaModalHapusTagihanSantri('${santriId}')">${svgIcon('trash',14)} Hapus Tagihan</button>
+        <button class="btn btn-g mutating-only" style="justify-content:center;padding:12px;border-radius:12px" onclick="closeMo('mo-detail');bukaMoBayarMulti('${santriId}');setTimeout(()=>switchModeTab('deposit'),300)">${svgIcon('bank',14)} Deposit</button>
+        <button class="btn btn-b mutating-only" style="justify-content:center;padding:12px;border-radius:12px" onclick="bukaModalGeneratePerSantri('${santriId}')">${svgIcon('zap',14)} Generate</button>
+        ${hasWA&&hasTunggak?`<button class="btn btn-wa mutating-only" style="justify-content:center;padding:12px;border-radius:12px" onclick="kirimWASantri('${santriId}','${bulanAktif()}')">${svgIcon('smartphone',14)} WA Tagihan</button>`:''}
+        <button class="btn btn-d mutating-only" style="justify-content:center;padding:12px;border-radius:12px;${hasWA&&hasTunggak?'':'grid-column:1/-1'}" onclick="bukaModalHapusTagihanSantri('${santriId}')">${svgIcon('trash',14)} Hapus Tagihan</button>
       </div>
     </div>
 

@@ -134,7 +134,7 @@ function bukaWAMassal(source){
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:13px;font-weight:700;color:var(--red)">${fmtRp(total)}</span>
-        ${hasWA?`<button class="btn btn-wa btn-xs" onclick="kirimWASantri('${sid}','${bulanTag.split(',')[0].trim()}')">${svgIcon('smartphone',12)} Kirim</button>`:`<span style="display:inline-flex;cursor:default;opacity:.5" title="No WA belum diinput">${svgIcon('smartphone',14)}</span>`}
+        ${hasWA?`<button class="btn btn-wa btn-xs mutating-only" onclick="kirimWASantri('${sid}','${bulanTag.split(',')[0].trim()}')">${svgIcon('smartphone',12)} Kirim</button>`:`<span style="display:inline-flex;cursor:default;opacity:.5" title="No WA belum diinput">${svgIcon('smartphone',14)}</span>`}
       </div>
     </div>`;
   });

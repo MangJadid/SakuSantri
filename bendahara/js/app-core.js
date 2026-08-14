@@ -321,7 +321,8 @@ async function enterApp(){
   const isAdmin = isKangAdmin();
   document.getElementById('pg-app').classList.add('shown');
   document.getElementById('hdr-bulan').textContent = CONFIG.bulan_aktif||BULAN_AKTIF_DEFAULT;
-  document.getElementById('hdr-role').textContent = isAdmin ? '👑 Admin' : ('🍳 '+(SESSION.dapur_ids&&SESSION.dapur_ids.length>0?SESSION.dapur_ids.map(did=>getDapurNama(did)).join(', '):SESSION.nama||'Pengelola'));
+  document.getElementById('hdr-role').textContent = isAdmin ? '👑 Admin' : isPengawas() ? '🔍 Pengawas' : ('🍳 '+(SESSION.dapur_ids&&SESSION.dapur_ids.length>0?SESSION.dapur_ids.map(did=>getDapurNama(did)).join(', '):SESSION.nama||'Pengelola'));
+  document.body.classList.toggle('role-pengawas', isPengawas());
 
   if(!isAdmin) ACTIVE_DAPUR = (SESSION.dapur_ids&&SESSION.dapur_ids.length===1)?SESSION.dapur_ids[0]:null;
 
@@ -348,10 +349,21 @@ async function enterApp(){
   hideLoginOverlay();
 }
 
-function isKangAdmin(){ 
+function isKangAdmin(){
   if(!SESSION) return false;
   return SESSION.role==='kangadmin' || SESSION.role==='super' || SESSION.username==='kangadmin';
 }
+
+// ===== PENGAWAS (read-only supervisor) =====
+// Pengawas navigasinya kayak admin (liat semua tab), tapi datanya TETAP
+// discope lewat akses_asrama/dapur_ids yang sama kayak akun pengelola biasa
+// (isKangAdmin() sengaja gak kena, biar _loadAllDataCore() & renderKobongBendahara()
+// otomatis nge-filter data-nya tanpa perlu ubah logika scoping yang udah ada).
+// Semua tombol yang bisa ubah data disembunyikan lewat class "mutating-only"
+// + body.role-pengawas (CSS), bukan dicek satu-satu di tiap fungsi.
+function isPengawas(){ return SESSION?.role==='pengawas'; }
+function canViewAllTabsBD(){ return isKangAdmin() || isPengawas(); }
+function isReadOnlyBD(){ return isPengawas(); }
 
 // ===== LOAD DATA =====
 let ALL_PIUTANG_ALUMNI = [];
@@ -575,14 +587,14 @@ function setActiveDapur(id,el){
 
 // ===== TABS =====
 function hasAkses(fitur){
-  if(isKangAdmin()) return true;
+  if(isKangAdmin() || isPengawas()) return true;
   const af = SESSION?.akses_fitur;
   if(!af || !af.length) return true; // kosong = semua akses
   return af.includes(fitur);
 }
 
 function buildTabs(){
-  const isAdmin=isKangAdmin();
+  const canViewAll=canViewAllTabsBD();
   const tabs=document.getElementById('main-tabs');
   let t='';
   if(hasAkses('dashboard')) t+=tab('dashboard',svgIcon('home',14)+' Dashboard');
@@ -594,7 +606,7 @@ function buildTabs(){
   if(hasAkses('tfadmin')) t+=tab('tfadmin',svgIcon('bank',14)+' TF Admin');
   if(hasAkses('import')) t+=tab('import',svgIcon('upload',14)+' Import');
   if(hasAkses('kobong')) t+=tab('kobong',svgIcon('home',14)+' Kobong');
-  if(isAdmin){
+  if(canViewAll){
     t+=tab('manajemen',svgIcon('users',14)+' Manajemen Bendahara');
     t+=tab('monitor',svgIcon('eye',14)+' Monitor');
     t+=tab('tanpaDapur',svgIcon('alert-triangle',14)+' Tanpa Dapur');
@@ -607,7 +619,7 @@ function buildTabs(){
   buildSidebarBD();
 
   // Set SQL migrasi di pengaturan
-  if(isAdmin){
+  if(canViewAll){
     const sqlEl = document.getElementById('sql-migrasi');
     if(sqlEl) sqlEl.value = getSQLMigrasi();
   }
@@ -917,7 +929,7 @@ async function renderNotifikasiBD(){
             ${n.target_username?`👤 ${n.target_username}`:'👥 Semua'} · ${tgl}
           </div>
         </div>
-        <button onclick="hapusNotifikasiBD(${n.id})" style="background:#fee2e2;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--red);font-size:13px" title="Hapus">🗑️</button>
+        <button class="mutating-only" onclick="hapusNotifikasiBD(${n.id})" style="background:#fee2e2;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--red);font-size:13px" title="Hapus">🗑️</button>
       </div>
     </div>`;
   }).join('');
@@ -971,10 +983,11 @@ async function hapusNotifikasiBD(id){
 }
 
 function showTab(id){
-  const isAdmin=isKangAdmin();
+  const canViewAll=canViewAllTabsBD();
   // Cek role dari hdr-role sebagai fallback jika SESSION belum siap
-  const isAdminFallback = document.getElementById('hdr-role')?.textContent?.includes('Admin');
-  if(['pengaturan','manajemen','monitor','tanpaDapur','generate','notifikasi'].includes(id) && !isAdmin && !isAdminFallback) return;
+  const hdrRoleTxt = document.getElementById('hdr-role')?.textContent||'';
+  const canViewAllFallback = hdrRoleTxt.includes('Admin') || hdrRoleTxt.includes('Pengawas');
+  if(['pengaturan','manajemen','monitor','tanpaDapur','generate','notifikasi'].includes(id) && !canViewAll && !canViewAllFallback) return;
 
   // Reset filter saat pindah tab
   resetFiltersBendahara();

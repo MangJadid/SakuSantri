@@ -62,8 +62,8 @@ async function loadMonitorData(){
     const loginAt=l.login_at?new Date(l.login_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
     const aksiBtn = l.username !== (SESSION.username||'kangadmin') ? `
       <div style="display:flex;gap:4px;flex-wrap:wrap">
-        ${status!=='offline'?`<button class="btn btn-d btn-xs" onclick="monitorLogoutBendahara('${l.username}','${(l.nama||'').replace(/'/g,"\'")}')">${svgIcon('log-out',12)} Logout</button>`:''}
-        <button class="btn btn-xs" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;gap:4px" onclick="monitorBlokirBendahara('${l.username}','${(l.nama||'').replace(/'/g,"\'")}')">${svgIcon('ban',12)} Blokir</button>
+        ${status!=='offline'?`<button class="btn btn-d btn-xs mutating-only" onclick="monitorLogoutBendahara('${l.username}','${(l.nama||'').replace(/'/g,"\'")}')">${svgIcon('log-out',12)} Logout</button>`:''}
+        <button class="btn btn-xs mutating-only" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;gap:4px" onclick="monitorBlokirBendahara('${l.username}','${(l.nama||'').replace(/'/g,"\'")}')">${svgIcon('ban',12)} Blokir</button>
       </div>` : '<span style="font-size:11px;color:var(--text-l)">— Anda</span>';
     return `<tr style="background:${st.bg}">
       <td><span style="font-size:12px;font-weight:700">${st.label}</span></td>

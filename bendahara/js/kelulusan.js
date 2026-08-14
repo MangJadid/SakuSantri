@@ -47,9 +47,9 @@ function renderKelulusan(){
       <td style="color:${d.tunggak>0?'var(--red)':'var(--green)'};font-weight:700">${fmtRp(d.tunggak)}</td>
       <td><span class="badge ${d.bebas?'badge-lunas':'badge-belum'}">${d.bebas?'✅ Bebas':'❌ Tunggakan'}</span></td>
       <td style="display:flex;gap:4px;flex-wrap:wrap">
-        ${bisaNaikJenjang?`<button class="btn btn-p btn-xs" onclick="bukaNaikJenjang('${d.id}')">${kelasNum===12?svgIcon('graduation-cap',12)+' Lulus':svgIcon('trending-up',12)+' Naik Jenjang'}</button>`:''}
-        ${d.bebas?`<button class="btn btn-p btn-xs" onclick="cetakSuratBebas('${d.id}','${d.nama}')">${svgIcon('graduation-cap',12)} Surat</button>`:`<button class="btn btn-b btn-xs" onclick="bukaMoBayarMulti('${d.id}')">${svgIcon('cash',12)} Lunasi</button>`}
-        <button class="btn btn-d btn-xs" onclick="bukaSantriKeluar('${d.id}')">${svgIcon('log-out',12)} Keluar</button>
+        ${bisaNaikJenjang?`<button class="btn btn-p btn-xs mutating-only" onclick="bukaNaikJenjang('${d.id}')">${kelasNum===12?svgIcon('graduation-cap',12)+' Lulus':svgIcon('trending-up',12)+' Naik Jenjang'}</button>`:''}
+        ${d.bebas?`<button class="btn btn-p btn-xs" onclick="cetakSuratBebas('${d.id}','${d.nama}')">${svgIcon('graduation-cap',12)} Surat</button>`:`<button class="btn btn-b btn-xs mutating-only" onclick="bukaMoBayarMulti('${d.id}')">${svgIcon('cash',12)} Lunasi</button>`}
+        <button class="btn btn-d btn-xs mutating-only" onclick="bukaSantriKeluar('${d.id}')">${svgIcon('log-out',12)} Keluar</button>
       </td>
     </tr>`;
   }).join('');
