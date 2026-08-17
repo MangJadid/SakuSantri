@@ -427,7 +427,7 @@ async function simpanTFAdmin(){
         if(tagihan){
           const totalBayar = makan/bulanArr.length + listrik/bulanArr.length;
           const nominal = Number(tagihan.nominal||0);
-          const status = totalBayar >= nominal ? 'lunas' : totalBayar > 0 ? 'cicilan' : tagihan.status;
+          const status = totalBayar >= nominal ? 'lunas' : totalBayar > 0 ? 'cicil' : tagihan.status;
           await SB.from('tagihan_pondok').update({
             nominal_bayar: Math.round(totalBayar),
             status,
