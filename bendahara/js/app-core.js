@@ -84,7 +84,6 @@ let ALL_SANTRI = [], ALL_TAGIHAN = [], ALL_AKUN = [], ALL_AKSES = [], ALL_ASRAMA
 let ALL_TF_ADMIN = [];
 let ACTIVE_DAPUR = null;
 let IMPORT_PARSED = [];
-let BAYAR_TAG_ID = null;
 let MULTI_SANTRI_ID = null;
 let fotoBase64 = null, fotoFile = null;
 

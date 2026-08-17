@@ -140,129 +140,6 @@ async function _lanjutGenerate(bulan, toProcess, fallbackMakan, fallbackListrik)
   } finally { setLoading(false, _lBtn); }
 }
 
-// ===== BAYAR TAGIHAN =====
-function bukaMoBayar(tagId){
-  const t=ALL_TAGIHAN.find(x=>String(x.id)===String(tagId));
-  if(!t){ toast('❌ Tagihan tidak ditemukan!'); return; }
-  BAYAR_TAG_ID=tagId;
-  const s=getSantriById(t.santri_id)||{};
-  const sudahBayar=Number(t.nominal_bayar||0);
-  const sisaBayar=Number(t.nominal)-sudahBayar;
-  const nomMakan=Number(t.nominal_makan||0);
-  const nomListrik=Number(t.nominal_listrik||0);
-  const hasRincian=Array.isArray(t.rincian)&&t.rincian.length>0;
-
-  document.getElementById('bayar-nama').textContent=`${s.nama||'—'} — ${t.bulan}`;
-
-  // Info deposit jika ada
-  const depEl=document.getElementById('bayar-deposit-info');
-  depEl.style.display='none';
-
-  const breakdownHtml = hasRincian
-    ? t.rincian.map(r=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--bg);border-radius:8px"><span>${r.jenis||'Tagihan'}</span><strong>${fmtRp(r.nominal||0)}</strong></div>`).join('')
-    : `${nomMakan?`<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--bg);border-radius:8px"><span>Uang Makan</span><strong>${fmtRp(nomMakan)}</strong></div>`:''}
-       ${nomListrik?`<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--bg);border-radius:8px"><span>Uang Listrik</span><strong>${fmtRp(nomListrik)}</strong></div>`:''}`;
-
-  document.getElementById('bayar-detail').innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:5px">
-      ${breakdownHtml}
-      ${sudahBayar>0?`<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--gold-p);border-radius:8px"><span>Sudah Dibayar</span><strong style="color:var(--gold)">${fmtRp(sudahBayar)}</strong></div>`:''}
-      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 12px;background:var(--green-p);border-radius:8px;border:1px solid var(--green-b)"><span><strong>Sisa Tagihan</strong></span><strong style="color:var(--red)">${fmtRp(sisaBayar)}</strong></div>
-    </div>`;
-
-  // Shortcut nominal
-  const shortcuts=[];
-  if(sisaBayar>0) shortcuts.push({label:'Lunas '+fmtRp(sisaBayar), val:sisaBayar});
-  if(hasRincian){
-    t.rincian.forEach(r=>{
-      const v=Number(r.nominal||0);
-      if(sisaBayar>=v&&v>0) shortcuts.push({label:(r.jenis||'Item')+' '+fmtRp(v), val:v});
-    });
-  } else {
-    if(sisaBayar>=nomMakan&&nomMakan>0) shortcuts.push({label:'Makan '+fmtRp(nomMakan), val:nomMakan});
-    if(sisaBayar>=nomListrik&&nomListrik>0) shortcuts.push({label:'Listrik '+fmtRp(nomListrik), val:nomListrik});
-  }
-  const half=Math.floor(sisaBayar/2);
-  if(half>0&&half!==sisaBayar) shortcuts.push({label:'½ '+fmtRp(half), val:half});
-
-  document.getElementById('bayar-shortcuts').innerHTML=shortcuts.map(sc=>
-    `<button class="btn btn-o btn-xs" onclick="document.getElementById('bayar-nominal').value=${sc.val};updateBayarSisa()">${sc.label}</button>`
-  ).join('');
-
-  document.getElementById('bayar-nominal').value=sisaBayar;
-  document.getElementById('bayar-tgl').value=today();
-  document.getElementById('bayar-ket').value='';
-  document.getElementById('bayar-sisa-wrap').style.display='none';
-  document.getElementById('bayar-lunas-wrap').style.display='block';
-  openMo('mo-bayar');
-}
-
-function updateBayarSisa(){
-  const t=ALL_TAGIHAN.find(x=>String(x.id)===String(BAYAR_TAG_ID));
-  if(!t) return;
-  const bayar=parseInt(document.getElementById('bayar-nominal').value)||0;
-  const sisa=Number(t.nominal)-(Number(t.nominal_bayar||0))-bayar;
-  const sisaWrap=document.getElementById('bayar-sisa-wrap');
-  const lunasWrap=document.getElementById('bayar-lunas-wrap');
-  if(sisa>0){
-    sisaWrap.style.display='block';
-    lunasWrap.style.display='none';
-    document.getElementById('bayar-sisa-val').textContent=fmtRp(sisa);
-  } else {
-    sisaWrap.style.display='none';
-    lunasWrap.style.display='block';
-  }
-}
-
-async function prosesBayar(){
-  if(_isLoading) return;
-  const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
-  setLoading(true, _lBtn);
-  try {
-
-  const t=ALL_TAGIHAN.find(x=>String(x.id)===String(BAYAR_TAG_ID));
-  if(!t){ toast('❌ Tagihan tidak ditemukan!'); return; }
-  let bayar=parseInt(document.getElementById('bayar-nominal').value)||0;
-  const tgl=document.getElementById('bayar-tgl').value;
-  const ket=document.getElementById('bayar-ket').value.trim();
-  if(!bayar||!tgl){ toast('⚠️ Isi nominal dan tanggal!'); return; }
-  if(bayar<=0){ toast('⚠️ Nominal harus lebih dari 0!'); return; }
-
-  // Ambil semua tagihan belum lunas santri ini, urutkan dari terlama
-  const BULAN_ORDER=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  const parseBulan = b => { const p=(b||'').split(' '); return parseInt(p[1]||0)*100+BULAN_ORDER.indexOf(p[0]); };
-
-  const semuaTagihan = ALL_TAGIHAN
-    .filter(x=>String(x.santri_id)===String(t.santri_id) && x.status!=='lunas')
-    .sort((a,b)=>parseBulan(a.bulan)-parseBulan(b.bulan)); // terlama dulu
-
-  // Pastikan tagihan yang dipilih ada di urutan pertama
-  const idx = semuaTagihan.findIndex(x=>String(x.id)===String(BAYAR_TAG_ID));
-  if(idx>0){ const [cur]=semuaTagihan.splice(idx,1); semuaTagihan.unshift(cur); }
-
-  let sisa=bayar, sukses=0;
-  for(const tg of semuaTagihan){
-    if(sisa<=0) break;
-    const sudahBayar=Number(tg.nominal_bayar||0);
-    const kurang=Number(tg.nominal)-sudahBayar;
-    if(kurang<=0) continue;
-    const bayarSekarang=Math.min(sisa,kurang);
-    const totalBayar=sudahBayar+bayarSekarang;
-    const status=totalBayar>=Number(tg.nominal)?'lunas':'cicil';
-    const {error}=await SB.from('tagihan_pondok').update({
-      nominal_bayar:totalBayar, status, tgl_bayar:tgl,
-      keterangan:ket||null, dicatat_oleh:SESSION.nama||SESSION.username
-    }).eq('id',tg.id);
-    if(!error){ sukses++; sisa-=bayarSekarang; }
-  }
-
-  toast(`✅ ${fmtRp(bayar)} dialokasikan ke ${sukses} tagihan!`);
-  closeMo('mo-bayar');
-  await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
-
-  } finally { setLoading(false, _lBtn); }
-}
-
 // ===== BAYAR MULTI / DEPOSIT =====
 function switchModeTab(mode){
   document.getElementById('mode-bulan').style.display=mode==='bulan'?'block':'none';
@@ -272,7 +149,32 @@ function switchModeTab(mode){
   if(mode==='deposit') initDepositMode();
 }
 
-async function bukaMoBayarMulti(santriId){
+function _bulanItemHtml(t, checked){
+  const sisa=Number(t.nominal)-Number(t.nominal_bayar||0);
+  return `<label class="bulan-item" id="bitem-${t.id}">
+      <input type="checkbox" value="${t.id}" data-nom="${sisa}" onchange="updateMultiTotal()" class="multi-check"${checked?' checked':''}>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px">${t.bulan||'—'}</div>
+        <div style="font-size:11px;color:var(--text-l)">${fmtRp(t.nominal_makan||0)} Makan + ${fmtRp(t.nominal_listrik||0)} Listrik${t.nominal_bayar>0?` · Bayar: ${fmtRp(t.nominal_bayar)}`:''}</div>
+      </div>
+      <strong style="font-size:13px;color:var(--red)">${fmtRp(sisa)}</strong>
+    </label>`;
+}
+
+function toggleTunggakanLain(btn){
+  const box=document.getElementById('multi-bulan-rest');
+  if(!box) return;
+  const willOpen=!box.classList.contains('open');
+  box.classList.toggle('open',willOpen);
+  btn.classList.toggle('open',willOpen);
+  btn.querySelector('.tt-label').textContent=(willOpen?'Sembunyikan':'Lihat')+' '+btn.dataset.count+' tunggakan bulan lain';
+}
+
+// santriId: wajib. focusTagId (opsional): tagihan spesifik yang diklik dari
+// baris per-bulan (Dashboard/Tagihan/Riwayat) -- item ini yang di-highlight
+// & dicentang otomatis, biar cara bayar sama persis di semua tab, bukan cuma
+// dari Rekap Tunggakan. Kalau tidak dikasih, fallback ke bulan aktif.
+async function bukaMoBayarMulti(santriId, focusTagId=null){
   try {
   MULTI_SANTRI_ID=santriId;
   const s=getSantriById(santriId)||{};
@@ -297,22 +199,30 @@ async function bukaMoBayarMulti(santriId){
     depAda.innerHTML=`<div class="success-box">${svgIcon('bank',13)} Saldo Deposit: <strong>${fmtRp(saldoDep)}</strong></div>`;
   } else depAda.style.display='none';
 
-  document.getElementById('multi-bulan-list').innerHTML=tagBelum.map(t=>{
-    const sisa=Number(t.nominal)-Number(t.nominal_bayar||0);
-    return `<label class="bulan-item" id="bitem-${t.id}">
-      <input type="checkbox" value="${t.id}" data-nom="${sisa}" onchange="updateMultiTotal()" class="multi-check">
-      <div style="flex:1">
-        <div style="font-weight:600;font-size:13px">${t.bulan||'—'}</div>
-        <div style="font-size:11px;color:var(--text-l)">${fmtRp(t.nominal_makan||0)} Makan + ${fmtRp(t.nominal_listrik||0)} Listrik${t.nominal_bayar>0?` · Bayar: ${fmtRp(t.nominal_bayar)}`:''}</div>
-      </div>
-      <strong style="font-size:13px;color:var(--red)">${fmtRp(sisa)}</strong>
-    </label>`;
-  }).join('')||'<div class="empty"><span class="ei">✅</span><p>Semua lunas!</p></div>';
+  // Item yang di-highlight: tagihan spesifik yang diklik, atau bulan aktif
+  const targetId = focusTagId!=null ? String(focusTagId)
+    : (tagBelum.find(t=>(t.bulan||'').toLowerCase()===bulanAktif().toLowerCase())?.id ?? null);
+  const primary = targetId!=null ? tagBelum.find(t=>String(t.id)===String(targetId)) : null;
+  const rest = primary ? tagBelum.filter(t=>String(t.id)!==String(primary.id)) : tagBelum;
 
-  document.getElementById('multi-total').value='Rp 0';
+  let html;
+  if(!tagBelum.length){
+    html='<div class="empty"><span class="ei">✅</span><p>Semua lunas!</p></div>';
+  } else if(primary){
+    html=_bulanItemHtml(primary,true) + (rest.length ? `
+      <button type="button" class="tunggakan-toggle" data-count="${rest.length}" onclick="toggleTunggakanLain(this)">
+        <span class="chev">▾</span><span class="tt-label">Lihat ${rest.length} tunggakan bulan lain</span>
+      </button>
+      <div class="tunggakan-collapse" id="multi-bulan-rest"><div>${rest.map(t=>_bulanItemHtml(t,false)).join('')}</div></div>` : '');
+  } else {
+    html=tagBelum.map(t=>_bulanItemHtml(t,false)).join('');
+  }
+  document.getElementById('multi-bulan-list').innerHTML=html;
+
   document.getElementById('multi-tgl-bayar').value=today();
   document.getElementById('multi-ket').value='';
   switchModeTab('bulan');
+  updateMultiTotal();
   openMo('mo-multi-bayar');
   } catch(e){ toast('❌ Error: '+e.message); console.error(e); }
 }

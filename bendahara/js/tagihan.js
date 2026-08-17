@@ -86,7 +86,7 @@ function renderTagihanTable(keepPage){
       <td><strong>${fmtRp(t.nominal)}</strong></td>
       <td>${statusBadge}</td>
       <td style="display:flex;gap:4px">
-        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="bukaMoBayar('${t.id}')">${svgIcon('cash',12)} Bayar</button>`:''}
+        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="bukaMoBayarMulti('${t.santri_id}','${t.id}')">${svgIcon('cash',12)} Bayar</button>`:''}
         ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs mutating-only" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulanAktif()}')">${svgIcon('smartphone',12)}</button>`:''}
         ${isKangAdmin()?`<button class="btn btn-d btn-xs mutating-only" onclick="hapusTagihan('${t.id}')">${svgIcon('trash',12)}</button>`:''}
       </td>
@@ -340,7 +340,7 @@ async function openDetailModal(santriId){
             ${sisa>0&&t.status!=='belum'?`<div style="font-size:11px;color:var(--red)">Sisa: ${fmtRp(sisa)}</div>`:''}
           </div>
           ${statusBadge}
-          ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="closeMo('mo-detail');bukaMoBayar('${t.id}')">${svgIcon('cash',12)}</button>`:''}
+          ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="closeMo('mo-detail');bukaMoBayarMulti('${t.santri_id}','${t.id}')">${svgIcon('cash',12)}</button>`:''}
           <button class="btn btn-xs mutating-only" style="background:#fee2e2;color:var(--red);border:1px solid #fecaca" onclick="hapusTagihanDetail('${t.id}','${(t.bulan||'').replace(/'/g,'')}')">${svgIcon('trash',12)}</button>
         </div>
       </div>`;

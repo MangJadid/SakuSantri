@@ -6,12 +6,12 @@
 <title>Bendahara — Pondok Pesantren An-Nur</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="./css/style.css?v=21">
+<link rel="stylesheet" href="./css/style.css?v=22">
 <meta name="apple-mobile-web-app-title" content="Bendahara An-Nur">
 <meta name="theme-color" content="#1a5c3a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Bendahara An-Nur">
-<meta name="app-build" content="2026-08-17-2">
+<meta name="app-build" content="2026-08-17-3">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=3">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png?v=3">
 <link rel="icon" type="image/png" href="icon-192.png?v=3">
@@ -1014,38 +1014,6 @@
   </div>
 </div>
 
-<!-- MODAL BAYAR TAGIHAN -->
-<div class="mo" id="mo-bayar">
-  <div class="mo-box" style="max-width:460px">
-    <div class="mo-h"><h3>💰 Bayar Tagihan</h3><button class="mo-cls" onclick="closeMo('mo-bayar')">✕</button></div>
-    <div class="mo-b">
-      <div style="font-weight:700;font-size:15px;margin-bottom:4px" id="bayar-nama"></div>
-      <div id="bayar-deposit-info" style="display:none;margin-bottom:10px"></div>
-      <div id="bayar-detail" style="margin-bottom:14px"></div>
-      <!-- Shortcut nominal -->
-      <div class="fg">
-        <label>Nominal Bayar</label>
-        <input type="number" id="bayar-nominal" placeholder="0" oninput="updateBayarSisa()">
-        <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap" id="bayar-shortcuts"></div>
-      </div>
-      <div class="two">
-        <div class="fg"><label>Tanggal Bayar</label><input type="date" id="bayar-tgl"></div>
-        <div class="fg"><label>Keterangan</label><input type="text" id="bayar-ket" placeholder="Transfer, tunai..."></div>
-      </div>
-      <div id="bayar-sisa-wrap" style="margin-bottom:12px;display:none">
-        <div class="warn-box" style="display:flex;justify-content:space-between;align-items:center">
-          <span>Sisa tagihan setelah bayar:</span>
-          <strong id="bayar-sisa-val" style="font-size:15px"></strong>
-        </div>
-      </div>
-      <div id="bayar-lunas-wrap" style="margin-bottom:12px;display:none">
-        <div class="success-box">✅ Tagihan akan <strong>LUNAS</strong> dengan pembayaran ini</div>
-      </div>
-      <button class="btn btn-p mutating-only" style="width:100%;justify-content:center;padding:13px" onclick="prosesBayar()">✅ Konfirmasi Bayar</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL BAYAR MULTI / DEPOSIT -->
 <div class="mo" id="mo-multi-bayar">
   <div class="mo-box" style="max-width:520px">
@@ -1441,11 +1409,11 @@
 <div id="toast"></div>
 
 <script src="./js/icons.js?v=1"></script>
-<script src="./js/app-core.js?v=22"></script>
+<script src="./js/app-core.js?v=23"></script>
 <script src="./js/konfigurasi-tagihan.js?v=3"></script>
-<script src="./js/dashboard.js?v=7"></script>
-<script src="./js/tagihan.js?v=6"></script>
-<script src="./js/pembayaran.js?v=6"></script>
+<script src="./js/dashboard.js?v=8"></script>
+<script src="./js/tagihan.js?v=7"></script>
+<script src="./js/pembayaran.js?v=7"></script>
 <script src="./js/santri.js?v=3"></script>
 <script src="./js/rekap-tunggakan.js?v=6"></script>
 <script src="./js/kelulusan.js?v=6"></script>

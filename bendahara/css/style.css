@@ -817,6 +817,22 @@ tbody tr{transition:background .15s}
   box-shadow:0 0 0 4px rgba(34,163,102,.12)
 }
 
+.tunggakan-toggle{
+  display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
+  margin-top:8px;padding:9px 12px;background:none;border:1.5px dashed var(--border);
+  border-radius:var(--rad-sm);color:var(--text-m);font-size:12.5px;font-weight:600;
+  font-family:inherit;cursor:pointer;transition:border-color .18s ease,color .18s ease
+}
+.tunggakan-toggle:hover{border-color:var(--green-l);color:var(--green)}
+.tunggakan-toggle .chev{display:inline-block;transition:transform .22s cubic-bezier(.23,1,.32,1)}
+.tunggakan-toggle.open .chev{transform:rotate(180deg)}
+.tunggakan-collapse{
+  display:grid;grid-template-rows:0fr;margin-top:8px;
+  transition:grid-template-rows .22s cubic-bezier(.23,1,.32,1)
+}
+.tunggakan-collapse.open{grid-template-rows:1fr}
+.tunggakan-collapse>div{overflow:hidden;display:flex;flex-direction:column;gap:8px}
+
 /* === ASRAMA CHIPS === */
 .asrama-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .asrama-chip{
