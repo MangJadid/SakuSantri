@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#1a5c3a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Bendahara An-Nur">
-<meta name="app-build" content="2026-08-17-1">
+<meta name="app-build" content="2026-08-17-2">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=3">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png?v=3">
 <link rel="icon" type="image/png" href="icon-192.png?v=3">
@@ -1070,7 +1070,7 @@
         </div>
         <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:var(--rad-sm);padding:12px 14px;margin-bottom:14px">
           <div style="font-size:12px;color:var(--text-m);margin-bottom:3px">Total yang akan dibayar <span style="font-weight:400">(otomatis dari bulan tercentang, bisa diubah kalau cicilan)</span>:</div>
-          <input type="number" id="multi-total" class="multi-total-input" placeholder="0">
+          <input type="text" inputmode="numeric" id="multi-total" class="multi-total-input" placeholder="Rp 0" oninput="formatMultiTotalInput(this)">
         </div>
         <div class="two">
           <div class="fg"><label>Tanggal Bayar</label><input type="date" id="multi-tgl-bayar"></div>
@@ -1445,7 +1445,7 @@
 <script src="./js/konfigurasi-tagihan.js?v=3"></script>
 <script src="./js/dashboard.js?v=7"></script>
 <script src="./js/tagihan.js?v=6"></script>
-<script src="./js/pembayaran.js?v=5"></script>
+<script src="./js/pembayaran.js?v=6"></script>
 <script src="./js/santri.js?v=3"></script>
 <script src="./js/rekap-tunggakan.js?v=6"></script>
 <script src="./js/kelulusan.js?v=6"></script>

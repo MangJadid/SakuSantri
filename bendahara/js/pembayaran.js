@@ -309,7 +309,7 @@ async function bukaMoBayarMulti(santriId){
     </label>`;
   }).join('')||'<div class="empty"><span class="ei">✅</span><p>Semua lunas!</p></div>';
 
-  document.getElementById('multi-total').value=0;
+  document.getElementById('multi-total').value='Rp 0';
   document.getElementById('multi-tgl-bayar').value=today();
   document.getElementById('multi-ket').value='';
   switchModeTab('bulan');
@@ -320,10 +320,15 @@ async function bukaMoBayarMulti(santriId){
 function updateMultiTotal(){
   let total=0;
   document.querySelectorAll('.multi-check:checked').forEach(c=>{ total+=parseInt(c.dataset.nom)||0; });
-  document.getElementById('multi-total').value=total;
+  document.getElementById('multi-total').value=fmtRp(total);
   document.querySelectorAll('.bulan-item').forEach(li=>{
     li.classList.toggle('checked',li.querySelector('.multi-check')?.checked);
   });
+}
+
+function formatMultiTotalInput(el){
+  const n=parseInt(el.value.replace(/\D/g,''))||0;
+  el.value=n>0?fmtRp(n):'';
 }
 
 async function prosesMultiBayar(){
@@ -339,7 +344,7 @@ async function prosesMultiBayar(){
   if(!tgl){ toast('⚠️ Isi tanggal!'); return; }
 
   const totalTagihan=checked.reduce((a,c)=>a+c.nom,0);
-  let bayarMasuk=parseInt(document.getElementById('multi-total').value)||0;
+  let bayarMasuk=parseInt(document.getElementById('multi-total').value.replace(/\D/g,''))||0;
   if(bayarMasuk<=0){ toast('⚠️ Isi nominal yang akan dibayar!'); return; }
   if(bayarMasuk>totalTagihan) bayarMasuk=totalTagihan;
   const isCicil=bayarMasuk<totalTagihan;
