@@ -439,7 +439,8 @@ create table if not exists santri_deposit (
 alter table santri_deposit enable row level security;
 create policy "allow_all" on santri_deposit for all using (true) with check (true);
 
--- Tabel monitor aktivitas
+-- Tabel monitor aktivitas (LAMA -- 1 baris per username, ketimpa tiap login
+-- baru. Gak dipakai lagi oleh app, dibiarkan aja gak masalah kalau mau dihapus manual)
 create table if not exists bendahara_activity (
   id bigserial primary key,
   username text unique,
@@ -449,6 +450,26 @@ create table if not exists bendahara_activity (
 );
 alter table bendahara_activity enable row level security;
 create policy "allow_all" on bendahara_activity for all using (true) with check (true);
+
+-- Tabel monitor aktivitas per-device (BARU -- samain pola sama login_sessions
+-- punya Saku Santri: 1 baris per device/sesi, bukan per akun, jadi 1 akun bisa
+-- kelihatan login dari beberapa device sekaligus & bisa di-logout satu-satu)
+create table if not exists bendahara_login_sessions (
+  id bigserial primary key,
+  session_id text unique not null,
+  bendahara_id bigint,
+  bendahara_username text,
+  bendahara_nama text,
+  bendahara_role text,
+  device_name text,
+  user_agent text,
+  last_seen timestamptz default now(),
+  is_online boolean default true,
+  revoked boolean default false,
+  created_at timestamptz default now()
+);
+alter table bendahara_login_sessions enable row level security;
+create policy "allow_all" on bendahara_login_sessions for all using (true) with check (true);
 
 -- Fitur Kelulusan & Piutang Alumni
 alter table santri add column if not exists is_arsip boolean default false;

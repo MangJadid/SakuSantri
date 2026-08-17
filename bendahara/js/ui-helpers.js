@@ -253,9 +253,9 @@ function doLogout(){
   resetFiltersBendahara();
   if(SB && SB.auth) SB.auth.signOut().catch(()=>{});
   teardownRealtimeSync();
+  stopActivityTrackingBD();
   clearSession(); SESSION=null;
   document.body.classList.remove('role-pengawas');
-  if(MONITOR_INTERVAL){ clearInterval(MONITOR_INTERVAL); MONITOR_INTERVAL=null; }
   if(monitorRefreshInterval){ clearInterval(monitorRefreshInterval); monitorRefreshInterval=null; }
   document.getElementById('pg-app').style.display='none';
   document.getElementById('pg-login').style.display='flex';

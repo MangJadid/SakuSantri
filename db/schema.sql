@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS login_sessions (
   KEY idx_login_sessions_pengurus (pengurus_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ================= bendahara_activity =================
+-- ================= bendahara_activity (lama, gak dipakai lagi) =================
 CREATE TABLE IF NOT EXISTS bendahara_activity (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(100) UNIQUE,
@@ -228,6 +228,22 @@ CREATE TABLE IF NOT EXISTS bendahara_activity (
   ip VARCHAR(64),
   last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ================= bendahara_login_sessions (baru, per-device) =================
+CREATE TABLE IF NOT EXISTS bendahara_login_sessions (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  session_id VARCHAR(100) UNIQUE NOT NULL,
+  bendahara_id BIGINT,
+  bendahara_username VARCHAR(100),
+  bendahara_nama VARCHAR(255),
+  bendahara_role VARCHAR(30),
+  device_name VARCHAR(255),
+  user_agent VARCHAR(500),
+  last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_online BOOLEAN DEFAULT TRUE,
+  revoked BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ================= permintaan_perubahan_santri =================

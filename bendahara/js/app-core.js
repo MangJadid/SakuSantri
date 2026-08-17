@@ -83,7 +83,6 @@ let SB, SESSION = null, CONFIG = {};
 let ALL_SANTRI = [], ALL_TAGIHAN = [], ALL_AKUN = [], ALL_AKSES = [], ALL_ASRAMA = [], ALL_KOBONG = [];
 let ALL_TF_ADMIN = [];
 let ACTIVE_DAPUR = null;
-let MONITOR_INTERVAL = null;
 let IMPORT_PARSED = [];
 let BAYAR_TAG_ID = null;
 let MULTI_SANTRI_ID = null;
@@ -126,19 +125,7 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
     const saved = loadSession();
     if(saved){
       SESSION = saved;
-      trackActivity();
-    MONITOR_INTERVAL = setInterval(async()=>{
-      await trackActivity();
-      if(SESSION?.id){
-        try{
-          const {data:chk} = await SB.from('bendahara_users').select('force_logout,is_blocked').eq('id',SESSION.id).single();
-          if(chk?.force_logout || chk?.is_blocked){
-            toast('⚠️ Anda telah di-logout oleh Admin', false);
-            setTimeout(()=>doLogout(), 2000);
-          }
-        }catch(e){}
-      }
-    }, 30*1000);
+      startActivityTrackingBD(false);
       await enterApp();
       return;
     }
@@ -247,19 +234,7 @@ async function doLogin(){
     // Parse dapur_id: bisa JSON array baru atau string lama
     try{ const arr=JSON.parse(data.dapur_id||'null'); SESSION.dapur_ids=Array.isArray(arr)?arr:[String(data.dapur_id)]; }
     catch(e){ SESSION.dapur_ids=data.dapur_id?[String(data.dapur_id)]:null; }
-    saveSession(); trackActivity();
-    MONITOR_INTERVAL = setInterval(async()=>{
-      await trackActivity();
-      if(SESSION?.id){
-        try{
-          const {data:chk} = await SB.from('bendahara_users').select('force_logout,is_blocked').eq('id',SESSION.id).single();
-          if(chk?.force_logout || chk?.is_blocked){
-            toast('⚠️ Anda telah di-logout oleh Admin', false);
-            setTimeout(()=>doLogout(), 2000);
-          }
-        }catch(e){}
-      }
-    }, 30*1000);
+    saveSession(); startActivityTrackingBD(true);
     document.getElementById('pg-login').style.display='none';
     showLoginOverlay('Memuat data pesantren...');
     await enterApp();
@@ -291,19 +266,7 @@ async function doLoginAdmin(){
     }
 
     SESSION = {role:'kangadmin', nama:'Admin', username:user, dapur_id:null, akses_asrama:[]};
-    saveSession(); trackActivity();
-    MONITOR_INTERVAL = setInterval(async()=>{
-      await trackActivity();
-      if(SESSION?.id){
-        try{
-          const {data:chk} = await SB.from('bendahara_users').select('force_logout,is_blocked').eq('id',SESSION.id).single();
-          if(chk?.force_logout || chk?.is_blocked){
-            toast('⚠️ Anda telah di-logout oleh Admin', false);
-            setTimeout(()=>doLogout(), 2000);
-          }
-        }catch(e){}
-      }
-    }, 30*1000);
+    saveSession(); startActivityTrackingBD(true);
     document.getElementById('pg-login').style.display='none';
     showLoginOverlay('Memuat data pesantren...');
     await enterApp();
