@@ -805,6 +805,18 @@ tbody tr{transition:background .15s}
 .bulan-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 .bulan-item.checked{border-color:var(--green);background:var(--green-p);box-shadow:0 0 0 3px rgba(34,163,102,.1)}
 
+.multi-total-input{
+  font-size:22px;font-weight:800;color:var(--green);
+  border:1.5px solid transparent;background:transparent;
+  padding:4px 8px;margin:0 -8px;border-radius:var(--rad-sm);
+  box-shadow:none;transition:all .2s ease
+}
+.multi-total-input:hover{border-color:var(--green-b)}
+.multi-total-input:focus{
+  border-color:var(--green-l);background:var(--white);
+  box-shadow:0 0 0 4px rgba(34,163,102,.12)
+}
+
 /* === ASRAMA CHIPS === */
 .asrama-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .asrama-chip{

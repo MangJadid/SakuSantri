@@ -309,7 +309,7 @@ async function bukaMoBayarMulti(santriId){
     </label>`;
   }).join('')||'<div class="empty"><span class="ei">✅</span><p>Semua lunas!</p></div>';
 
-  document.getElementById('multi-total').textContent='Rp 0';
+  document.getElementById('multi-total').value=0;
   document.getElementById('multi-tgl-bayar').value=today();
   document.getElementById('multi-ket').value='';
   switchModeTab('bulan');
@@ -320,7 +320,7 @@ async function bukaMoBayarMulti(santriId){
 function updateMultiTotal(){
   let total=0;
   document.querySelectorAll('.multi-check:checked').forEach(c=>{ total+=parseInt(c.dataset.nom)||0; });
-  document.getElementById('multi-total').textContent=fmtRp(total);
+  document.getElementById('multi-total').value=total;
   document.querySelectorAll('.bulan-item').forEach(li=>{
     li.classList.toggle('checked',li.querySelector('.multi-check')?.checked);
   });
@@ -338,18 +338,35 @@ async function prosesMultiBayar(){
   const ket=document.getElementById('multi-ket').value.trim();
   if(!tgl){ toast('⚠️ Isi tanggal!'); return; }
 
-  let sukses=0;
-  for(const {id,nom} of checked){
+  const totalTagihan=checked.reduce((a,c)=>a+c.nom,0);
+  let bayarMasuk=parseInt(document.getElementById('multi-total').value)||0;
+  if(bayarMasuk<=0){ toast('⚠️ Isi nominal yang akan dibayar!'); return; }
+  if(bayarMasuk>totalTagihan) bayarMasuk=totalTagihan;
+  const isCicil=bayarMasuk<totalTagihan;
+
+  // Alokasikan dari bulan terlama dulu (cicilan mengisi tagihan lama lebih dulu)
+  const BULAN_ORDER=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const parseBulan=b=>{ const p=(b||'').split(' '); return parseInt(p[1]||0)*100+BULAN_ORDER.indexOf(p[0]); };
+  const urut=[...checked].sort((a,b)=>{
+    const ta=ALL_TAGIHAN.find(x=>String(x.id)===String(a.id))?.bulan||'';
+    const tb=ALL_TAGIHAN.find(x=>String(x.id)===String(b.id))?.bulan||'';
+    return parseBulan(ta)-parseBulan(tb);
+  });
+
+  let sisa=bayarMasuk, sukses=0;
+  for(const {id,nom} of urut){
+    if(sisa<=0) break;
     const t=ALL_TAGIHAN.find(x=>String(x.id)===String(id)); if(!t) continue;
-    const totalBayar=(Number(t.nominal_bayar||0))+nom;
+    const bayarSekarang=Math.min(sisa,nom);
+    const totalBayar=(Number(t.nominal_bayar||0))+bayarSekarang;
     const status=totalBayar>=Number(t.nominal)?'lunas':'cicil';
     const {error}=await SB.from('tagihan_pondok').update({
       nominal_bayar:totalBayar, status, tgl_bayar:tgl,
       keterangan:ket||null, dicatat_oleh:SESSION.nama||SESSION.username
     }).eq('id',id);
-    if(!error) sukses++;
+    if(!error){ sukses++; sisa-=bayarSekarang; }
   }
-  toast(`✅ ${sukses} tagihan berhasil!`);
+  toast(isCicil?`✅ ${fmtRp(bayarMasuk)} dialokasikan ke ${sukses} tagihan (cicilan)!`:`✅ ${sukses} tagihan berhasil!`);
   closeMo('mo-multi-bayar');
   await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable();
 
