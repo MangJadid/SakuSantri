@@ -4,9 +4,10 @@ function konfirmasiTutupBulan(){
   konfirm(
     `<strong>⚠️ Tutup Bulan ${bulan}?</strong><br><br>
     Proses ini akan:<br>
-    • Membuat transaksi <em>"Saldo sisa ${bulan}"</em> untuk setiap santri<br>
+    • Membuat transaksi <em>"Saldo sisa ${bulan}"</em> untuk santri bersaldo positif<br>
+    • Membuat transaksi <em>"Tunggakan sisa ${bulan}"</em> untuk santri bersaldo minus<br>
     • Menghapus semua transaksi lama<br>
-    • Saldo santri tetap aman terbawa<br><br>
+    • Saldo santri (positif maupun minus) tetap aman terbawa<br><br>
     <span style="color:var(--red);font-weight:600">Pastikan sudah backup sebelum lanjut!</span>`,
     tutupBulan,
     'lainnya'
@@ -32,17 +33,27 @@ async function tutupBulan(){
     const {error:errD} = await SB.from('transaksi').delete().neq('id', 0);
     if(errD) throw errD;
 
-    // 3. Buat transaksi pembuka baru untuk santri yang saldonya > 0
+    // 3. Buat transaksi pembuka baru untuk setiap santri yang saldonya gak nol --
+    //    saldo positif dicatat "masuk" (Saldo sisa), saldo minus dicatat "keluar"
+    //    (Tunggakan sisa) supaya kelihatan jejaknya di Riwayat, bukan cuma kebawa
+    //    diam-diam lewat kolom saldo (yang emang gak pernah direset di sini).
     const txBaru = (santri||[])
-      .filter(s => s.saldo > 0)
-      .map(s => ({
+      .filter(s => s.saldo !== 0)
+      .map(s => s.saldo > 0 ? {
         santri_id: s.id,
         tanggal: tglHariIni,
         jenis: 'masuk',
         keterangan: `Saldo sisa ${bulan}`,
         nominal: s.saldo,
         oleh
-      }));
+      } : {
+        santri_id: s.id,
+        tanggal: tglHariIni,
+        jenis: 'keluar',
+        keterangan: `Tunggakan sisa ${bulan}`,
+        nominal: Math.abs(s.saldo),
+        oleh
+      });
 
     if(txBaru.length){
       const {error:errI} = await SB.from('transaksi').insert(txBaru);
@@ -53,7 +64,9 @@ async function tutupBulan(){
     await loadAllData();
     renderDashboard();
 
-    if(st) st.innerHTML = `<span style="color:var(--green)">✅ Tutup bulan <strong>${bulan}</strong> berhasil! ${txBaru.length} santri terbawa saldonya ke bulan baru.</span>`;
+    const jmlMinus = txBaru.filter(t=>t.jenis==='keluar').length;
+    const jmlPlus = txBaru.length - jmlMinus;
+    if(st) st.innerHTML = `<span style="color:var(--green)">✅ Tutup bulan <strong>${bulan}</strong> berhasil! ${jmlPlus} santri saldo terbawa, ${jmlMinus} santri tunggakan tercatat.</span>`;
     if(btn){ btn.textContent='✅ Selesai'; btn.style.opacity='.5'; }
     toast(`✅ Tutup bulan ${bulan} berhasil!`);
 
