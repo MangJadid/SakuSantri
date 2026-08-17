@@ -236,11 +236,6 @@ function updateMultiTotal(){
   });
 }
 
-function formatMultiTotalInput(el){
-  const n=parseInt(el.value.replace(/\D/g,''))||0;
-  el.value=n>0?fmtRp(n):'';
-}
-
 async function prosesMultiBayar(){
   if(_isLoading) return;
   const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
@@ -254,7 +249,7 @@ async function prosesMultiBayar(){
   if(!tgl){ toast('⚠️ Isi tanggal!'); return; }
 
   const totalTagihan=checked.reduce((a,c)=>a+c.nom,0);
-  let bayarMasuk=parseInt(document.getElementById('multi-total').value.replace(/\D/g,''))||0;
+  let bayarMasuk=parseRupiahInput(document.getElementById('multi-total'));
   if(bayarMasuk<=0){ toast('⚠️ Isi nominal yang akan dibayar!'); return; }
   if(bayarMasuk>totalTagihan) bayarMasuk=totalTagihan;
   const isCicil=bayarMasuk<totalTagihan;

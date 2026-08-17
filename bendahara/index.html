@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#1a5c3a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Bendahara An-Nur">
-<meta name="app-build" content="2026-08-17-5">
+<meta name="app-build" content="2026-08-17-6">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=3">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png?v=3">
 <link rel="icon" type="image/png" href="icon-192.png?v=3">
@@ -1038,7 +1038,7 @@
         </div>
         <div style="background:var(--green-p);border:1px solid var(--green-b);border-radius:var(--rad-sm);padding:12px 14px;margin-bottom:14px">
           <div style="font-size:12px;color:var(--text-m);margin-bottom:3px">Total yang akan dibayar <span style="font-weight:400">(otomatis dari bulan tercentang, bisa diubah kalau cicilan)</span>:</div>
-          <input type="text" inputmode="numeric" id="multi-total" class="multi-total-input" placeholder="Rp 0" oninput="formatMultiTotalInput(this)">
+          <input type="text" inputmode="numeric" id="multi-total" class="multi-total-input" placeholder="Rp 0" oninput="formatRupiahInput(this)">
         </div>
         <div class="two">
           <div class="fg"><label>Tanggal Bayar</label><input type="date" id="multi-tgl-bayar"></div>
@@ -1296,7 +1296,7 @@
       <!-- Total TF -->
       <div class="fg">
         <label>Total TF dari Ortu (Rp)</label>
-        <input type="number" id="tf-total" placeholder="0" oninput="tfHitungSisa()" style="font-size:16px;font-weight:700">
+        <input type="text" inputmode="numeric" id="tf-total" placeholder="0" oninput="formatRupiahInput(this);tfHitungSisa()" style="font-size:16px;font-weight:700">
       </div>
 
       <!-- Rincian -->
@@ -1307,24 +1307,24 @@
         <div class="fg">
           <label>🍽️ Uang Makan <span id="tf-makan-hint" style="color:var(--green);font-size:11px"></span></label>
           <div id="tf-makan-dapur-info" style="font-size:12px;color:var(--text-m);margin-bottom:4px"></div>
-          <input type="number" id="tf-makan" placeholder="0" oninput="tfHitungSisa()">
+          <input type="text" inputmode="numeric" id="tf-makan" placeholder="0" oninput="formatRupiahInput(this);tfHitungSisa()">
         </div>
 
         <div class="fg">
           <label>⚡ Listrik (Rp) <span id="tf-listrik-hint" style="color:var(--green);font-size:11px"></span></label>
-          <input type="number" id="tf-listrik" placeholder="0" oninput="tfHitungSisa()">
+          <input type="text" inputmode="numeric" id="tf-listrik" placeholder="0" oninput="formatRupiahInput(this);tfHitungSisa()">
         </div>
         <div class="fg">
           <label>📚 SPP MTs (Rp)</label>
-          <input type="number" id="tf-spp-mts" placeholder="0" oninput="tfHitungSisa()">
+          <input type="text" inputmode="numeric" id="tf-spp-mts" placeholder="0" oninput="formatRupiahInput(this);tfHitungSisa()">
         </div>
         <div class="fg">
           <label>📚 SPP MA (Rp)</label>
-          <input type="number" id="tf-spp-ma" placeholder="0" oninput="tfHitungSisa()">
+          <input type="text" inputmode="numeric" id="tf-spp-ma" placeholder="0" oninput="formatRupiahInput(this);tfHitungSisa()">
         </div>
         <div class="fg">
           <label>💵 Uang Jajan (Rp)</label>
-          <input type="number" id="tf-jajan" placeholder="0" oninput="tfHitungSisa()">
+          <input type="text" inputmode="numeric" id="tf-jajan" placeholder="0" oninput="formatRupiahInput(this);tfHitungSisa()">
         </div>
         <!-- DLL -->
         <div style="border-top:1px dashed var(--border);margin:8px 0;padding-top:8px">
@@ -1409,16 +1409,16 @@
 <div id="toast"></div>
 
 <script src="./js/icons.js?v=1"></script>
-<script src="./js/app-core.js?v=23"></script>
+<script src="./js/app-core.js?v=24"></script>
 <script src="./js/konfigurasi-tagihan.js?v=3"></script>
 <script src="./js/dashboard.js?v=8"></script>
 <script src="./js/tagihan.js?v=7"></script>
-<script src="./js/pembayaran.js?v=7"></script>
+<script src="./js/pembayaran.js?v=8"></script>
 <script src="./js/santri.js?v=3"></script>
 <script src="./js/rekap-tunggakan.js?v=6"></script>
 <script src="./js/kelulusan.js?v=6"></script>
 <script src="./js/piutang.js?v=4"></script>
-<script src="./js/tf-admin.js?v=6"></script>
+<script src="./js/tf-admin.js?v=7"></script>
 <script src="./js/riwayat-wa.js?v=6"></script>
 <script src="./js/import.js?v=4"></script>
 <script src="./js/manajemen-bendahara.js?v=4"></script>

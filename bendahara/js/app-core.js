@@ -483,6 +483,15 @@ const avColors=['#1a5c3a','#2471a3','#6c3483','#b8860b','#c0392b','#16a085','#8e
 function avColor(n){ if(!n) return avColors[0]; let h=0; for(let i=0;i<n.length;i++) h=(h+n.charCodeAt(i)*31)%avColors.length; return avColors[h]; }
 function avLetter(n){ return n?n[0].toUpperCase():'?'; }
 function fmtRp(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
+// Field nominal yang formatnya "Rp 140.000" tapi tetap bisa diedit --
+// dipakai di semua input nominal (Bayar Multi, TF Admin, dll).
+function formatRupiahInput(el){
+  const n=parseInt((el.value||'').replace(/\D/g,''))||0;
+  el.value=n>0?fmtRp(n):'';
+}
+function parseRupiahInput(el){
+  return parseInt(((el?.value)||'').replace(/\D/g,''))||0;
+}
 function today(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function fmtTgl(s){ if(!s) return '—'; try{ return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return s; } }
 

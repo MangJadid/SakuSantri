@@ -250,8 +250,8 @@ function tfBulanChecked(){
   });
   // Kurangi yang sudah dibayar
   cbs.forEach(cb=>{ totalMakan -= Math.min(Number(cb.dataset.bayar||0), Number(cb.dataset.makan||0)); });
-  document.getElementById('tf-makan').value = totalMakan||'';
-  document.getElementById('tf-listrik').value = totalListrik||'';
+  document.getElementById('tf-makan').value = totalMakan?fmtRp(totalMakan):'';
+  document.getElementById('tf-listrik').value = totalListrik?fmtRp(totalListrik):'';
   const jumlah = cbs.length;
   document.getElementById('tf-makan-hint').textContent = jumlah>0?`(${jumlah} bulan)` : '';
   document.getElementById('tf-listrik-hint').textContent = jumlah>0?`(${jumlah} bulan)` : '';
@@ -290,12 +290,12 @@ function editTFAdmin(id){
   document.getElementById('tf-santri-search').value=tf.nama_santri||'';
   document.getElementById('tf-santri-selected-nama').textContent=tf.nama_santri||'';
   document.getElementById('tf-santri-selected').style.display='flex';
-  document.getElementById('tf-total').value=tf.total_tf||'';
-  document.getElementById('tf-makan').value=tf.uang_makan||'';
-  document.getElementById('tf-listrik').value=tf.listrik||'';
-  document.getElementById('tf-spp-mts').value=tf.spp_mts||'';
-  document.getElementById('tf-spp-ma').value=tf.spp_ma||'';
-  document.getElementById('tf-jajan').value=tf.uang_jajan||'';
+  document.getElementById('tf-total').value=tf.total_tf?fmtRp(tf.total_tf):'';
+  document.getElementById('tf-makan').value=tf.uang_makan?fmtRp(tf.uang_makan):'';
+  document.getElementById('tf-listrik').value=tf.listrik?fmtRp(tf.listrik):'';
+  document.getElementById('tf-spp-mts').value=tf.spp_mts?fmtRp(tf.spp_mts):'';
+  document.getElementById('tf-spp-ma').value=tf.spp_ma?fmtRp(tf.spp_ma):'';
+  document.getElementById('tf-jajan').value=tf.uang_jajan?fmtRp(tf.uang_jajan):'';
   document.getElementById('tf-catatan').value=tf.catatan||'';
   // Isi dll
   document.getElementById('tf-dll-list').innerHTML='';
@@ -333,9 +333,9 @@ function tfTambahDll(ket='', nominal=''){
     <input type="text" placeholder="Keterangan" value="${ket}" 
       style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"
       class="tf-dll-ket">
-    <input type="number" placeholder="Nominal" value="${nominal}"
+    <input type="text" inputmode="numeric" placeholder="Nominal" value="${nominal?fmtRp(nominal):''}"
       style="width:120px;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"
-      class="tf-dll-nominal" oninput="tfHitungSisa()">
+      class="tf-dll-nominal" oninput="formatRupiahInput(this);tfHitungSisa()">
     <button type="button" onclick="this.parentElement.remove();tfHitungSisa()"
       style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--red);display:inline-flex" title="Hapus">${svgIcon('x',13)}</button>
   `;
@@ -343,13 +343,13 @@ function tfTambahDll(ket='', nominal=''){
 }
 
 function tfHitungSisa(){
-  const total = Number(document.getElementById('tf-total')?.value||0);
-  const makan = Number(document.getElementById('tf-makan')?.value||0);
-  const listrik = Number(document.getElementById('tf-listrik')?.value||0);
-  const sppMts = Number(document.getElementById('tf-spp-mts')?.value||0);
-  const sppMa = Number(document.getElementById('tf-spp-ma')?.value||0);
-  const jajan = Number(document.getElementById('tf-jajan')?.value||0);
-  const dllTotal = [...document.querySelectorAll('.tf-dll-nominal')].reduce((s,el)=>s+Number(el.value||0),0);
+  const total = parseRupiahInput(document.getElementById('tf-total'));
+  const makan = parseRupiahInput(document.getElementById('tf-makan'));
+  const listrik = parseRupiahInput(document.getElementById('tf-listrik'));
+  const sppMts = parseRupiahInput(document.getElementById('tf-spp-mts'));
+  const sppMa = parseRupiahInput(document.getElementById('tf-spp-ma'));
+  const jajan = parseRupiahInput(document.getElementById('tf-jajan'));
+  const dllTotal = [...document.querySelectorAll('.tf-dll-nominal')].reduce((s,el)=>s+parseRupiahInput(el),0);
   const sisa = total - makan - listrik - sppMts - sppMa - jajan - dllTotal;
   const sisaEl = document.getElementById('tf-sisa-display');
   const sisaBox = document.getElementById('tf-sisa-box');
@@ -366,19 +366,19 @@ function tfHitungSisa(){
 async function simpanTFAdmin(){
   const editId = document.getElementById('tf-edit-id').value;
   const santriId = document.getElementById('tf-santri-id').value;
-  const total = Number(document.getElementById('tf-total').value||0);
-  const makan = Number(document.getElementById('tf-makan').value||0);
-  const listrik = Number(document.getElementById('tf-listrik').value||0);
-  const sppMts = Number(document.getElementById('tf-spp-mts').value||0);
-  const sppMa = Number(document.getElementById('tf-spp-ma').value||0);
-  const jajan = Number(document.getElementById('tf-jajan').value||0);
+  const total = parseRupiahInput(document.getElementById('tf-total'));
+  const makan = parseRupiahInput(document.getElementById('tf-makan'));
+  const listrik = parseRupiahInput(document.getElementById('tf-listrik'));
+  const sppMts = parseRupiahInput(document.getElementById('tf-spp-mts'));
+  const sppMa = parseRupiahInput(document.getElementById('tf-spp-ma'));
+  const jajan = parseRupiahInput(document.getElementById('tf-jajan'));
   const catatan = document.getElementById('tf-catatan').value.trim();
 
   // Kumpulkan dll
   const dllItems = [];
   document.querySelectorAll('#tf-dll-list > div').forEach(div=>{
     const ket = div.querySelector('.tf-dll-ket')?.value?.trim()||'';
-    const nom = Number(div.querySelector('.tf-dll-nominal')?.value||0);
+    const nom = parseRupiahInput(div.querySelector('.tf-dll-nominal'));
     if(ket || nom) dllItems.push({ket, nominal:nom});
   });
   const dllTotal = dllItems.reduce((s,i)=>s+i.nominal,0);
@@ -420,20 +420,52 @@ async function simpanTFAdmin(){
     }
     if(error){ toast('Gagal simpan: '+error.message, false); return; }
 
-    // Update tagihan santri otomatis per bulan
+    // Update tagihan santri: uang makan+listrik dialokasikan dari bulan
+    // tercentang yang PALING LAMA dulu (bukan dibagi rata), sampai tiap
+    // tagihan lunas baru lanjut ke bulan berikutnya -- konsisten dengan
+    // cara alokasi di fitur Bayar lainnya. Kalau masih ada sisa setelah
+    // semua bulan tercentang lunas (misal TF buat bulan yang tagihannya
+    // belum digenerate), sisanya masuk Deposit santri biar kepake otomatis
+    // pas tagihan bulan itu digenerate nanti.
     if(makan||listrik){
-      for(const bulan of bulanArr){
-        const tagihan = ALL_TAGIHAN.find(t=>String(t.santri_id)===String(santriId)&&t.bulan===bulan&&t.status!=='lunas');
-        if(tagihan){
-          const totalBayar = makan/bulanArr.length + listrik/bulanArr.length;
-          const nominal = Number(tagihan.nominal||0);
-          const status = totalBayar >= nominal ? 'lunas' : totalBayar > 0 ? 'cicil' : tagihan.status;
-          await SB.from('tagihan_pondok').update({
-            nominal_bayar: Math.round(totalBayar),
-            status,
-            tgl_bayar: new Date().toISOString().split('T')[0],
-            keterangan: `TF Admin${catatan?' - '+catatan:''}`
-          }).eq('id', tagihan.id);
+      const BULAN_ORDER=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      const parseBulanUrut=b=>{ const p=(b||'').split(' '); return parseInt(p[1]||0)*100+BULAN_ORDER.indexOf(p[0]); };
+      const tagihanDicentang = bulanArr
+        .map(b=>ALL_TAGIHAN.find(t=>String(t.santri_id)===String(santriId)&&t.bulan===b&&t.status!=='lunas'))
+        .filter(Boolean)
+        .sort((a,b)=>parseBulanUrut(a.bulan)-parseBulanUrut(b.bulan));
+
+      let sisaPool = makan + listrik;
+      for(const tagihan of tagihanDicentang){
+        if(sisaPool<=0) break;
+        const sudahBayar = Number(tagihan.nominal_bayar||0);
+        const kurang = Number(tagihan.nominal||0) - sudahBayar;
+        if(kurang<=0) continue;
+        const bayarSekarang = Math.min(sisaPool, kurang);
+        const totalBayar = sudahBayar + bayarSekarang;
+        const status = totalBayar >= Number(tagihan.nominal) ? 'lunas' : 'cicil';
+        await SB.from('tagihan_pondok').update({
+          nominal_bayar: totalBayar,
+          status,
+          tgl_bayar: new Date().toISOString().split('T')[0],
+          keterangan: `TF Admin${catatan?' - '+catatan:''}`
+        }).eq('id', tagihan.id);
+        sisaPool -= bayarSekarang;
+      }
+
+      // Kelebihan (misal TF buat bulan yang belum ada tagihannya) -> Deposit
+      if(sisaPool>0){
+        let dep=null;
+        try{ const {data:d}=await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle(); dep=d; }catch(e){}
+        const saldoBaru=(dep?Number(dep.saldo||0):0)+sisaPool;
+        const depPayload = {
+          saldo:saldoBaru, tgl_terakhir:new Date().toISOString().split('T')[0],
+          keterangan:`Kelebihan TF Admin${catatan?' - '+catatan:''}`, dicatat_oleh:SESSION.nama||SESSION.username
+        };
+        if(dep){
+          await SB.from('santri_deposit').update(depPayload).eq('id',dep.id);
+        } else {
+          await SB.from('santri_deposit').insert({santri_id:santriId, ...depPayload});
         }
       }
     }
