@@ -109,6 +109,7 @@ async function renderMonitor(){
     });
 
     const isSelfUsername = (u) => u && SESSION?.username && u===SESSION.username;
+    const thisDeviceSid = (typeof getDeviceSessionIdBD==='function') ? getDeviceSessionIdBD() : null;
 
     const cards = groups.map(g=>{
       const roleBadge = (g.role==='kangadmin'||g.role==='super')?
@@ -124,14 +125,15 @@ async function renderMonitor(){
         const statusColor = s.statusKey==='online'?'#15803d':s.statusKey==='idle'?'#a16207':'#6b7280';
         const namaEsc = (g.nama||'').replace(/'/g,"\\'");
         const deviceEsc = (s.device_name||'Perangkat').replace(/'/g,"\\'");
+        const isThisDevice = isSelf && thisDeviceSid && s.session_id===thisDeviceSid;
         return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-top:1px dashed var(--border)">
           <div style="min-width:0;flex:1">
-            <div style="font-size:13px;font-weight:600">${s.device_name||'—'} ${s.isBaru?'<span style="background:#fee2e2;color:#b91c1c;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px">🆕 Baru login</span>':''}</div>
+            <div style="font-size:13px;font-weight:600">${s.device_name||'—'} ${isThisDevice?'<span style="background:var(--green-p);color:var(--green);border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px">Perangkat ini</span>':''} ${s.isBaru?'<span style="background:#fee2e2;color:#b91c1c;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px">🆕 Baru login</span>':''}</div>
             <div style="font-size:12px;color:${statusColor};font-weight:600;margin-top:2px">${statusDot} ${s.waktu}${s.statusKey==='offline'?' (app tertutup, tapi masih login)':''}</div>
             <div style="font-size:11px;color:var(--text-l);margin-top:2px">Login pertama: ${s.loginFirst}</div>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0">
-            ${isSelf?'':`<button class="btn btn-d btn-xs mutating-only" onclick="monitorLogoutDeviceBD('${s.session_id}','${namaEsc}','${deviceEsc}')">${svgIcon('log-out',12)} Logout</button>`}
+            ${isThisDevice?'':`<button class="btn btn-d btn-xs mutating-only" onclick="monitorLogoutDeviceBD('${s.session_id}','${namaEsc}','${deviceEsc}')">${svgIcon('log-out',12)} Logout</button>`}
           </div>
         </div>`;
       }).join('');
