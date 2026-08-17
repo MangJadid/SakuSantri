@@ -492,6 +492,7 @@
           <!-- Filter -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
             <input class="search-inp" id="cari-tf" placeholder="🔍 Cari nama santri..." oninput="renderTFAdmin()" style="flex:1;min-width:160px">
+            <select id="filter-asrama-tf" onchange="renderTFAdmin()"><option value="">Semua Asrama</option></select>
             <select id="filter-tahun-tf" onchange="fillBulanByTahun('tf');renderTFAdmin()"><option value="">Semua Tahun</option></select>
             <select id="filter-bulan-tf" onchange="renderTFAdmin()"><option value="">Semua Bulan</option></select>
           </div>
@@ -1439,7 +1440,7 @@
 <div id="toast"></div>
 
 <script src="./js/icons.js?v=1"></script>
-<script src="./js/app-core.js?v=21"></script>
+<script src="./js/app-core.js?v=22"></script>
 <script src="./js/konfigurasi-tagihan.js?v=3"></script>
 <script src="./js/dashboard.js?v=7"></script>
 <script src="./js/tagihan.js?v=6"></script>
@@ -1448,7 +1449,7 @@
 <script src="./js/rekap-tunggakan.js?v=6"></script>
 <script src="./js/kelulusan.js?v=6"></script>
 <script src="./js/piutang.js?v=4"></script>
-<script src="./js/tf-admin.js?v=4"></script>
+<script src="./js/tf-admin.js?v=5"></script>
 <script src="./js/riwayat-wa.js?v=6"></script>
 <script src="./js/import.js?v=4"></script>
 <script src="./js/manajemen-bendahara.js?v=4"></script>

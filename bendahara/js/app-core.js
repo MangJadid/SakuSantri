@@ -360,7 +360,6 @@ async function _loadAllDataCore(){
   ALL_ASRAMA = r2.data||[];
   ALL_KOBONG = r3.data||[];
   ALL_PIUTANG_ALUMNI = r4.data||[];
-  ALL_TF_ADMIN = r5.data||[];
   ALL_KONFIG_TAGIHAN = r6.data||[];
   ALL_AKUN = r7?.data||[];
   ALL_AKSES = r8?.data||[];
@@ -380,6 +379,11 @@ async function _loadAllDataCore(){
   const santriIds = new Set(ALL_SANTRI.map(s=>String(s.id)));
   ALL_TAGIHAN = tagihan.filter(t=>santriIds.has(String(t.santri_id)));
 
+  // TF Admin ikut discope sama persis kayak Tagihan -- sebelumnya ALL_TF_ADMIN
+  // gak difilter sama sekali, jadi akun yang cuma dikasih akses 1 asrama tetap
+  // lihat data TF asrama lain juga.
+  let tfAdmin = r5.data||[];
+  ALL_TF_ADMIN = tfAdmin.filter(t=>santriIds.has(String(t.santri_id)));
 }
 
 // ===== REALTIME SYNC (via Supabase Broadcast — TIDAK butuh setting Replication apapun) =====
@@ -988,7 +992,7 @@ function fillSelects(){
   ['s-dapur','akun-dapur'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML='<option value="">-- Pilih Dapur --</option>'+dapurOpts; });
 
   // Asrama select
-  ['filter-asrama-tagihan','filter-asrama-santri','filter-asrama-rekap','s-asrama'].forEach(id=>{
+  ['filter-asrama-tagihan','filter-asrama-santri','filter-asrama-rekap','filter-asrama-tf','s-asrama'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     const cur = el.value;
     const hasAll = id!=='s-asrama';

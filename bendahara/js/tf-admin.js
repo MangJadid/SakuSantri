@@ -1,6 +1,7 @@
 // ===== TF ADMIN =====
 function getTFFiltered(){
   const q=(document.getElementById('cari-tf')?.value||'').toLowerCase();
+  const asramaF=document.getElementById('filter-asrama-tf')?.value||'';
   const tahunF=document.getElementById('filter-tahun-tf')?.value||'';
   const bulanF=document.getElementById('filter-bulan-tf')?.value||'';
   const dariF=document.getElementById('filter-tgl-dari-tf')?.value||'';
@@ -8,6 +9,10 @@ function getTFFiltered(){
 
   return ALL_TF_ADMIN.filter(tf=>{
     if(q && !(tf.nama_santri||'').toLowerCase().includes(q)) return false;
+    if(asramaF){
+      const s=getSantriById(tf.santri_id)||{};
+      if(String(s.kobong?.asrama_id||'')!==asramaF) return false;
+    }
     if(tahunF && !(tf.bulan||'').endsWith(tahunF)) return false;
     if(bulanF && !(tf.bulan||'').includes(bulanF)) return false;
     if(dariF && tf.created_at && tf.created_at.split('T')[0] < dariF) return false;
@@ -18,6 +23,7 @@ function getTFFiltered(){
 
 function resetFilterTF(){
   document.getElementById('cari-tf').value='';
+  document.getElementById('filter-asrama-tf').value='';
   document.getElementById('filter-tahun-tf').value='';
   document.getElementById('filter-bulan-tf').value='';
   document.getElementById('filter-tgl-dari-tf').value='';
@@ -124,6 +130,7 @@ function renderTFAdmin(){
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
             <strong style="font-size:14px">${tf.nama_santri||'—'}</strong>
+            ${s.kobong?.asrama_id?`<span class="badge badge-bg" style="font-size:10.5px">${getAsramaNama(s.kobong.asrama_id)}</span>`:''}
           </div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
             ${bulanArr.map(b=>`<span class="badge badge-lunas" style="font-size:11px">${b}</span>`).join('')}
