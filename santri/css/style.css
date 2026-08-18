@@ -45,8 +45,12 @@
   --transition:.18s cubic-bezier(.4,0,.2,1);
 }
 
-html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden;max-width:100vw}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;overflow-x:hidden;max-width:100vw}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:clip;max-width:100vw}
+/* overflow-x:clip (bukan hidden) sengaja dipakai -- "hidden" bikin browser
+   otomatis mengubah overflow-y jadi "auto" juga (aturan spec CSS), yang
+   diam-diam mematikan position:sticky sidebar desktop di tab dengan
+   konten panjang. "clip" motong tampilan yang sama tanpa efek samping itu. */
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;overflow-x:clip;max-width:100vw}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--green-xl);border-radius:99px;opacity:.5}
