@@ -2,6 +2,7 @@
 const REKAP_FILTER_IDS = ['filter-asrama-rekap','filter-tahun-rekap','filter-bulan-rekap','filter-status-rekap','filter-kobong-rekap','filter-kelas-rekap','filter-wali-rekap'];
 const TAGIHAN_FILTER_IDS = ['filter-asrama-tagihan','filter-tahun-tagihan','filter-bulan-tagihan','filter-status-tagihan','filter-kobong-tagihan','filter-kelas-tagihan','filter-wali-tagihan'];
 const SANTRI_FILTER_IDS = ['filter-asrama-santri','filter-kobong-santri','filter-kelas-santri'];
+const TF_FILTER_IDS = ['filter-asrama-tf','filter-tahun-tf','filter-bulan-tf','filter-tgl-dari-tf','filter-tgl-sampai-tf'];
 function toggleFilterPanel(ctx){
   const panel = document.getElementById('filter-panel-'+ctx);
   const btn = document.getElementById('filter-toggle-'+ctx);

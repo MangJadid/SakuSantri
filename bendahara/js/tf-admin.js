@@ -28,6 +28,7 @@ function resetFilterTF(){
   document.getElementById('filter-bulan-tf').value='';
   document.getElementById('filter-tgl-dari-tf').value='';
   document.getElementById('filter-tgl-sampai-tf').value='';
+  updateFilterBadge('tf',TF_FILTER_IDS);
   renderTFAdmin();
 }
 
