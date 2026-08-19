@@ -278,7 +278,7 @@ async function refreshFromRealtime(){
 async function loadSantriForRole(){
   try{
   if(SESSION.role==='super'||SESSION.role==='pengawas'){
-    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').eq('is_arsip',false).order('nama');
+    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,nisn,kobong(id,nama)').eq('is_arsip',false).order('nama');
     if(error) throw error;
     return data||[];
   }
@@ -287,7 +287,7 @@ async function loadSantriForRole(){
     if(!asramaIds.length) return [];
     const kobongIds = ALL_KOBONG.filter(k=>asramaIds.includes(String(k.asrama_id))).map(k=>k.id);
     if(!kobongIds.length) return [];
-    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').in('kobong_id',kobongIds).eq('is_arsip',false).order('nama');
+    const {data,error} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,nisn,kobong(id,nama)').in('kobong_id',kobongIds).eq('is_arsip',false).order('nama');
     if(error) throw error;
     return data||[];
   }
@@ -306,7 +306,7 @@ async function loadSantriForRole(){
     console.warn('[DEBUG] loadSantriForRole fallback (is_arsip mungkin belum ada):', e.message);
     try{
       if(SESSION.role==='super'||SESSION.role==='pengawas'){
-        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').order('nama');
+        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,nisn,kobong(id,nama)').order('nama');
         return data||[];
       }
       if(SESSION.role==='sekretaris'||SESSION.role==='sekretariat'){
@@ -314,7 +314,7 @@ async function loadSantriForRole(){
         if(!asramaIds.length) return [];
         const kobongIds = ALL_KOBONG.filter(k=>asramaIds.includes(String(k.asrama_id))).map(k=>k.id);
         if(!kobongIds.length) return [];
-        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,kobong(id,nama)').in('kobong_id',kobongIds).order('nama');
+        const {data} = await SB.from('santri').select('id,nama,kobong_id,pin,saldo,kelas,catatan,dapur_id,no_wa,foto_url,created_by,kecamatan,kota,jenis_kelamin,nisn,kobong(id,nama)').in('kobong_id',kobongIds).order('nama');
         return data||[];
       }
       if(SESSION.role==='pengurus'){
