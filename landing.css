@@ -22,6 +22,11 @@ body {
 }
 a { color: inherit; }
 img { max-width: 100%; display: block; }
+/* <picture> dipakai buat sumber WebP+fallback -- display:contents supaya
+   wrapper-nya "tembus" di layout (img di dalamnya tetap terhitung anak
+   langsung dari parent aslinya untuk width/height:100% dsb, gak keputus
+   sama box inline default punya <picture>). */
+picture { display: contents; }
 
 :focus-visible {
   outline: 2.5px solid var(--gold-400); outline-offset: 3px; border-radius: 4px;
@@ -279,8 +284,12 @@ img { max-width: 100%; display: block; }
 .mockup-duo { max-width: 460px; width: 100%; min-width: 0; padding-bottom: 8%; }
 .device { position: relative; }
 .device-tablet { width: 100%; z-index: 1; }
+/* height:auto wajib di sini -- img-nya punya atribut width/height HTML (buat
+   cegah CLS), dan begitu ada atribut height tapi CSS gak nyebut height sama
+   sekali, browser pakai angka atribut itu mentah-mentah (929px dst) alih-alih
+   ngitung ulang dari aspect-ratio pas width dipaksa 100%. */
 .tablet-frame-img {
-  position: relative; z-index: 3; width: 100%; display: block; pointer-events: none;
+  position: relative; z-index: 3; width: 100%; height: auto; display: block; pointer-events: none;
   filter: drop-shadow(0 36px 80px rgba(0,0,0,0.5)) drop-shadow(0 0 30px rgba(126,214,160,0.1));
 }
 .tablet-inner {
@@ -293,7 +302,7 @@ img { max-width: 100%; display: block; }
   position: absolute; z-index: 3; width: 25.5%; left: 69%; top: 39%;
 }
 .phone-frame-img {
-  position: relative; z-index: 3; width: 100%; display: block; pointer-events: none;
+  position: relative; z-index: 3; width: 100%; height: auto; display: block; pointer-events: none;
   filter: drop-shadow(0 20px 40px rgba(0,0,0,0.7)) drop-shadow(0 0 20px rgba(232,201,106,0.2));
 }
 .mockup-inner {
@@ -557,11 +566,8 @@ img { max-width: 100%; display: block; }
 .motif-ring-b { animation: motifSpin 90s linear infinite reverse; }
 @keyframes motifSpin { to { transform: rotate(360deg); } }
 
-/* Wadah crossfade: motif SVG 2D (fallback/default) <-> canvas 3D (progressive enhancement) */
 #hero-3d { overflow: visible; }
-#hero-3d .motif-svg { display: block; width: 100%; height: 100%; transition: opacity 0.5s ease; }
-#hero-3d canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
-#hero-3d.is-ready .motif-svg { opacity: 0; }
+#hero-3d .motif-svg { display: block; width: 100%; height: 100%; }
 
 /* === ACCESS PAGE (Pilih Aplikasi) === */
 .access-page { min-height: 100vh; display: flex; flex-direction: column; }

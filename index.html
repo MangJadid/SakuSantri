@@ -13,9 +13,14 @@
   <link rel="icon" type="image/png" href="jadid-logo.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="landing.css?v=14"/>
-  <link rel="preload" as="image" href="masjid-annur.jpg" fetchpriority="high"/>
+  <link rel="stylesheet" href="landing.css?v=15"/>
+  <!-- Font CSS dari domain pihak ketiga -- dimuat non-blocking (preload lalu
+       diaktifkan onload) supaya gak ikut menahan render awal halaman. Teks
+       tetap kebaca pakai font fallback berkat &display=swap sampai font asli
+       selesai dimuat. -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"/></noscript>
+  <link rel="preload" as="image" href="masjid-annur.webp" type="image/webp" fetchpriority="high"/>
   <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -27,7 +32,10 @@
   <header class="site-header">
     <nav class="navbar container">
       <a href="#beranda" class="navbar-brand">
-        <img src="logo-annur.png" alt="Logo An-Nur"/>
+        <picture>
+          <source srcset="logo-annur.webp" type="image/webp"/>
+          <img src="logo-annur.png" alt="Logo An-Nur" width="34" height="34"/>
+        </picture>
         <span>
           <b>Saku Santri</b>
           <span>Pesantren An-Nur</span>
@@ -52,7 +60,10 @@
     <!-- HERO -->
     <section class="hero" id="beranda">
       <div class="hero-bg">
-        <img src="masjid-annur.jpg" alt="Bangunan Pondok Pesantren An-Nur pada malam hari"/>
+        <picture>
+          <source srcset="masjid-annur.webp" type="image/webp"/>
+          <img src="masjid-annur.jpg" alt="Bangunan Pondok Pesantren An-Nur pada malam hari" width="960" height="1280" fetchpriority="high"/>
+        </picture>
       </div>
       <div class="motif motif-hero" id="hero-3d">
         <svg class="motif-svg" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
@@ -74,7 +85,7 @@
       </div>
       <div class="container hero-grid">
         <div class="hero-copy">
-          <span class="hero-badge"><img src="logo-annur.png" alt=""/> Platform Terpadu &middot; Pesantren An-Nur</span>
+          <span class="hero-badge"><picture><source srcset="logo-annur.webp" type="image/webp"/><img src="logo-annur.png" alt="" width="22" height="22"/></picture> Platform Terpadu &middot; Pesantren An-Nur</span>
           <h1>Satu sistem untuk keuangan pesantren yang lebih tertata.</h1>
           <p class="hero-lead"><strong>Saku Santri</strong> menyatukan pencatatan saldo santri, transaksi harian, dan laporan kas pesantren dalam satu alur kerja yang transparan, rapi, dan mudah diakses kapan saja.</p>
           <div class="hero-actions">
@@ -89,19 +100,25 @@
           <div class="mockup mockup-duo">
             <!-- DESKTOP: alur akses (Landing -> Pilih Aplikasi -> Login Bendahara) -->
             <div class="device device-tablet">
-              <img src="bingkaidkestop-clean.png" alt="" class="tablet-frame-img"/>
+              <picture>
+                <source srcset="bingkaidkestop-clean.webp" type="image/webp"/>
+                <img src="bingkaidkestop-clean.png" alt="" class="tablet-frame-img" width="975" height="701"/>
+              </picture>
               <div class="tablet-inner">
                 <div class="device-screen" id="tablet-screens" data-screen="0">
-                  <img class="device-slide is-active" src="slide-desktop-3.jpg" alt="Tampilan landing page Saku Santri di desktop"/>
-                  <img class="device-slide" src="slide-desktop-2.jpg" alt="Tampilan halaman pilih aplikasi"/>
-                  <img class="device-slide" src="slide-desktop-1.jpg" alt="Tampilan login Bendahara"/>
+                  <picture><source srcset="slide-desktop-3.webp" type="image/webp"/><img class="device-slide is-active" src="slide-desktop-3.jpg" alt="Tampilan landing page Saku Santri di desktop" width="900" height="635"/></picture>
+                  <picture><source srcset="slide-desktop-2.webp" type="image/webp"/><img class="device-slide" src="slide-desktop-2.jpg" alt="Tampilan halaman pilih aplikasi" width="900" height="635"/></picture>
+                  <picture><source srcset="slide-desktop-1.webp" type="image/webp"/><img class="device-slide" src="slide-desktop-1.jpg" alt="Tampilan login Bendahara" width="900" height="635"/></picture>
                 </div>
               </div>
 
               <!-- HP: pengalaman dalam aplikasi (Dashboard -> Panel Akun) -- dianggap
                    nempel di tablet biar posisi % konsisten sama 1 kotak referensi -->
               <div class="device device-phone">
-                <img src="bingkaihp-clean.png" alt="" class="phone-frame-img"/>
+                <picture>
+                  <source srcset="bingkaihp-clean.webp" type="image/webp"/>
+                  <img src="bingkaihp-clean.png" alt="" class="phone-frame-img" width="452" height="929"/>
+                </picture>
                 <div class="mockup-inner">
                   <div class="phone-statusbar">
                     <span>9:41</span>
@@ -111,9 +128,9 @@
                     </span>
                   </div>
                   <div class="device-screen" id="phone-screens" data-screen="0">
-                    <img class="device-slide is-active" src="slide-phone-1.jpg" alt="Tampilan login Data Uang Jajan Santri di HP"/>
-                    <img class="device-slide" src="slide-phone-2.jpg" alt="Tampilan dashboard mobile Saku Santri"/>
-                    <img class="device-slide" src="slide-phone-3.jpg" alt="Tampilan panel akun di HP"/>
+                    <picture><source srcset="slide-phone-1.webp" type="image/webp"/><img class="device-slide is-active" src="slide-phone-1.jpg" alt="Tampilan login Data Uang Jajan Santri di HP" width="240" height="482"/></picture>
+                    <picture><source srcset="slide-phone-2.webp" type="image/webp"/><img class="device-slide" src="slide-phone-2.jpg" alt="Tampilan dashboard mobile Saku Santri" width="240" height="478"/></picture>
+                    <picture><source srcset="slide-phone-3.webp" type="image/webp"/><img class="device-slide" src="slide-phone-3.jpg" alt="Tampilan panel akun di HP" width="240" height="475"/></picture>
                   </div>
                   <div class="phone-home-indicator"></div>
                 </div>
@@ -328,7 +345,10 @@
       <div class="footer-grid">
         <div>
           <div class="footer-brand">
-            <img src="logo-annur.png" alt="Logo An-Nur"/>
+            <picture>
+              <source srcset="logo-annur.webp" type="image/webp"/>
+              <img src="logo-annur.png" alt="Logo An-Nur" width="32" height="32"/>
+            </picture>
             <div>
               <b>Saku Santri</b>
               <span>Pondok Pesantren An-Nur</span>
@@ -480,6 +500,5 @@
       }, { passive: true });
     })();
   </script>
-  <script src="hero-3d.js?v=3"></script>
 </body>
 </html>
