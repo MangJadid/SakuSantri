@@ -161,7 +161,7 @@ function loadSession(){
   try {
     const r=localStorage.getItem(SESS_KEY); if(!r) return null;
     const d=JSON.parse(r);
-    if(Date.now()-d.savedAt > 48*3600*1000){ localStorage.removeItem(SESS_KEY); return null; }
+    if(Date.now()-d.savedAt > 30*24*3600*1000){ localStorage.removeItem(SESS_KEY); return null; } // 30 hari, samain kayak Saku Santri
     return d;
   } catch(e){ return null; }
 }
