@@ -340,6 +340,7 @@ async function openDetailModal(santriId){
             ${sisa>0&&t.status!=='belum'?`<div style="font-size:11px;color:var(--red)">Sisa: ${fmtRp(sisa)}</div>`:''}
           </div>
           ${statusBadge}
+          ${t.status!=='belum'?`<button class="btn btn-o btn-xs" title="Bukti Bayar" onclick="cetakBuktiBayar('${t.id}')">${svgIcon('document',12)}</button>`:''}
           ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="closeMo('mo-detail');bukaMoBayarMulti('${t.santri_id}','${t.id}')">${svgIcon('cash',12)}</button>`:''}
           <button class="btn btn-xs mutating-only" style="background:#fee2e2;color:var(--red);border:1px solid #fecaca" onclick="hapusTagihanDetail('${t.id}','${(t.bulan||'').replace(/'/g,'')}')">${svgIcon('trash',12)}</button>
         </div>
@@ -628,4 +629,91 @@ async function prosesHapusTagihanSantri(){
       } finally { setLoading(false,_lBtn2); }
     }, 'hapus'
   );
+}
+
+// ===== BUKTI PEMBAYARAN =====
+function cetakBuktiBayar(tagihanId){
+  const t = ALL_TAGIHAN.find(x=>String(x.id)===String(tagihanId));
+  if(!t){ toast('❌ Tagihan tidak ditemukan!'); return; }
+  const s = getSantriById(t.santri_id)||{};
+  const kobongNama = s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
+  const asramaNama = getAsramaNama(s.kobong?.asrama_id||'')||'—';
+  const sudahBayar = Number(t.nominal_bayar||0);
+  const sisa = Number(t.nominal)-sudahBayar;
+  const hasRincian = Array.isArray(t.rincian)&&t.rincian.length>0;
+
+  const rincianHtml = hasRincian
+    ? t.rincian.map(r=>`<tr><td style="padding:5px 0;color:#555">${r.jenis||'Tagihan'}</td><td style="padding:5px 0;text-align:right;font-weight:600">${fmtRp(r.nominal||0)}</td></tr>`).join('')
+    : `${t.nominal_makan?`<tr><td style="padding:5px 0;color:#555">Uang Makan</td><td style="padding:5px 0;text-align:right;font-weight:600">${fmtRp(t.nominal_makan)}</td></tr>`:''}
+       ${t.nominal_listrik?`<tr><td style="padding:5px 0;color:#555">Uang Listrik</td><td style="padding:5px 0;text-align:right;font-weight:600">${fmtRp(t.nominal_listrik)}</td></tr>`:''}`;
+
+  const statusLabel = t.status==='lunas' ? 'LUNAS' : 'CICILAN (SEBAGIAN)';
+  const statusColor = t.status==='lunas' ? '#15803d' : '#a16207';
+  const namaSantri = s.nama||t.santri_nama||'—';
+  const pesantren = CONFIG.pesantren_nama||'Pondok Pesantren An-Nur';
+
+  const content = `
+    <div style="font-family:sans-serif;padding:4px;font-size:13px;color:#1a1a1a">
+      <div style="text-align:center;margin-bottom:16px">
+        <h2 style="margin:0;font-size:17px">${pesantren}</h2>
+        <div style="font-size:12px;color:#666;margin-top:2px">Bukti Pembayaran Tagihan Santri</div>
+      </div>
+      <div style="border:1.5px solid #ddd;border-radius:10px;padding:14px 16px;margin-bottom:12px">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+          <tr><td style="padding:3px 0;color:#666;width:38%">Nama Santri</td><td style="padding:3px 0;font-weight:700">: ${namaSantri}</td></tr>
+          <tr><td style="padding:3px 0;color:#666">Kelas / Kobong</td><td style="padding:3px 0">: ${s.kelas||'—'} / ${kobongNama}</td></tr>
+          <tr><td style="padding:3px 0;color:#666">Asrama</td><td style="padding:3px 0">: ${asramaNama}</td></tr>
+          <tr><td style="padding:3px 0;color:#666">Bulan Tagihan</td><td style="padding:3px 0;font-weight:700">: ${t.bulan||'—'}</td></tr>
+        </table>
+      </div>
+      <div style="border:1.5px solid #ddd;border-radius:10px;padding:14px 16px;margin-bottom:12px">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px">${rincianHtml}</table>
+        <div style="border-top:1.5px dashed #ccc;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-weight:700">
+          <span>Total Tagihan</span><span>${fmtRp(t.nominal)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;color:#15803d;font-weight:700;margin-top:4px">
+          <span>Dibayar</span><span>${fmtRp(sudahBayar)}</span>
+        </div>
+        ${sisa>0?`<div style="display:flex;justify-content:space-between;color:#dc2626;font-weight:700;margin-top:4px"><span>Sisa</span><span>${fmtRp(sisa)}</span></div>`:''}
+      </div>
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="display:inline-block;padding:6px 18px;border-radius:20px;background:${t.status==='lunas'?'#f0fdf4':'#fefce8'};color:${statusColor};font-weight:800;font-size:13px;letter-spacing:.5px">${statusLabel}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;color:#555;margin-bottom:12px">
+        <tr><td style="padding:2px 0;width:38%">Tanggal Bayar</td><td style="padding:2px 0">: ${fmtTgl(t.tgl_bayar)}</td></tr>
+        <tr><td style="padding:2px 0">Dicatat Oleh</td><td style="padding:2px 0">: ${t.dicatat_oleh||'—'}</td></tr>
+        ${t.keterangan?`<tr><td style="padding:2px 0">Keterangan</td><td style="padding:2px 0">: ${t.keterangan}</td></tr>`:''}
+        <tr><td style="padding:2px 0">No. Referensi</td><td style="padding:2px 0">: TGH-${t.id}</td></tr>
+      </table>
+      <div style="text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:10px">
+        Dicetak: ${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}<br>
+        Dokumen ini dihasilkan otomatis oleh sistem Bendahara ${pesantren}.
+      </div>
+    </div>
+  `;
+  const el = document.getElementById('bukti-bayar-content');
+  el.innerHTML = content;
+  el.dataset.filename = `Bukti-Bayar-${namaSantri.replace(/[^a-z0-9]/gi,'-')}-${(t.bulan||'').replace(/[^a-z0-9]/gi,'-')}`;
+  openMo('mo-bukti-bayar');
+}
+
+function doDownloadBukti(){
+  const el = document.getElementById('bukti-bayar-content');
+  const c = el.innerHTML;
+  const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Bukti Pembayaran</title>
+  <style>
+    body{font-family:sans-serif;margin:0;padding:16px}
+    @media print{@page{margin:14mm;size:A5 portrait}}
+  </style></head><body>${c}
+  <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (el.dataset.filename||'Bukti-Pembayaran') + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📄 Bukti pembayaran berhasil didownload!');
 }

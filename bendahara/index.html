@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#1a5c3a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Bendahara An-Nur">
-<meta name="app-build" content="2026-08-19-1">
+<meta name="app-build" content="2026-08-19-2">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=3">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png?v=3">
 <link rel="icon" type="image/png" href="icon-192.png?v=3">
@@ -1371,6 +1371,20 @@
   </div>
 </div>
 
+<!-- MODAL BUKTI BAYAR -->
+<div class="mo" id="mo-bukti-bayar">
+  <div class="mo-box" style="max-width:460px">
+    <div class="mo-h"><h3>🧾 Bukti Pembayaran</h3><button class="mo-cls" onclick="closeMo('mo-bukti-bayar')">✕</button></div>
+    <div class="mo-b">
+      <div id="bukti-bayar-content"></div>
+      <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-b" onclick="doDownloadBukti()">⬇️ Download</button>
+        <button class="btn btn-o" onclick="closeMo('mo-bukti-bayar')">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL PROFIL PENGURUS -->
 <div class="mo" id="mo-profil-pengurus">
   <div class="mo-box" style="max-width:420px">
@@ -1417,7 +1431,7 @@
 <script src="./js/app-core.js?v=25"></script>
 <script src="./js/konfigurasi-tagihan.js?v=3"></script>
 <script src="./js/dashboard.js?v=8"></script>
-<script src="./js/tagihan.js?v=7"></script>
+<script src="./js/tagihan.js?v=8"></script>
 <script src="./js/pembayaran.js?v=9"></script>
 <script src="./js/santri.js?v=3"></script>
 <script src="./js/rekap-tunggakan.js?v=6"></script>
