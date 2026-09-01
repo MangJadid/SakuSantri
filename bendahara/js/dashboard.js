@@ -64,10 +64,27 @@ function renderDashboard(){
   // Hitung pecahan makan & listrik
   const lunasCount = lunas.length;
   const belumCount = belum.length;
-  const makanTerkumpul = lunasCount * nomMakan;
-  const listrikTerkumpul = lunasCount * nomListrik;
-  const makanTunggakan = belumCount * nomMakan;
-  const listrikTunggakan = belumCount * nomListrik;
+
+  // Rincian per jenis tagihan -- baca rincian aktual tiap tagihan (bukan cuma
+  // asumsi nominal makan/listrik global) supaya asrama dengan konfigurasi
+  // custom (mis. tambah Infak/Kas) ikut kehitung sebagai baris sendiri,
+  // bukan cuma numpuk diam-diam di Total.
+  const jenisTotals = {};
+  function _ensureJenis(j){ if(!jenisTotals[j]) jenisTotals[j]={terkumpul:0,tunggakan:0,perSantri:0}; return jenisTotals[j]; }
+  tagihanBulan.forEach(t=>{
+    const isLunas = t.status==='lunas';
+    const items = (Array.isArray(t.rincian)&&t.rincian.length)
+      ? t.rincian
+      : [{jenis:'Uang Makan',nominal:Number(t.nominal_makan||0)},{jenis:'Uang Listrik',nominal:Number(t.nominal_listrik||0)}].filter(x=>x.nominal>0);
+    items.forEach(r=>{
+      const j=_ensureJenis(r.jenis||'Lainnya');
+      const nom=Number(r.nominal||0);
+      if(isLunas) j.terkumpul+=nom; else j.tunggakan+=nom;
+      if(!j.perSantri) j.perSantri=nom;
+    });
+  });
+  const JENIS_ICON_BD={'Uang Makan':{ic:'🍽️',bg:'#fff7ed',rute:'Dapur'},'Uang Listrik':{ic:'⚡',bg:'#fefce8',rute:'Kas'}};
+  function _jenisMetaBD(j){ return JENIS_ICON_BD[j]||{ic:'💰',bg:'#f0f9ff',rute:''}; }
 
   const dapurLabel = ACTIVE_DAPUR?getDapurNama(ACTIVE_DAPUR):'Semua Dapur';
   document.getElementById('dash-tagihan-title').textContent=`📋 Tagihan Bulan Ini — ${dapurLabel}`;
@@ -132,50 +149,36 @@ function renderDashboard(){
         <div style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;text-align:center;border-left:1px solid var(--border)">✅ Terkumpul</div>
         <div style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;text-align:center;border-left:1px solid var(--border)">❌ Tunggakan</div>
       </div>
-      <!-- Row Uang Makan -->
-      <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;border-bottom:1px solid var(--border)">
+      <!-- Rows per jenis (dinamis, ikut rincian konfigurasi asrama/dapur) -->
+      ${Object.entries(jenisTotals).map(([jenis,d],i,arr)=>{
+        const meta=_jenisMetaBD(jenis);
+        const subtitle=d.perSantri?`${fmtRp(d.perSantri)}/santri${meta.rute?' → '+meta.rute:''}`:'';
+        return `<div style="display:grid;grid-template-columns:1.8fr 1fr 1fr${i<arr.length-1?';border-bottom:1px solid var(--border)':''}">
         <div style="padding:12px 12px;display:flex;align-items:center;gap:8px">
-          <div style="width:36px;height:36px;border-radius:10px;background:#fff7ed;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🍽️</div>
+          <div style="width:36px;height:36px;border-radius:10px;background:${meta.bg};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${meta.ic}</div>
           <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">Uang Makan</div>
-            <div style="font-size:10px;color:var(--text-l);margin-top:1px">${fmtRp(nomMakan)}/santri → Dapur</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${jenis}</div>
+            ${subtitle?`<div style="font-size:10px;color:var(--text-l);margin-top:1px">${subtitle}</div>`:''}
           </div>
         </div>
         <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border);background:#f0fdf4">
-          <div style="font-size:12px;font-weight:800;color:var(--green)">${fmtRp(makanTerkumpul)}</div>
+          <div style="font-size:12px;font-weight:800;color:var(--green)">${fmtRp(d.terkumpul)}</div>
           <div style="font-size:10px;color:var(--green);margin-top:3px;font-weight:600">${lunasCount} santri</div>
         </div>
         <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border);background:#fff5f5">
-          <div style="font-size:12px;font-weight:800;color:var(--red)">${fmtRp(makanTunggakan)}</div>
+          <div style="font-size:12px;font-weight:800;color:var(--red)">${fmtRp(d.tunggakan)}</div>
           <div style="font-size:10px;color:var(--red);margin-top:3px;font-weight:600">${belumCount} santri</div>
         </div>
-      </div>
-      <!-- Row Uang Listrik -->
-      <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr">
-        <div style="padding:12px 12px;display:flex;align-items:center;gap:8px">
-          <div style="width:36px;height:36px;border-radius:10px;background:#fefce8;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">⚡</div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">Uang Listrik</div>
-            <div style="font-size:10px;color:var(--text-l);margin-top:1px">${fmtRp(nomListrik)}/santri → Kas</div>
-          </div>
-        </div>
-        <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border);background:#f0fdf4">
-          <div style="font-size:12px;font-weight:800;color:var(--green)">${fmtRp(listrikTerkumpul)}</div>
-          <div style="font-size:10px;color:var(--green);margin-top:3px;font-weight:600">${lunasCount} santri</div>
-        </div>
-        <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border);background:#fff5f5">
-          <div style="font-size:12px;font-weight:800;color:var(--red)">${fmtRp(listrikTunggakan)}</div>
-          <div style="font-size:10px;color:var(--red);margin-top:3px;font-weight:600">${belumCount} santri</div>
-        </div>
-      </div>
+      </div>`;
+      }).join('')}
       <!-- Footer total -->
       <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;background:var(--bg);border-top:2px solid var(--border)">
         <div style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;display:flex;align-items:center">Total</div>
         <div style="padding:10px 10px;text-align:center;border-left:1px solid var(--border)">
-          <div style="font-size:13px;font-weight:800;color:var(--green)">${fmtRp(makanTerkumpul+listrikTerkumpul)}</div>
+          <div style="font-size:13px;font-weight:800;color:var(--green)">${fmtRp(Object.values(jenisTotals).reduce((a,d)=>a+d.terkumpul,0))}</div>
         </div>
         <div style="padding:10px 10px;text-align:center;border-left:1px solid var(--border)">
-          <div style="font-size:13px;font-weight:800;color:var(--red)">${fmtRp(makanTunggakan+listrikTunggakan)}</div>
+          <div style="font-size:13px;font-weight:800;color:var(--red)">${fmtRp(Object.values(jenisTotals).reduce((a,d)=>a+d.tunggakan,0))}</div>
         </div>
       </div>
     </div>
