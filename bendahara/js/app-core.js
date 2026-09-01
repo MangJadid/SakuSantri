@@ -750,7 +750,10 @@ function buildMobileNavBD(){
   requestAnimationFrame(moveBnavHighlightBD);
   window.addEventListener('resize', moveBnavHighlightBD);
 
-  const lainnya = MENU_LAINNYA_BD.filter(m => m.action || document.getElementById('tab-'+m.id));
+  // rincianDapur cuma relevan buat admin (kartu per-dapur) -- untuk sesi yang
+  // sudah kescope ke 1 dapur, rinciannya sudah otomatis nempel di Dashboard,
+  // gak perlu tombol terpisah yang bakal buka kartu kosong.
+  const lainnya = MENU_LAINNYA_BD.filter(m => (m.id!=='rincianDapur' || !ACTIVE_DAPUR) && (m.action || document.getElementById('tab-'+m.id)));
   grid.innerHTML = lainnya.length ? `
     <div class="mnav-label"><i></i>Fitur Lainnya</div>
     <div class="mnav-items">

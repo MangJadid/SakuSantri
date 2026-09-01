@@ -275,79 +275,12 @@ function renderDashboard(){
     });
     dc+='</div>';
     dapurCardsEl.innerHTML=dc;
-  } else if(ACTIVE_DAPUR){
-    const sIds=new Set(ALL_SANTRI.filter(s=>String(s.dapur_id)===String(ACTIVE_DAPUR)).map(s=>String(s.id)));
-    const tg=tagihanBulan.filter(t=>sIds.has(String(t.santri_id)));
-    const lunDapur=tg.filter(t=>t.status==='lunas');
-    const belumDapur=tg.filter(t=>t.status!=='lunas');
-    const lunJml=lunDapur.length;
-    const belumJml=belumDapur.length;
-    const makanD=lunJml*nomMakan, listrikD=lunJml*nomListrik;
-    const makanTunggD=belumJml*nomMakan, listrikTunggD=belumJml*nomListrik;
-    dapurCardsEl.innerHTML=`
-      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--sh);margin-bottom:16px">
-        <!-- Header -->
-        <div style="background:linear-gradient(135deg,var(--green) 0%,var(--green-m) 100%);padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:16px">📊</span>
-            <span style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.6px">Rincian ${getDapurNama(ACTIVE_DAPUR)}</span>
-          </div>
-          <span style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600">${bulan}</span>
-        </div>
-        <!-- Tabel Header -->
-        <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;border-bottom:2px solid var(--border);background:var(--bg)">
-          <div style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px">Jenis</div>
-          <div style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;text-align:center;border-left:1px solid var(--border)">✅ Terkumpul</div>
-          <div style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;text-align:center;border-left:1px solid var(--border)">❌ Tunggakan</div>
-        </div>
-        <!-- Row Uang Makan -->
-        <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;border-bottom:1px solid var(--border)">
-          <div style="padding:12px 12px;display:flex;align-items:center;gap:8px">
-            <div style="width:36px;height:36px;border-radius:10px;background:#fff7ed;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🍽️</div>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--text)">Uang Makan</div>
-              <div style="font-size:10px;color:var(--text-l);margin-top:1px">${fmtRp(nomMakan)}/santri → Dapur</div>
-            </div>
-          </div>
-          <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border);background:#f0fdf4">
-            <div style="font-size:12px;font-weight:800;color:var(--green)">${fmtRp(makanD)}</div>
-            <div style="font-size:10px;color:var(--green);margin-top:3px;font-weight:600">${lunJml} santri</div>
-          </div>
-          <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border);background:#fff5f5">
-            <div style="font-size:12px;font-weight:800;color:var(--red)">${fmtRp(makanTunggD)}</div>
-            <div style="font-size:10px;color:var(--red);margin-top:3px;font-weight:600">${belumJml} santri</div>
-          </div>
-        </div>
-        <!-- Row Uang Listrik -->
-        <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr">
-          <div style="padding:12px 12px;display:flex;align-items:center;gap:8px">
-            <div style="width:36px;height:36px;border-radius:10px;background:#fefce8;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">⚡</div>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--text)">Uang Listrik</div>
-              <div style="font-size:10px;color:var(--text-l);margin-top:1px">${fmtRp(nomListrik)}/santri → Kas</div>
-            </div>
-          </div>
-          <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border);background:#f0fdf4">
-            <div style="font-size:12px;font-weight:800;color:var(--green)">${fmtRp(listrikD)}</div>
-            <div style="font-size:10px;color:var(--green);margin-top:3px;font-weight:600">${lunJml} santri</div>
-          </div>
-          <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border);background:#fff5f5">
-            <div style="font-size:12px;font-weight:800;color:var(--red)">${fmtRp(listrikTunggD)}</div>
-            <div style="font-size:10px;color:var(--red);margin-top:3px;font-weight:600">${belumJml} santri</div>
-          </div>
-        </div>
-        <!-- Footer total -->
-        <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;background:var(--bg);border-top:2px solid var(--border)">
-          <div style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;display:flex;align-items:center">Total</div>
-          <div style="padding:10px 10px;text-align:center;border-left:1px solid var(--border)">
-            <div style="font-size:13px;font-weight:800;color:var(--green)">${fmtRp(makanD+listrikD)}</div>
-          </div>
-          <div style="padding:10px 10px;text-align:center;border-left:1px solid var(--border)">
-            <div style="font-size:13px;font-weight:800;color:var(--red)">${fmtRp(makanTunggD+listrikTunggD)}</div>
-          </div>
-        </div>
-      </div>`;
   } else {
+    // ACTIVE_DAPUR (pengelola 1 dapur): rinciannya sudah ada di kartu
+    // "Rincian per Jenis Tagihan" di atas -- dulu ada tabel kedua di sini yang
+    // isinya sama tapi cuma Makan/Listrik (gak ikut kategori custom kayak
+    // Infak/Kas) dan gampang beda angka karena nominal yang dipakai beda cara
+    // hitung. Dihapus biar cuma ada satu sumber kebenaran.
     dapurCardsEl.innerHTML='';
   }
 
