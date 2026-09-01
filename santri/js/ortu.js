@@ -254,8 +254,10 @@ async function renderSyahriyahOrtu(){
               ${statusBadge(t.status)}
             </div>
             <div style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--text-m)">
-              ${t.nominal_makan>0?`<div style="display:flex;justify-content:space-between"><span>Uang Makan</span><span>${fmtRp(t.nominal_makan)}</span></div>`:''}
-              ${t.nominal_listrik>0?`<div style="display:flex;justify-content:space-between"><span>Uang Listrik</span><span>${fmtRp(t.nominal_listrik)}</span></div>`:''}
+              ${Array.isArray(t.rincian)&&t.rincian.length
+                ? t.rincian.map(r=>`<div style="display:flex;justify-content:space-between"><span>${r.jenis||'—'}</span><span>${fmtRp(r.nominal||0)}</span></div>`).join('')
+                : `${t.nominal_makan>0?`<div style="display:flex;justify-content:space-between"><span>Uang Makan</span><span>${fmtRp(t.nominal_makan)}</span></div>`:''}
+                   ${t.nominal_listrik>0?`<div style="display:flex;justify-content:space-between"><span>Uang Listrik</span><span>${fmtRp(t.nominal_listrik)}</span></div>`:''}`}
               ${t.nominal_bayar>0?`<div style="display:flex;justify-content:space-between;color:var(--green)"><span>Sudah Dibayar</span><span>${fmtRp(t.nominal_bayar)}</span></div>`:''}
               ${sisa>0?`<div style="display:flex;justify-content:space-between;color:#dc2626;font-weight:700;border-top:1px solid var(--border);padding-top:6px;margin-top:4px"><span>Sisa</span><span>${fmtRp(sisa)}</span></div>`:''}
             </div>

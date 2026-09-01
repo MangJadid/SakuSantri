@@ -152,11 +152,15 @@ function switchModeTab(mode){
 
 function _bulanItemHtml(t, checked){
   const sisa=Number(t.nominal)-Number(t.nominal_bayar||0);
+  const hasRincian=Array.isArray(t.rincian)&&t.rincian.length>0;
+  const rincianTxt=hasRincian
+    ? t.rincian.map(r=>`${fmtRp(r.nominal||0)} ${r.jenis||'—'}`).join(' + ')
+    : `${fmtRp(t.nominal_makan||0)} Makan + ${fmtRp(t.nominal_listrik||0)} Listrik`;
   return `<label class="bulan-item" id="bitem-${t.id}">
       <input type="checkbox" value="${t.id}" data-nom="${sisa}" onchange="updateMultiTotal()" class="multi-check"${checked?' checked':''}>
       <div style="flex:1">
         <div style="font-weight:600;font-size:13px">${t.bulan||'—'}</div>
-        <div style="font-size:11px;color:var(--text-l)">${fmtRp(t.nominal_makan||0)} Makan + ${fmtRp(t.nominal_listrik||0)} Listrik${t.nominal_bayar>0?` · Bayar: ${fmtRp(t.nominal_bayar)}`:''}</div>
+        <div style="font-size:11px;color:var(--text-l)">${rincianTxt}${t.nominal_bayar>0?` · Bayar: ${fmtRp(t.nominal_bayar)}`:''}</div>
       </div>
       <strong style="font-size:13px;color:var(--red)">${fmtRp(sisa)}</strong>
     </label>`;

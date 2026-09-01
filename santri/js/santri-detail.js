@@ -99,8 +99,10 @@ async function openDetailModal(id){
               ${lunas?svgIcon('check-circle',12)+' Lunas':svgIcon('x',12)+' Belum Bayar'}
             </span>
           </div>
-          ${t.nominal_makan?`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-l)">Uang Makan</span><span>${rp(t.nominal_makan)}</span></div>`:''}
-          ${t.nominal_listrik?`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-l)">Uang Listrik</span><span>${rp(t.nominal_listrik)}</span></div>`:''}
+          ${Array.isArray(t.rincian)&&t.rincian.length
+            ? t.rincian.map(r=>`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-l)">${r.jenis||'—'}</span><span>${rp(r.nominal||0)}</span></div>`).join('')
+            : `${t.nominal_makan?`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-l)">Uang Makan</span><span>${rp(t.nominal_makan)}</span></div>`:''}
+               ${t.nominal_listrik?`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-l)">Uang Listrik</span><span>${rp(t.nominal_listrik)}</span></div>`:''}`}
           <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;border-top:1px solid var(--border);padding-top:8px;margin-top:6px">
             <span style="color:${lunas?'var(--green)':'var(--red)'}">Sisa</span>
             <span style="color:${lunas?'var(--green)':'var(--red)'}">${lunas?'Rp 0':rp(t.nominal||0)}</span>
