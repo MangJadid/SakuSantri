@@ -483,6 +483,41 @@ const avColors=['#1a5c3a','#2471a3','#6c3483','#b8860b','#c0392b','#16a085','#8e
 function avColor(n){ if(!n) return avColors[0]; let h=0; for(let i=0;i<n.length;i++) h=(h+n.charCodeAt(i)*31)%avColors.length; return avColors[h]; }
 function avLetter(n){ return n?n[0].toUpperCase():'?'; }
 function fmtRp(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
+
+// ===== RINCIAN PER JENIS (dipakai kotak ringkasan Tagihan & Tunggakan) =====
+// Generalisasi dari pola "makan+listrik" ke jenis apa pun (Infak, Kas, dll)
+// yang ada di rincian tiap tagihan. Alokasi bayar per jenis pakai prioritas
+// urutan array (isi jenis pertama full dulu, sisa ke jenis berikutnya) --
+// (uang makan/kategori pertama diprioritaskan dulu sampai terpenuhi, sisanya baru ke kategori berikutnya).
+function hitungRincianJenisBD(list){
+  const totalPerJenis={}, bayarPerJenis={};
+  const jenisList=[];
+  function ensure(j){ if(!(j in totalPerJenis)){ totalPerJenis[j]=0; bayarPerJenis[j]=0; jenisList.push(j); } }
+  list.forEach(t=>{
+    const items=(Array.isArray(t.rincian)&&t.rincian.length)
+      ? t.rincian
+      : [{jenis:'Uang Makan',nominal:Number(t.nominal_makan||0)},{jenis:'Uang Listrik',nominal:Number(t.nominal_listrik||0)}].filter(x=>x.nominal>0);
+    const totalT=items.reduce((a,x)=>a+Number(x.nominal||0),0);
+    let sisaBayar=t.status==='lunas'?Number(t.nominal_bayar||totalT):Number(t.nominal_bayar||0);
+    items.forEach(it=>{
+      const j=it.jenis||'Lainnya', nom=Number(it.nominal||0);
+      ensure(j);
+      totalPerJenis[j]+=nom;
+      const alokasi=Math.min(Math.max(sisaBayar,0),nom);
+      bayarPerJenis[j]+=alokasi;
+      sisaBayar-=alokasi;
+    });
+  });
+  const sisaPerJenis={};
+  jenisList.forEach(j=>{ sisaPerJenis[j]=totalPerJenis[j]-bayarPerJenis[j]; });
+  return {jenisList, totalPerJenis, bayarPerJenis, sisaPerJenis};
+}
+const JENIS_ICON_BD2={'Uang Makan':'🍽️','Uang Listrik':'⚡'};
+function jenisIconBD(j){ return JENIS_ICON_BD2[j]||'💰'; }
+function rincianRowsBD(rj, which){
+  const map = which==='bayar'?rj.bayarPerJenis : which==='sisa'?rj.sisaPerJenis : rj.totalPerJenis;
+  return rj.jenisList.map(j=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--border);font-size:12px"><span>${jenisIconBD(j)} ${j}</span><strong>${fmtRp(map[j]||0)}</strong></div>`).join('');
+}
 // Field nominal yang formatnya "Rp 140.000" tapi tetap bisa diedit --
 // dipakai di semua input nominal (Bayar Multi, TF Admin, dll).
 function formatRupiahInput(el){

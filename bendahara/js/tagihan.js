@@ -23,25 +23,6 @@ function updateTagihanBulanInfo(){
   `;
 }
 
-// Pecah nominal terbayar per tagihan menjadi porsi makan & listrik:
-// uang makan diprioritaskan dulu sampai terpenuhi, sisanya baru masuk ke listrik.
-// Contoh: nominal makan 380rb, listrik 40rb. Cicilan 300rb -> semua ke makan.
-// Cicilan 400rb -> makan lunas 380rb, sisa 20rb masuk ke listrik.
-function _pecahBayar(list){
-  let bayarMakan=0, bayarListrik=0;
-  list.forEach(t=>{
-    const nomMakan = Number(t.nominal_makan||0);
-    const nomListrik = Number(t.nominal_listrik||0);
-    const bayar = t.status==='lunas' ? Number(t.nominal||(nomMakan+nomListrik)) : Number(t.nominal_bayar||0);
-    if(bayar<=0) return;
-    const bm = Math.min(bayar, nomMakan);
-    const bl = Math.min(bayar-bm, nomListrik);
-    bayarMakan += bm;
-    bayarListrik += bl;
-  });
-  return {bayarMakan, bayarListrik};
-}
-
 function renderTagihanTable(keepPage){
   if(!keepPage) _pageState.tagihan = 1;
   const q=document.getElementById('cari-tagihan')?.value.toLowerCase()||'';
@@ -98,40 +79,39 @@ function renderTagihanTable(keepPage){
 
   // Summary cards (dari semua filtered, bukan hanya halaman ini)
   const totalNom  = filtered.reduce((a,t)=>a+Number(t.nominal||0),0);
-  const totalMakan= filtered.reduce((a,t)=>a+Number(t.nominal_makan||0),0);
-  const totalListrik=filtered.reduce((a,t)=>a+Number(t.nominal_listrik||0),0);
   const totalBayar= filtered.reduce((a,t)=>a+Number(t.nominal_bayar||0),0);
   const totalTunggak=filtered.filter(t=>t.status!=='lunas').reduce((a,t)=>a+(Number(t.nominal)-Number(t.nominal_bayar||0)),0);
   const jmlLunas  = filtered.filter(t=>t.status==='lunas').length;
   const jmlBelum  = filtered.filter(t=>t.status==='belum').length;
   const jmlCicil  = filtered.filter(t=>t.status==='cicil').length;
-  const {bayarMakan, bayarListrik} = _pecahBayar(filtered);
-  const tunggakMakan = totalMakan - bayarMakan;
-  const tunggakListrik = totalListrik - bayarListrik;
+  const rj = hitungRincianJenisBD(filtered);
   const summEl = document.getElementById('tagihan-summary');
   if(summEl) summEl.innerHTML = filtered.length===0 ? '' : `
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
-      <div style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px">
-        <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Total Tagihan</div>
+      <div class="rincian-card" onclick="this.classList.toggle('open')" style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Total Tagihan</div>
+          <span class="rincian-hint">Rincian <span class="chev">▾</span></span>
+        </div>
         <div style="font-size:17px;font-weight:800;color:var(--text)">${fmtRp(totalNom)}</div>
-        <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-          <span>${svgIcon('utensils',11)} ${fmtRp(totalMakan)}</span><span>${svgIcon('zap',11)} ${fmtRp(totalListrik)}</span>
-        </div>
         <div style="font-size:10px;color:var(--text-l);margin-top:2px">${filtered.length} tagihan · ✅${jmlLunas} ⏳${jmlCicil} ❌${jmlBelum}</div>
+        <div class="rincian-card-detail"><div>${rincianRowsBD(rj,'total')}</div></div>
       </div>
-      <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 16px">
-        <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Terbayar</div>
+      <div class="rincian-card" onclick="this.classList.toggle('open')" style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Terbayar</div>
+          <span class="rincian-hint">Rincian <span class="chev">▾</span></span>
+        </div>
         <div style="font-size:17px;font-weight:800;color:var(--green)">${fmtRp(totalBayar)}</div>
-        <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-          <span>${svgIcon('utensils',11)} ${fmtRp(Math.round(bayarMakan))}</span><span>${svgIcon('zap',11)} ${fmtRp(Math.round(bayarListrik))}</span>
-        </div>
+        <div class="rincian-card-detail"><div>${rincianRowsBD(rj,'bayar')}</div></div>
       </div>
-      <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:12px 16px">
-        <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Tunggakan</div>
-        <div style="font-size:17px;font-weight:800;color:var(--red)">${fmtRp(totalTunggak)}</div>
-        <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-          <span>${svgIcon('utensils',11)} ${fmtRp(Math.round(tunggakMakan))}</span><span>${svgIcon('zap',11)} ${fmtRp(Math.round(tunggakListrik))}</span>
+      <div class="rincian-card" onclick="this.classList.toggle('open')" style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:12px 16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase;margin-bottom:4px">Tunggakan</div>
+          <span class="rincian-hint">Rincian <span class="chev">▾</span></span>
         </div>
+        <div style="font-size:17px;font-weight:800;color:var(--red)">${fmtRp(totalTunggak)}</div>
+        <div class="rincian-card-detail"><div>${rincianRowsBD(rj,'sisa')}</div></div>
       </div>
     </div>`;
 

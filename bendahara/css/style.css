@@ -837,6 +837,19 @@ tbody tr{transition:background .15s}
 .tunggakan-collapse.open{grid-template-rows:1fr}
 .tunggakan-collapse>div{overflow:hidden;display:flex;flex-direction:column;gap:8px}
 
+/* === KOTAK RINGKASAN BISA DIKLIK (Total/Terbayar/Tunggakan -- rincian per jenis) === */
+.rincian-card{cursor:pointer;transition:box-shadow .18s ease}
+.rincian-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.rincian-card .rincian-hint{font-size:9px;font-weight:700;color:var(--text-l);display:inline-flex;align-items:center;gap:3px}
+.rincian-card .rincian-hint .chev{display:inline-block;transition:transform .22s cubic-bezier(.23,1,.32,1)}
+.rincian-card.open .rincian-hint .chev{transform:rotate(180deg)}
+.rincian-card-detail{
+  display:grid;grid-template-rows:0fr;
+  transition:grid-template-rows .22s cubic-bezier(.23,1,.32,1)
+}
+.rincian-card.open .rincian-card-detail{grid-template-rows:1fr;margin-top:8px}
+.rincian-card-detail>div{overflow:hidden}
+
 /* === ASRAMA CHIPS === */
 .asrama-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .asrama-chip{

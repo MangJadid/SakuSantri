@@ -123,36 +123,35 @@ function updateRekapSummary(tagihanF){
   const el = document.getElementById('rekap-summary');
   if(!el) return;
   const total = tagihanF.reduce((a,t)=>a+Number(t.nominal),0);
-  const makan = tagihanF.reduce((a,t)=>a+Number(t.nominal_makan||0),0);
-  const listrik = tagihanF.reduce((a,t)=>a+Number(t.nominal_listrik||0),0);
   const lunas = tagihanF.filter(t=>t.status==='lunas').reduce((a,t)=>a+Number(t.nominal_bayar||t.nominal),0);
   const tunggak = tagihanF.filter(t=>t.status!=='lunas').reduce((a,t)=>a+(Number(t.nominal)-Number(t.nominal_bayar||0)),0);
-  const {bayarMakan, bayarListrik} = _pecahBayar(tagihanF);
-  const tunggakMakan = makan - bayarMakan;
-  const tunggakListrik = listrik - bayarListrik;
+  const rj = hitungRincianJenisBD(tagihanF);
   el.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
-        <div style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px">
-          <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Total Tagihan</div>
+        <div class="rincian-card" onclick="this.classList.toggle('open')" style="background:#f8faf9;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Total Tagihan</div>
+            <span class="rincian-hint">Rincian <span class="chev">▾</span></span>
+          </div>
           <div style="font-size:17px;font-weight:800;color:var(--text)">${fmtRp(total)}</div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-            <span>${svgIcon('utensils',11)} ${fmtRp(makan)}</span><span>${svgIcon('zap',11)} ${fmtRp(listrik)}</span>
-          </div>
           <div style="font-size:10px;color:var(--text-l);margin-top:2px">${tagihanF.length} tagihan</div>
+          <div class="rincian-card-detail"><div>${rincianRowsBD(rj,'total')}</div></div>
         </div>
-        <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 16px">
-          <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Terbayar</div>
+        <div class="rincian-card" onclick="this.classList.toggle('open')" style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Terbayar</div>
+            <span class="rincian-hint">Rincian <span class="chev">▾</span></span>
+          </div>
           <div style="font-size:17px;font-weight:800;color:var(--green)">${fmtRp(lunas)}</div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-            <span>${svgIcon('utensils',11)} ${fmtRp(Math.round(bayarMakan))}</span><span>${svgIcon('zap',11)} ${fmtRp(Math.round(bayarListrik))}</span>
-          </div>
+          <div class="rincian-card-detail"><div>${rincianRowsBD(rj,'bayar')}</div></div>
         </div>
-        <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:12px 16px">
-          <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Tunggakan</div>
-          <div style="font-size:17px;font-weight:800;color:var(--red)">${fmtRp(tunggak)}</div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;gap:10px">
-            <span>${svgIcon('utensils',11)} ${fmtRp(Math.round(tunggakMakan))}</span><span>${svgIcon('zap',11)} ${fmtRp(Math.round(tunggakListrik))}</span>
+        <div class="rincian-card" onclick="this.classList.toggle('open')" style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:10px;padding:12px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div style="font-size:10px;color:var(--text-l);font-weight:600;text-transform:uppercase">Tunggakan</div>
+            <span class="rincian-hint">Rincian <span class="chev">▾</span></span>
           </div>
+          <div style="font-size:17px;font-weight:800;color:var(--red)">${fmtRp(tunggak)}</div>
+          <div class="rincian-card-detail"><div>${rincianRowsBD(rj,'sisa')}</div></div>
         </div>
     </div>
   `;
