@@ -308,4 +308,24 @@ CREATE TABLE IF NOT EXISTS push_notifications (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ================= poster_kategori & poster (Poster & Info di beranda) =================
+CREATE TABLE IF NOT EXISTS poster_kategori (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  nama VARCHAR(100) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS poster (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  judul VARCHAR(200) NOT NULL,
+  gambar_url TEXT NOT NULL,
+  kategori_id BIGINT NULL,
+  tampil_sampai DATE NULL,
+  dibuat_oleh VARCHAR(100),
+  dibuat_oleh_nama VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_poster_kategori (kategori_id),
+  CONSTRAINT fk_poster_kategori FOREIGN KEY (kategori_id) REFERENCES poster_kategori(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;

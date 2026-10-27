@@ -176,6 +176,7 @@ async function enterApp(){
   setupRealtimeSync();
   buildTabs();
   renderSosmedBanner();
+  renderSemuaSliderPoster(); // gak di-await -- beranda jangan nunggu poster
   updateSidebarProfile();
   updateNotif();
   if(SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') updateBadgePersetujuan();

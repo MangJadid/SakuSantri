@@ -116,10 +116,12 @@ async function renderDetailOrtu(){
       </div>
     </div>
     ${kontakAdminAsramaHtml(_kbForAsramaO?.asrama_id ?? _kbForAsramaO?.asrama?.id, s.nama)}
+    <div data-poster-slider></div>
     <div class="panel">
       <div class="ph"><h2>${svgIcon('document',16)} Riwayat Transaksi</h2></div>
       <div class="pb">${txHtml}</div>
     </div>`;
+  renderSemuaSliderPoster();
 }
 
 // ===== UANG SYAHRIYAH ORTU =====

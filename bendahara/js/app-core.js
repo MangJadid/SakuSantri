@@ -325,6 +325,7 @@ async function enterApp(){
   adjustTabsStickyPos();
   buildTabs();
   renderSosmedBanner();
+  renderSemuaSliderPoster(); // gak di-await -- beranda jangan nunggu poster
   _suppressBroadcast = true;
   await loadAllData();
   _suppressBroadcast = false;

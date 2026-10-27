@@ -36,6 +36,8 @@ const ALLOWED_TABLES = [
   'riwayat_perubahan_santri'      => ['pk' => 'id',   'upsertKey' => 'id'],
   'push_subscriptions'            => ['pk' => 'id',   'upsertKey' => 'username'],
   'push_notifications'            => ['pk' => 'id',   'upsertKey' => 'id'],
+  'poster_kategori'               => ['pk' => 'id',   'upsertKey' => 'id'],
+  'poster'                        => ['pk' => 'id',   'upsertKey' => 'id'],
 ];
 
 // Relasi embedded select yang didukung, mis. .select('*,kobong(id,nama)')
