@@ -214,6 +214,10 @@ async function loadAllData(){
 }
 
 async function _loadAllDataCore(){
+  // Admin/pengawas: transaksi gak butuh data lain -- mulai unduh duluan, barengan
+  // sama yang lain (ini bagian paling berat, ribuan baris).
+  const txAwal = (SESSION.role==='super'||SESSION.role==='pengawas') ? loadTxForRole() : null;
+  txAwal?.catch(()=>{}); // error tetap dilempar saat di-await di bawah
   // Load asrama & kobong DULU — karena loadSantriForRole butuh ALL_KOBONG sudah terisi
   const [as, ks, ps] = await Promise.all([
     SB.from('asrama').select('*').order('nama'),
@@ -226,8 +230,8 @@ async function _loadAllDataCore(){
   // Baru load santri (butuh ALL_KOBONG dan ALL_ASRAMA sudah terisi)
   ALL_SANTRI = await loadSantriForRole();
 
-  // Baru load transaksi (butuh ALL_SANTRI sudah terisi)
-  ALL_TX = await loadTxForRole();
+  // Baru load transaksi (butuh ALL_SANTRI sudah terisi, kecuali admin/pengawas)
+  ALL_TX = await (txAwal || loadTxForRole());
 
   populateKobongSelects();
   populateWaliSelects();
@@ -333,16 +337,20 @@ async function loadSantriForRole(){
 // kepotong begitu jumlah transaksi tembus limit (mis. cuma kebawa dari
 // tanggal tertentu ke atas). Pola sama persis dengan export-backup.js.
 async function fetchAllTx(queryBuilder){
-  const PAGE = 1000;
+  const PAGE = 1000, PARALEL = 5;
+  // Ambil 5 halaman sekaligus (bukan antre satu-satu) -- 6.000+ transaksi jadi
+  // 2 kali bolak-balik ke server, bukan 7.
   let all=[], from=0;
   while(true){
-    const {data, error} = await queryBuilder().range(from, from+PAGE-1);
-    if(error) throw error;
-    all = all.concat(data||[]);
-    if(!data || data.length < PAGE) break;
-    from += PAGE;
+    const hasil = await Promise.all(Array.from({length:PARALEL}, (_,i)=>
+      queryBuilder().range(from+i*PAGE, from+(i+1)*PAGE-1)));
+    for(const {data, error} of hasil){
+      if(error) throw error;
+      all = all.concat(data||[]);
+      if(!data || data.length < PAGE) return all;
+    }
+    from += PARALEL*PAGE;
   }
-  return all;
 }
 
 async function loadTxForRole(){
