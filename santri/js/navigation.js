@@ -21,6 +21,7 @@ const SIDEBAR_GROUPS = [
   { label:'Sistem', items:[
     {id:'persetujuan', label:'Persetujuan', icon:'check-circle', badge:'badge-persetujuan-sb'},
     {id:'notifikasi', label:'Notifikasi', icon:'bell', badge:'badge-notifikasi-tab-sb'},
+    {id:'adminasrama', label:'Admin', icon:'shield'},
     {id:'pengaturan', label:'Pengaturan', icon:'settings'},
   ]},
 ];
@@ -49,7 +50,7 @@ function buildSidebar(){
 const TAB_TITLES = {
   dashboard:'Dashboard', santri:'Santri', massal:'Transaksi', riwayat:'Riwayat',
   kobong:'Kobong', naikkelas:'Naik Kelas', pengurus:'Pengurus', persetujuan:'Persetujuan',
-  notifikasi:'Notifikasi', monitor:'Monitor', pengaturan:'Pengaturan',
+  notifikasi:'Notifikasi', monitor:'Monitor', pengaturan:'Pengaturan', adminasrama:'Admin Asrama',
   detail:'Beranda', syahriyah:'Uang Syahriyah', profil:'Profil Santri',
 };
 
@@ -88,6 +89,7 @@ const MENU_LAINNYA = [
   {id:'persetujuan', label:'Persetujuan', icon:svgIcon('check-circle'), c:'g'},
   {id:'notifikasi', label:'Notifikasi', icon:svgIcon('bell'), c:'gg'},
   {id:'monitor', label:'Monitor', icon:svgIcon('eye'), c:'b'},
+  {id:'adminasrama', label:'Admin', icon:svgIcon('shield'), c:'p'},
   {id:'pengaturan', label:'Pengaturan', icon:svgIcon('settings'), c:'r'},
 ];
 
@@ -121,6 +123,7 @@ function buildTabs(){
       t += tab('monitor',svgIcon('eye',14)+' Monitor');
     }
     if(SESSION.role==='super'){
+      t += tab('adminasrama',svgIcon('shield',14)+' Admin');
       t += tab('pengaturan',svgIcon('settings',14)+' Pengaturan');
     }
   }
@@ -192,7 +195,7 @@ function tab(id, label){
 
 function showTab(id){
   // Cegah akses tab yang tidak sesuai role
-  if(id==='pengaturan' && SESSION && SESSION.role!=='super') return;
+  if((id==='pengaturan'||id==='adminasrama') && SESSION && SESSION.role!=='super') return;
   if((id==='monitor'||id==='pengurus') && SESSION && SESSION.role!=='super' && SESSION.role!=='pengawas') return;
   if((id==='kobong'||id==='naikkelas'||id==='persetujuan') && SESSION && SESSION.role!=='super' && SESSION.role!=='sekretaris' && SESSION.role!=='sekretariat' && SESSION.role!=='pengawas') return;
   if(['dashboard','santri','massal','riwayat','kobong','pengurus','monitor','naikkelas','pengaturan','persetujuan'].includes(id) && SESSION && SESSION.role==='ortu') return;
@@ -223,6 +226,7 @@ function showTab(id){
   if(id==='persetujuan') prsShowSub('pending');
   if(id==='syahriyah') renderSyahriyahOrtu();
   if(id==='profil') renderProfilOrtu();
+  if(id==='adminasrama') renderAdminAsrama();
   if(id==='pengaturan'){
     if(SESSION.role==='super'){
       // Inject konten pengaturan jika belum ada

@@ -324,6 +324,7 @@ async function enterApp(){
   buildDapurBar();
   adjustTabsStickyPos();
   buildTabs();
+  renderSosmedBanner();
   _suppressBroadcast = true;
   await loadAllData();
   _suppressBroadcast = false;

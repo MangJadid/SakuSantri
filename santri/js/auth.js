@@ -175,6 +175,7 @@ async function enterApp(){
   if(dataTimedOut) toast('Sebagian data lambat dimuat, koneksi mungkin lambat. Tarik layar ke bawah untuk muat ulang.', false);
   setupRealtimeSync();
   buildTabs();
+  renderSosmedBanner();
   updateSidebarProfile();
   updateNotif();
   if(SESSION.role==='super'||SESSION.role==='sekretaris'||SESSION.role==='sekretariat') updateBadgePersetujuan();

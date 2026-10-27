@@ -41,7 +41,12 @@ async function renderDetailOrtu(){
   const k=s.kobong?.nama||getKobongNama(s.kobong_id)||'Belum ditentukan';
   const _dapurMapO={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
   const dapurValO = _dapurMapO[s.dapur_id] || s.dapur_id || '—';
-  const _kbForAsramaO = ALL_KOBONG.find(x=>x.id==s.kobong_id);
+  let _kbForAsramaO = ALL_KOBONG.find(x=>x.id==s.kobong_id);
+  // Jika kobong belum ada (ortu), fetch langsung dari DB -- butuh asrama-nya buat kontak admin
+  if(!_kbForAsramaO && s.kobong_id){
+    const {data:kbData} = await SB.from('kobong').select('id,nama,asrama_id,asrama(id,nama)').eq('id',s.kobong_id).maybeSingle();
+    if(kbData) _kbForAsramaO = kbData;
+  }
   const asramaValO = _kbForAsramaO?.asrama?.nama || '—';
   const kelasValO = s.kelas || '—';
   // Hitung saldo dari transaksi (SUMBER KEBENARAN)
@@ -110,6 +115,7 @@ async function renderDetailOrtu(){
         <div style="font-size:18px;font-weight:700;color:var(--red);margin-top:6px">${rp(totalKeluarO)}</div>
       </div>
     </div>
+    ${kontakAdminAsramaHtml(_kbForAsramaO?.asrama_id ?? _kbForAsramaO?.asrama?.id, s.nama)}
     <div class="panel">
       <div class="ph"><h2>${svgIcon('document',16)} Riwayat Transaksi</h2></div>
       <div class="pb">${txHtml}</div>
