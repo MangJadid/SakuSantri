@@ -47,8 +47,12 @@ function renderAdminAsrama(){
       <div class="info-box" style="margin-bottom:14px">Muncul sebagai banner <strong>Follow Media Sosial</strong> di paling bawah setiap halaman, di app Saku Santri &amp; Bendahara, untuk semua pengguna. Isi link lengkap atau cukup <strong>@username</strong>. Kosongkan yang tidak dipakai.</div>
       ${SOSMED_PLATFORM.map(p=>`<div class="fg" style="margin-bottom:12px"><label>${p.label}</label><input type="url" class="sosmed-input" data-key="${p.key}" placeholder="@username atau ${p.base.replace('https://','')}..." value="${escAdm(sosmed[p.key])}"></div>`).join('')}
     </div></div>
+    <div class="panel"><div class="ph"><h2>${svgIcon('message-square',16)} Nomor Dukungan &amp; Masukan</h2></div><div class="pb">
+      <div class="info-box" style="margin-bottom:14px">Nomor WA Kang Admin untuk menerima <strong>masukan &amp; laporan</strong> tentang aplikasi dari orang tua (menu <strong>Lainnya → Dukungan &amp; Masukan</strong>). Terpisah dari nomor admin asrama di bawah.</div>
+      <div class="fg" style="margin:0"><label for="wa-masukan">No WhatsApp</label><input type="tel" id="wa-masukan" inputmode="tel" maxlength="20" placeholder="0812xxxxxxx" value="${escAdm(CONFIG.wa_masukan ? '0'+String(CONFIG.wa_masukan).slice(2) : '')}"></div>
+    </div></div>
     <h3 style="font-family:'Lora',serif;font-size:17px;color:var(--green);margin:22px 0 10px">${svgIcon('smartphone',16)} Nomor WA Admin Asrama</h3>
-    <div class="info-box" style="margin-bottom:16px">Atur nomor WhatsApp admin untuk tiap asrama. Orang tua santri akan melihat tombol <strong>Hubungi Admin Asrama</strong> di beranda mereka, berisi nomor admin dari asrama anaknya saja.</div>
+    <div class="info-box" style="margin-bottom:16px">Atur nomor WhatsApp admin untuk tiap asrama. Di <strong>beranda</strong>, orang tua melihat nomor admin asrama anaknya; di menu <strong>Lainnya</strong>, mereka bisa melihat nomor admin semua asrama.</div>
     ${panels || `<div class="empty"><span class="ei">🏛️</span><p>Belum ada asrama. Tambahkan dulu di menu Kobong.</p></div>`}
     <button class="btn btn-p" onclick="simpanAdminAsrama()">${svgIcon('save',14)} Simpan Semua</button>`;
 }
@@ -74,6 +78,9 @@ async function simpanAdminAsrama(){
     if(url===null){ inp.focus(); toast(`Link "${inp.value.trim()}" tidak valid!`, false); return; }
     if(url) sosmed[inp.dataset.key] = url;
   }
+  const inpMasukan = document.getElementById('wa-masukan');
+  const waMasukan = inpMasukan.value.trim() ? normNoWaAdmin(inpMasukan.value) : '';
+  if(waMasukan===null){ inpMasukan.focus(); toast(`Nomor WA "${inpMasukan.value.trim()}" tidak valid!`, false); return; }
   const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
   showLoadingOverlay('Menyimpan pengaturan admin...','Data sedang disimpan ke server.');
   setLoading(true, _lBtn);
@@ -82,11 +89,13 @@ async function simpanAdminAsrama(){
     const res = await Promise.all([
       SB.from('settings').upsert({key:'wa_admin_asrama', value}),
       SB.from('settings').upsert({key:'sosmed_pondok', value:valueSosmed}),
+      SB.from('settings').upsert({key:'wa_masukan', value:waMasukan}),
     ]);
     const err = res.find(r=>r.error)?.error;
     if(err) throw err;
     CONFIG.wa_admin_asrama = value;
     CONFIG.sosmed_pondok = valueSosmed;
+    CONFIG.wa_masukan = waMasukan;
     localStorage.setItem('siujang_cfg', JSON.stringify(CONFIG));
     toast('✅ Pengaturan admin disimpan!');
     renderAdminAsrama();
@@ -96,17 +105,34 @@ async function simpanAdminAsrama(){
   }finally{ setLoading(false, _lBtn); }
 }
 
+function tombolWaAdmin(list, namaSantri){
+  const pesan = encodeURIComponent(`Assalamu'alaikum, saya orang tua/wali dari ${namaSantri||'santri'}.`);
+  return list.map(it=>`<a class="btn btn-wa" href="https://wa.me/${escAdm(it.no)}?text=${pesan}" target="_blank" rel="noopener" style="justify-content:space-between;text-decoration:none">
+        <span>${escAdm(it.nama)}</span><span style="font-family:'DM Mono',monospace;font-size:12px">0${escAdm(String(it.no).slice(2))}</span>
+      </a>`).join('');
+}
+
 // Kartu buat beranda ortu -- kosong kalau asrama anaknya belum punya nomor admin
 function kontakAdminAsramaHtml(asramaId, namaSantri){
   const list = getWaAdminAsrama()[asramaId] || [];
   if(!list.length) return '';
-  const pesan = encodeURIComponent(`Assalamu'alaikum, saya orang tua/wali dari ${namaSantri||'santri'}.`);
   return `<div class="panel" style="margin-bottom:18px">
     <div class="ph"><h2>${svgIcon('smartphone',16)} Hubungi Admin Asrama</h2></div>
-    <div class="pb" style="display:flex;flex-direction:column;gap:10px">
-      ${list.map(it=>`<a class="btn btn-wa" href="https://wa.me/${escAdm(it.no)}?text=${pesan}" target="_blank" rel="noopener" style="justify-content:space-between;text-decoration:none">
-        <span>${escAdm(it.nama)}</span><span style="font-family:'DM Mono',monospace;font-size:12px">0${escAdm(String(it.no).slice(2))}</span>
-      </a>`).join('')}
-    </div>
+    <div class="pb" style="display:flex;flex-direction:column;gap:10px">${tombolWaAdmin(list, namaSantri)}</div>
+  </div>`;
+}
+
+// Menu Lainnya ortu -- nomor admin SEMUA asrama, asrama anaknya paling atas; '' kalau belum ada nomor sama sekali
+function kontakSemuaAsramaHtml(asramaList, asramaAnakId, namaSantri){
+  const data = getWaAdminAsrama();
+  const ada = asramaList.filter(a=>(data[a.id]||[]).length)
+    .sort((a,b)=>(String(b.id)===String(asramaAnakId)) - (String(a.id)===String(asramaAnakId)));
+  if(!ada.length) return '';
+  return `<div class="panel" style="margin-bottom:18px">
+    <div class="ph"><h2>${svgIcon('smartphone',16)} Admin Asrama</h2></div>
+    <div class="pb" style="display:flex;flex-direction:column;gap:18px">${ada.map(a=>`<div>
+      <div style="font-size:12.5px;font-weight:700;color:var(--text-m);margin-bottom:8px">${escAdm(a.nama)}${String(a.id)===String(asramaAnakId)?' <span style="font-weight:600;color:var(--green-l)">· asrama anak Anda</span>':''}</div>
+      <div style="display:flex;flex-direction:column;gap:8px">${tombolWaAdmin(data[a.id], namaSantri)}</div>
+    </div>`).join('')}</div>
   </div>`;
 }

@@ -32,21 +32,11 @@ async function updateBadgeSyahriyah(){
 async function renderDetailOrtu(){
   const s=SESSION.santri;
   const kritis=parseInt(CONFIG.kritis_batas)||50000;
-  // Ambil transaksi via RPC (PIN diverifikasi server-side)
-  let txs = [];
-  const { data: txRpc } = await SB.rpc('get_transaksi_ortu', {
-    p_santri_id: String(s.id), p_pin: SESSION.pin||''
-  });
-  if(txRpc?.data) txs = txRpc.data;
+  const txs = await ambilTxOrtu();
   const k=s.kobong?.nama||getKobongNama(s.kobong_id)||'Belum ditentukan';
   const _dapurMapO={'dapur_bibi':'Dapur Bibi','dapur_ummi':'Dapur Ummi','dapur_buonih':'Dapur Bu Onih'};
   const dapurValO = _dapurMapO[s.dapur_id] || s.dapur_id || '—';
-  let _kbForAsramaO = ALL_KOBONG.find(x=>x.id==s.kobong_id);
-  // Jika kobong belum ada (ortu), fetch langsung dari DB -- butuh asrama-nya buat kontak admin
-  if(!_kbForAsramaO && s.kobong_id){
-    const {data:kbData} = await SB.from('kobong').select('id,nama,asrama_id,asrama(id,nama)').eq('id',s.kobong_id).maybeSingle();
-    if(kbData) _kbForAsramaO = kbData;
-  }
+  const _kbForAsramaO = await kobongOrtu();
   const asramaValO = _kbForAsramaO?.asrama?.nama || '—';
   const kelasValO = s.kelas || '—';
   // Hitung saldo dari transaksi (SUMBER KEBENARAN)
@@ -55,25 +45,6 @@ async function renderDetailOrtu(){
   const saldoRealO   = totalMasukO - totalKeluarO;
   const sc=saldoRealO<0?'s-minus':saldoRealO===0?'s-nol':saldoRealO<kritis?'s-warn':'s-ok';
 
-  let txHtml=`<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p><p style="font-size:12px;color:var(--text-l);margin-top:6px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6">Data uang jajan santri akan muncul jika uang jajan santri dititipkan kepada pengurus kobong.</p></div>`;
-  if(txs&&txs.length){
-    let running=0;
-    const ws=[...txs].reverse().map(t=>{ running+=t.jenis==='masuk'?t.nominal:-t.nominal; return {...t,running}; }).reverse();
-    txHtml=`<div class="tw"><table>
-      <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead>
-      <tbody>`;
-    ws.forEach(t=>{
-      const sc2=t.running<0?'s-minus':t.running===0?'s-nol':t.running<kritis?'s-warn':'s-ok';
-      txHtml+=`<tr>
-        <td style="font-size:11.5px;color:var(--text-l);white-space:nowrap">${fmtTanggal(t.tanggal)}</td>
-        <td style="font-weight:500">${t.keterangan||'—'}</td>
-        <td class="s-ok dh-nominal">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>
-        <td class="dh-nominal" style="color:var(--red)">${t.jenis==='keluar'?rp(t.nominal):'—'}</td>
-        <td><strong class="${sc2} dh-nominal">${t.running<0?'−':''} ${rp(t.running)}</strong></td>
-      </tr>`;
-    });
-    txHtml+=`</tbody></table></div>`;
-  }
 
   document.getElementById('detail-content').innerHTML=`
     <div style="background:linear-gradient(160deg,var(--green-m),var(--green));border-radius:20px;overflow:hidden">
@@ -116,12 +87,103 @@ async function renderDetailOrtu(){
       </div>
     </div>
     ${kontakAdminAsramaHtml(_kbForAsramaO?.asrama_id ?? _kbForAsramaO?.asrama?.id, s.nama)}
-    <div data-poster-slider></div>
-    <div class="panel">
+    <div data-poster-slider></div>`;
+  renderSemuaSliderPoster();
+}
+
+// Transaksi ortu lewat RPC (PIN diverifikasi server-side) -- dipakai Beranda & tab Transaksi
+async function ambilTxOrtu(){
+  const s = SESSION.santri;
+  const { data: txRpc } = await SB.rpc('get_transaksi_ortu', {
+    p_santri_id: String(s.id), p_pin: SESSION.pin||''
+  });
+  return txRpc?.data || [];
+}
+
+// Kobong (+asrama) anak -- ALL_KOBONG kosong buat ortu, jadi fetch langsung dari DB
+async function kobongOrtu(){
+  const s = SESSION.santri;
+  const kb = ALL_KOBONG.find(x=>x.id==s.kobong_id);
+  if(kb || !s.kobong_id) return kb;
+  const {data} = await SB.from('kobong').select('id,nama,asrama_id,asrama(id,nama)').eq('id',s.kobong_id).maybeSingle();
+  return data || undefined;
+}
+
+// ===== TAB TRANSAKSI ORTU (dulu riwayatnya ada di Beranda) =====
+async function renderTransaksiOrtu(){
+  const el = document.getElementById('txortu-content');
+  if(!el) return;
+  if(!el.innerHTML) el.innerHTML = '<div class="empty"><p>Memuat transaksi...</p></div>';
+  const txs = await ambilTxOrtu();
+  const kritis=parseInt(CONFIG.kritis_batas)||50000;
+  let txHtml=`<div class="empty"><span class="ei">📝</span><p>Belum ada transaksi</p><p style="font-size:12px;color:var(--text-l);margin-top:6px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6">Data uang jajan santri akan muncul jika uang jajan santri dititipkan kepada pengurus kobong.</p></div>`;
+  if(txs&&txs.length){
+    let running=0;
+    const ws=[...txs].reverse().map(t=>{ running+=t.jenis==='masuk'?t.nominal:-t.nominal; return {...t,running}; }).reverse();
+    txHtml=`<div class="tw"><table>
+      <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead>
+      <tbody>`;
+    ws.forEach(t=>{
+      const sc2=t.running<0?'s-minus':t.running===0?'s-nol':t.running<kritis?'s-warn':'s-ok';
+      txHtml+=`<tr>
+        <td style="font-size:11.5px;color:var(--text-l);white-space:nowrap">${fmtTanggal(t.tanggal)}</td>
+        <td style="font-weight:500">${t.keterangan||'—'}</td>
+        <td class="s-ok dh-nominal">${t.jenis==='masuk'?rp(t.nominal):'—'}</td>
+        <td class="dh-nominal" style="color:var(--red)">${t.jenis==='keluar'?rp(t.nominal):'—'}</td>
+        <td><strong class="${sc2} dh-nominal">${t.running<0?'−':''} ${rp(t.running)}</strong></td>
+      </tr>`;
+    });
+    txHtml+=`</tbody></table></div>`;
+  }
+  el.innerHTML = `<div class="panel">
       <div class="ph"><h2>${svgIcon('document',16)} Riwayat Transaksi</h2></div>
       <div class="pb">${txHtml}</div>
     </div>`;
-  renderSemuaSliderPoster();
+}
+
+// ===== TAB LAINNYA ORTU: kontak admin asrama, media sosial, keluar =====
+async function renderLainnyaOrtu(){
+  const el = document.getElementById('lainnya-content');
+  if(!el) return;
+  const s = SESSION.santri;
+  const kb = await kobongOrtu();
+  let asramaList = ALL_ASRAMA;
+  if(!asramaList.length){ const {data} = await SB.from('asrama').select('id,nama').order('nama'); asramaList = data||[]; }
+  const kontak = kontakSemuaAsramaHtml(asramaList, kb?.asrama_id ?? kb?.asrama?.id, s.nama)
+    || `<div class="panel" style="margin-bottom:18px"><div class="ph"><h2>${svgIcon('smartphone',16)} Admin Asrama</h2></div>
+        <div class="pb"><div style="font-size:13px;color:var(--text-l)">Nomor admin asrama belum diatur oleh pondok.</div></div></div>`;
+  const adaSosmed = SOSMED_PLATFORM.some(p=>getSosmedPondok()[p.key]);
+  el.innerHTML = `${kontak}
+    <div class="panel"><div class="pb" style="padding:6px 8px">
+      ${adaSosmed ? `<button class="acc-menu-item" onclick="bukaSosmedSheet()">
+        <span class="acc-menu-ic">${svgIcon('link')}</span>
+        <span class="acc-menu-txt"><b>Media Sosial Pondok</b><span>Instagram, Facebook, YouTube, dll.</span></span>
+        <span class="acc-menu-chev">›</span>
+      </button>` : ''}
+      <button class="acc-menu-item" onclick="dukunganOrtu()">
+        <span class="acc-menu-ic">${svgIcon('message-square')}</span>
+        <span class="acc-menu-txt"><b>Dukungan &amp; Masukan</b><span>Laporkan masalah atau beri saran ke Kang Admin</span></span>
+        <span class="acc-menu-chev">›</span>
+      </button>
+      <button class="acc-menu-item" onclick="keluarOrtu()">
+        <span class="acc-menu-ic" style="color:var(--red)">${svgIcon('log-out')}</span>
+        <span class="acc-menu-txt"><b style="color:var(--red)">Keluar dari Akun</b><span>Masuk lagi pakai nama santri &amp; PIN</span></span>
+        <span class="acc-menu-chev">›</span>
+      </button>
+    </div></div>`;
+}
+
+// Nomor khusus masukan (diatur Kang Admin di menu Admin, terpisah dari nomor asrama);
+// kalau belum diisi: WA di profil Kang Admin, lalu nomor Bantuan yang sudah ada
+function dukunganOrtu(){
+  let no = normNoWaAdmin(CONFIG.wa_masukan);
+  if(!no){ try{ no = normNoWaAdmin(JSON.parse(CONFIG.super_profil||'{}').no_wa); }catch(e){} }
+  const pesan = `Assalamu'alaikum Kang Admin, saya orang tua/wali dari ${SESSION.santri?.nama||'santri'}. Saya ingin menyampaikan masukan/laporan tentang aplikasi Saku Santri:\n\n`;
+  window.open(`https://wa.me/${no||'6287789179398'}?text=${encodeURIComponent(pesan)}`, '_blank');
+}
+
+function keluarOrtu(){
+  konfirm('Keluar dari akun orang tua? Untuk masuk lagi perlu nama santri &amp; PIN.', ()=>doLogout(), 'lainnya', 'Ya, Keluar');
 }
 
 // ===== UANG SYAHRIYAH ORTU =====
