@@ -11,8 +11,8 @@ function openModalImport(){
   _importExcelRows=[];
 }
 
-function downloadTemplateExcel(){
-  if(typeof XLSX==='undefined'){ toast('Library XLSX belum dimuat!',false); return; }
+async function downloadTemplateExcel(){
+  try{ await loadXLSX(); }catch(e){ toast(e.message,false); return; }
   const ws = XLSX.utils.aoa_to_sheet([
     ['nama','asrama','kobong','kelas','pin','no_wa','kecamatan','kota','catatan'],
     ['Ahmad Fauzi','Al-Badri','Al-Badri 1','7','1234','081234567890','Cibeureum','Kab. Ciamis',''],
@@ -34,8 +34,9 @@ function previewImportExcel(input){
   btn.disabled=true; btn.style.opacity='.5';
 
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     try {
+      await loadXLSX();
       const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
       const ws = wb.Sheets[wb.SheetNames[0]];
       const allRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});

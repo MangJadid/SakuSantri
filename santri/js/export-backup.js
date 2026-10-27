@@ -18,6 +18,7 @@ async function exportLengkap(){
   const btn = event?.target;
   if(btn){ btn.textContent='⏳ Memproses...'; btn.disabled=true; }
   try{
+    await loadXLSX();
     const bulan = CONFIG.bulan_aktif||today();
     const isSuper = SESSION.role==='super';
     const username = SESSION.user?.username||SESSION.user?.nama||'Pengurus';
@@ -247,8 +248,9 @@ function exportExcelRiwayat(){
   exportXLSX(rows,`Riwayat_Transaksi`);
 }
 
-function exportXLSX(rows, nama){
+async function exportXLSX(rows, nama){
   if(!rows.length){ toast('Tidak ada data untuk diexport!',false); return; }
+  try{ await loadXLSX(); }catch(e){ toast(e.message,false); return; }
   const ws=XLSX.utils.json_to_sheet(rows);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,nama.substring(0,31));

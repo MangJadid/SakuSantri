@@ -47,6 +47,22 @@ function hideLoadingScreen(){
   setTimeout(()=>{ el.style.display='none'; }, 350);
 }
 
+// ===== LIBRARY EXCEL: baru diunduh saat Export/Import dipakai =====
+// Sengaja tidak dimuat di <head> -- ukurannya 880 KB dan bikin layar loading lama
+// (apalagi sinyal lemah), padahal cuma kepakai pas Export/Import.
+let _xlsxPromise = null;
+function loadXLSX(){
+  if(window.XLSX) return Promise.resolve();
+  if(!_xlsxPromise) _xlsxPromise = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = resolve;
+    s.onerror = ()=>{ _xlsxPromise = null; s.remove(); reject(new Error('Library Excel gagal dimuat, periksa koneksi lalu coba lagi')); };
+    document.head.appendChild(s);
+  });
+  return _xlsxPromise;
+}
+
 // ===== SHA-256 HASHING (Web Crypto API) =====
 async function sha256(str){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));

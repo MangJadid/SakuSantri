@@ -75,21 +75,18 @@ function withTimeout(promise, ms){
         // Dikasih batas waktu juga -- kalau nyangkut, JANGAN anggap ditolak (bisa
         // salah nge-logout user yang sah cuma gara-gara jaringan lambat). Anggap
         // saja belum sempat kecek, lanjutkan sesi yang tersimpan.
-        if(SESSION.role!=='super'){
-          const {data:pg, timedOut} = await withTimeout(
-            SB.from('pengurus').select('force_logout,is_blocked').eq('id',SESSION.user.id).single(), 8000
-          );
-          if(!timedOut && (pg?.force_logout || pg?.is_blocked)) ditolak = true;
-        }
-        if(!ditolak){
-          const sid = getDeviceSessionId();
-          const {data:ses, timedOut} = await withTimeout(
-            SB.from('login_sessions').select('revoked').eq('session_id', sid).maybeSingle(), 8000
-          );
-          if(!timedOut && ses?.revoked){
-            ditolak = true;
-            SB.from('login_sessions').delete().eq('session_id', sid).then(()=>{}).catch(()=>{}); // bersihkan barisnya sendiri
-          }
+        // Dua cek dijalankan bareng (bukan gantian) biar layar loading lebih cepat.
+        const sid = getDeviceSessionId();
+        const [pgRes, sesRes] = await Promise.all([
+          SESSION.role!=='super'
+            ? withTimeout(SB.from('pengurus').select('force_logout,is_blocked').eq('id',SESSION.user.id).single(), 8000)
+            : {},
+          withTimeout(SB.from('login_sessions').select('revoked').eq('session_id', sid).maybeSingle(), 8000)
+        ]);
+        if(!pgRes.timedOut && (pgRes.data?.force_logout || pgRes.data?.is_blocked)) ditolak = true;
+        if(!sesRes.timedOut && sesRes.data?.revoked){
+          ditolak = true;
+          SB.from('login_sessions').delete().eq('session_id', sid).then(()=>{}).catch(()=>{}); // bersihkan barisnya sendiri
         }
       }catch(e){}
     }

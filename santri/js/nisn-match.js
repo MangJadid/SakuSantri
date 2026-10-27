@@ -63,8 +63,9 @@ function previewCocokkanNisn(input) {
   _nisnRows = [];
 
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     try {
+      await loadXLSX();
       const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const allRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
