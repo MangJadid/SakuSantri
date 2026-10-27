@@ -62,12 +62,11 @@ function pasangCssPoster(){
     .pst-head h3{display:flex;align-items:center;gap:8px;margin:0;font-size:15px;font-weight:700;color:var(--text,#1d2b24)}
     .pst-head h3 i{width:4px;height:16px;border-radius:2px;background:var(--gold-l,#c9a227)}
     .pst-semua{border:0;background:none;padding:8px 4px;font:inherit;font-size:13px;font-weight:700;color:var(--green-l,#2f6f4f);cursor:pointer}
-    .pst-track{position:relative;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
-      -webkit-overflow-scrolling:touch;padding:4px calc((100% - min(74%,250px))/2) 10px}
+    .pst-track{--pst-w:min(56vw,220px);position:relative;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;padding:8px calc(50% - var(--pst-w)/2) 18px}
     .pst-track::-webkit-scrollbar{display:none}
-    .pst-kartu{flex:0 0 min(74%,250px);scroll-snap-align:center;aspect-ratio:4/5;border:0;padding:0;border-radius:16px;overflow:hidden;
-      background:#e7ece8;cursor:pointer;box-shadow:0 6px 18px rgba(18,53,40,.14);transition:transform .2s ease-out}
-    .pst-kartu:active{transform:scale(.97)}
+    .pst-kartu{position:relative;flex:0 0 var(--pst-w);scroll-snap-align:center;aspect-ratio:4/5;border:0;padding:0;border-radius:16px;overflow:hidden;
+      background:#e7ece8;cursor:pointer;box-shadow:0 8px 22px rgba(18,53,40,.2);will-change:transform,opacity}
     .pst-kartu:focus-visible{outline:3px solid var(--gold-l,#c9a227);outline-offset:2px}
     .pst-kartu img{width:100%;height:100%;object-fit:cover;display:block}
     .pst-dots{display:flex;justify-content:center;gap:6px;margin-top:4px}
@@ -136,16 +135,23 @@ async function renderSliderPoster(el){
   const kartu = [...track.children], dots = [...el.querySelectorAll('.pst-dots span')];
   let idx = 0, jedaSampai = 0, raf = 0;
   const keKartu = i => track.scrollTo({left: kartu[i].offsetLeft - (track.clientWidth - kartu[i].clientWidth)/2, behavior:'smooth'});
-  track.addEventListener('scroll', ()=>{
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(()=>{
-      const tengah = track.scrollLeft + track.clientWidth/2;
-      let terdekat = 0, jarak = Infinity;
-      kartu.forEach((k,i)=>{ const d = Math.abs(k.offsetLeft + k.clientWidth/2 - tengah); if(d<jarak){ jarak=d; terdekat=i; } });
-      idx = terdekat;
-      dots.forEach((d,i)=>d.classList.toggle('on', i===idx));
+  // Efek galeri: kartu tengah besar & terang, kiri-kanan mengecil & redup -- ikut jari saat digeser
+  const aturEfek = ()=>{
+    const tengah = track.scrollLeft + track.clientWidth/2;
+    let terdekat = 0, jarak = Infinity;
+    kartu.forEach((k,i)=>{
+      const d = Math.abs(k.offsetLeft + k.clientWidth/2 - tengah);
+      if(d<jarak){ jarak=d; terdekat=i; }
+      const r = Math.min(1, d/k.clientWidth); // 0 = pas di tengah, 1 = tetangga
+      k.style.transform = `scale(${1 - .18*r})`;
+      k.style.opacity = 1 - .45*r;
+      k.style.zIndex = r < .5 ? 2 : 1;
     });
-  }, {passive:true});
+    idx = terdekat;
+    dots.forEach((d,i)=>d.classList.toggle('on', i===idx));
+  };
+  track.addEventListener('scroll', ()=>{ cancelAnimationFrame(raf); raf = requestAnimationFrame(aturEfek); }, {passive:true});
+  requestAnimationFrame(aturEfek);
   // Digeser manual -> auto-slide berhenti dulu 8 detik biar gak rebutan sama jari
   ['pointerdown','touchstart','wheel','focusin'].forEach(ev=>track.addEventListener(ev, ()=>{ jedaSampai = Date.now()+8000; }, {passive:true}));
   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
