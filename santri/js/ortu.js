@@ -152,7 +152,7 @@ async function renderLainnyaOrtu(){
   const kontak = kontakSemuaAsramaHtml(asramaList, kb?.asrama_id ?? kb?.asrama?.id, s.nama)
     || `<div class="panel" style="margin-bottom:18px"><div class="ph"><h2>${svgIcon('smartphone',16)} Admin Asrama</h2></div>
         <div class="pb"><div style="font-size:13px;color:var(--text-l)">Nomor admin asrama belum diatur oleh pondok.</div></div></div>`;
-  const adaSosmed = SOSMED_PLATFORM.some(p=>getSosmedPondok()[p.key]);
+  const adaSosmed = getSosmedPondok().length > 0;
   el.innerHTML = `${kontak}
     <div class="panel"><div class="pb" style="padding:6px 8px">
       ${adaSosmed ? `<button class="acc-menu-item" onclick="bukaSosmedSheet()">

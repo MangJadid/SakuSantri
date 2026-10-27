@@ -28,6 +28,19 @@ function barisWaAdmin(asramaId, item){
   </div>`;
 }
 
+// Satu baris = satu akun media sosial (boleh banyak akun per platform, mis. TikTok tiap asrama)
+function barisSosmed(item){
+  return `<div class="sosmed-baris-admin" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed var(--border)">
+    <div class="fg" style="flex:0 1 130px;margin:0"><label>Platform</label><select class="sosmed-platform">${SOSMED_PLATFORM.map(p=>`<option value="${p.key}" ${item?.platform===p.key?'selected':''}>${p.label}</option>`).join('')}</select></div>
+    <div class="fg" style="flex:1 1 150px;margin:0"><label>Judul</label><input type="text" class="sosmed-nama" maxlength="50" placeholder="mis. TikTok Asrama Ummi" value="${escAdm(item?.nama)}"></div>
+    <div class="fg" style="flex:2 1 180px;margin:0"><label>Link / @username</label><input type="url" class="sosmed-url" placeholder="@username atau link lengkap" value="${escAdm(item?.url)}"></div>
+    <button class="btn btn-d btn-sm" onclick="this.closest('.sosmed-baris-admin').remove()" aria-label="Hapus akun">${svgIcon('trash',14)}</button>
+  </div>`;
+}
+function tambahBarisSosmed(){
+  document.getElementById('sosmed-list')?.insertAdjacentHTML('beforeend', barisSosmed(null));
+}
+
 function tambahBarisWaAdmin(asramaId){
   document.getElementById('wa-admin-list-'+asramaId)?.insertAdjacentHTML('beforeend', barisWaAdmin(asramaId, null));
 }
@@ -41,11 +54,11 @@ function renderAdminAsrama(){
       <div id="wa-admin-list-${a.id}">${(data[a.id]||[]).map(it=>barisWaAdmin(a.id, it)).join('')}</div>
       <button class="btn btn-b btn-sm" onclick="tambahBarisWaAdmin('${a.id}')">${svgIcon('plus',14)} Tambah Nomor</button>
     </div></div>`).join('');
-  const sosmed = getSosmedPondok();
   sec.innerHTML = `
     <div class="panel"><div class="ph"><h2>${svgIcon('link',16)} Media Sosial Pondok</h2></div><div class="pb">
-      <div class="info-box" style="margin-bottom:14px">Muncul sebagai banner <strong>Follow Media Sosial</strong> di paling bawah setiap halaman, di app Saku Santri &amp; Bendahara, untuk semua pengguna. Isi link lengkap atau cukup <strong>@username</strong>. Kosongkan yang tidak dipakai.</div>
-      ${SOSMED_PLATFORM.map(p=>`<div class="fg" style="margin-bottom:12px"><label>${p.label}</label><input type="url" class="sosmed-input" data-key="${p.key}" placeholder="@username atau ${p.base.replace('https://','')}..." value="${escAdm(sosmed[p.key])}"></div>`).join('')}
+      <div class="info-box" style="margin-bottom:14px">Muncul sebagai banner <strong>Follow Media Sosial</strong> di paling bawah Beranda (Saku Santri &amp; Bendahara) dan di menu <strong>Lainnya</strong> orang tua. Jumlah akun bebas, satu platform boleh beberapa akun (mis. TikTok tiap asrama). Beri <strong>judul</strong> yang jelas untuk tiap akun, lalu isi link lengkap atau cukup <strong>@username</strong>.</div>
+      <div id="sosmed-list">${getSosmedPondok().map(barisSosmed).join('')}</div>
+      <button class="btn btn-b btn-sm" onclick="tambahBarisSosmed()">${svgIcon('plus',14)} Tambah Akun</button>
     </div></div>
     <div class="panel"><div class="ph"><h2>${svgIcon('message-square',16)} Nomor Dukungan &amp; Masukan</h2></div><div class="pb">
       <div class="info-box" style="margin-bottom:14px">Nomor WA Kang Admin untuk menerima <strong>masukan &amp; laporan</strong> tentang aplikasi dari orang tua (menu <strong>Lainnya → Dukungan &amp; Masukan</strong>). Terpisah dari nomor admin asrama di bawah.</div>
@@ -72,11 +85,17 @@ async function simpanAdminAsrama(){
     }
     (hasil[row.dataset.asrama] = hasil[row.dataset.asrama] || []).push({nama, no});
   }
-  const sosmed = {};
-  for(const inp of document.querySelectorAll('#sec-adminasrama .sosmed-input')){
-    const url = normUrlSosmed(inp.dataset.key, inp.value);
-    if(url===null){ inp.focus(); toast(`Link "${inp.value.trim()}" tidak valid!`, false); return; }
-    if(url) sosmed[inp.dataset.key] = url;
+  const sosmed = [];
+  for(const row of document.querySelectorAll('#sec-adminasrama .sosmed-baris-admin')){
+    const platform = row.querySelector('.sosmed-platform').value;
+    const nama = row.querySelector('.sosmed-nama').value.trim();
+    const inpUrl = row.querySelector('.sosmed-url');
+    const url = normUrlSosmed(platform, inpUrl.value);
+    if(url==='' && !nama) continue; // baris kosong dilewati
+    if(!url){ inpUrl.focus(); toast(url===null ? `Link "${inpUrl.value.trim()}" tidak valid!` : 'Link akun wajib diisi!', false); return; }
+    // Judul wajib -- kalau kosong, beberapa akun TikTok bakal tampil sama-sama "TikTok" di daftar ortu
+    if(!nama){ row.querySelector('.sosmed-nama').focus(); toast('Judul akun wajib diisi, mis. "TikTok Asrama Ummi"!', false); return; }
+    sosmed.push({platform, nama, url});
   }
   const inpMasukan = document.getElementById('wa-masukan');
   const waMasukan = inpMasukan.value.trim() ? normNoWaAdmin(inpMasukan.value) : '';

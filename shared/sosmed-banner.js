@@ -1,6 +1,7 @@
 // ===== BANNER "FOLLOW MEDIA SOSIAL" -- dipakai Saku Santri & Bendahara =====
 // Link diatur Kang Admin di Saku Santri (menu Admin), disimpan di tabel settings
-// key 'sosmed_pondok' sebagai JSON {instagram, facebook, youtube, tiktok, x}.
+// key 'sosmed_pondok' sebagai JSON [{platform, nama, url}, ...] -- jumlah akun tidak dibatasi
+// (mis. TikTok tiap asrama). Format lama {instagram:url,...} tetap terbaca.
 // Banner cuma di paling bawah Beranda (semua role) -- halaman kerja (tabel dll) dibiarkan bersih.
 // Ortu juga bisa buka daftar akunnya dari menu Lainnya.
 // Disembunyikan kalau belum ada link sama sekali.
@@ -23,9 +24,14 @@ function escSosmed(s){
 }
 
 function getSosmedPondok(){
-  try{ const v = JSON.parse(CONFIG.sosmed_pondok||'{}'); return (v && typeof v==='object') ? v : {}; }
-  catch(e){ return {}; }
+  let v;
+  try{ v = JSON.parse(CONFIG.sosmed_pondok||'[]'); }catch(e){ return []; }
+  if(Array.isArray(v)) return v.filter(a=>a && a.url && SOSMED_PLATFORM.some(p=>p.key===a.platform));
+  if(v && typeof v==='object') return SOSMED_PLATFORM.filter(p=>v[p.key]).map(p=>({platform:p.key, nama:p.label, url:v[p.key]}));
+  return [];
 }
+
+function platformSosmed(key){ return SOSMED_PLATFORM.find(p=>p.key===key); }
 
 // "@annur" -> link profil platform itu; "instagram.com/annur" -> https://...
 // Cuma http/https yang lolos (cegah link javascript: dll). '' = kosong, null = tidak valid.
@@ -108,7 +114,8 @@ function renderSosmedBanner(){
   // Beranda ortu = #sec-detail, selain itu (staf Saku Santri & semua akun Bendahara) = #sec-dashboard
   const beranda = document.querySelector(SESSION?.role==='ortu' ? '#sec-detail' : '#sec-dashboard');
   if(!beranda) return;
-  const aktif = SOSMED_PLATFORM.filter(p=>getSosmedPondok()[p.key]);
+  const akun = getSosmedPondok();
+  const aktif = SOSMED_PLATFORM.filter(p=>akun.some(a=>a.platform===p.key)); // logo banner: 1 per platform
   let el = document.getElementById('sosmed-banner');
   if(!aktif.length){ el?.remove(); return; }
   pasangCssSosmed();
@@ -122,9 +129,8 @@ function renderSosmedBanner(){
 }
 
 function bukaSosmedSheet(){
-  const links = getSosmedPondok();
-  const aktif = SOSMED_PLATFORM.filter(p=>links[p.key]);
-  if(!aktif.length || document.getElementById('sosmed-overlay')) return;
+  const akun = getSosmedPondok();
+  if(!akun.length || document.getElementById('sosmed-overlay')) return;
   pasangCssSosmed();
   const asal = document.activeElement;
   const ov = document.createElement('div');
@@ -135,11 +141,11 @@ function bukaSosmedSheet(){
       <div><h3 id="sosmed-judul">Media Sosial</h3><p>${escSosmed(CONFIG.pesantren_nama||'Pondok Pesantren An-Nur')}</p></div>
       <button type="button" class="sosmed-tutup" aria-label="Tutup">×</button>
     </div>
-    ${aktif.map(p=>`<a class="sosmed-row" href="${escSosmed(links[p.key])}" target="_blank" rel="noopener">
+    ${akun.map(a=>{ const p = platformSosmed(a.platform); return `<a class="sosmed-row" href="${escSosmed(a.url)}" target="_blank" rel="noopener">
       ${logoSosmed(p)}
-      <span class="sosmed-row-teks"><b>${p.label}</b><small>${escSosmed(namaAkunSosmed(links[p.key]))}</small></span>
+      <span class="sosmed-row-teks"><b>${escSosmed(a.nama || p.label)}</b><small>${a.nama ? p.label+' · ' : ''}${escSosmed(namaAkunSosmed(a.url))}</small></span>
       <span class="sosmed-row-buka">Buka ›</span>
-    </a>`).join('')}
+    </a>`; }).join('')}
   </div>`;
   const tutup = ()=>{ ov.remove(); document.removeEventListener('keydown', onKey); asal?.focus?.(); };
   const onKey = e=>{ if(e.key==='Escape') tutup(); };
