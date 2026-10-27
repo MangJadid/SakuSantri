@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Saku Santri">
-<link rel="stylesheet" href="./css/style.css?v=52">
+<link rel="stylesheet" href="./css/style.css?v=53">
 <meta name="theme-color" content="#0f5c52">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
@@ -288,15 +288,16 @@
       <!-- Grid akses cepat -- HP saja, gantiin tab atas yang harus discroll -->
       <div class="mnav-grid" id="mnav-grid"></div>
 
-      <div class="panel" id="dash-ringkasan-panel">
+      <!-- Dilipat secara bawaan biar beranda lega -- buka/tutup diingat per HP (lihat toggleRingkasanDash) -->
+      <div class="panel terlipat" id="dash-ringkasan-panel">
         <div class="ph">
-          <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg> Ringkasan Santri</h2>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <h2><button type="button" class="lipat-toggle" id="dash-ringkasan-toggle" onclick="toggleRingkasanDash()" aria-expanded="false" aria-controls="dash-ringkasan-isi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg> Ringkasan Santri <span class="lipat-jml" id="dash-ringkasan-jml"></span><span class="lipat-panah" aria-hidden="true">›</span></button></h2>
+          <div class="lipat-isi" style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-sm btn-wa-all" onclick="kirimWASemuaKritis()" id="btn-wa-semua" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> WA Semua Kritis</button>
             <button class="btn btn-p btn-sm" onclick="exportLengkap()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg> Backup Lengkap</button>
           </div>
         </div>
-        <div class="pb">
+        <div class="pb lipat-isi" id="dash-ringkasan-isi">
           <div class="ftog-row">
             <input type="text" id="dash-cari" placeholder="🔍 Cari nama santri..." oninput="debounce(renderDashboardDebounced)()">
           </div>
@@ -1169,7 +1170,7 @@
 <script src="./js/init-setup.js?v=15"></script>
 <script src="./js/auth.js?v=22"></script>
 <script src="./js/navigation.js?v=22"></script>
-<script src="./js/dashboard.js?v=16"></script>
+<script src="./js/dashboard.js?v=17"></script>
 <script src="./js/santri-helpers.js?v=11"></script>
 <script src="./js/santri-table.js?v=16"></script>
 <script src="./js/santri-detail.js?v=14"></script>

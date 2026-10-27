@@ -259,6 +259,8 @@ function renderDashboard(){
   });
   document.getElementById('dash-tbl').innerHTML = html||`<tr><td colspan="7"><div class="empty"><span class="ei">🔍</span><p>Tidak ada data</p></div></td></tr>`;
   renderPaginationUI('dash-pagination', filtered.length, 'dash', 'renderDashboard()');
+  const jmlRingkasan = document.getElementById('dash-ringkasan-jml');
+  if(jmlRingkasan) jmlRingkasan.textContent = '· '+filtered.length+' santri';
 
   const kritisAdaWA = filtered.filter(s=>(s.saldo<kritis)&&s.no_wa).length;
   const btnWaSemuaDash = document.getElementById('btn-wa-semua');
@@ -270,3 +272,15 @@ function renderDashboard(){
 
 function getKobongNama(id){ const k=ALL_KOBONG.find(k=>k.id===id); return k?.nama||''; }
 
+// ===== RINGKASAN SANTRI: lipat/buka -- tertutup secara bawaan biar beranda lega, pilihan diingat per HP =====
+function setRingkasanDash(buka){
+  const p = document.getElementById('dash-ringkasan-panel');
+  if(!p) return;
+  p.classList.toggle('terlipat', !buka);
+  document.getElementById('dash-ringkasan-toggle')?.setAttribute('aria-expanded', String(buka));
+  try{ localStorage.setItem('dash_ringkasan_buka', buka ? '1' : '0'); }catch(e){}
+}
+function toggleRingkasanDash(){
+  setRingkasanDash(document.getElementById('dash-ringkasan-panel')?.classList.contains('terlipat'));
+}
+try{ if(localStorage.getItem('dash_ringkasan_buka')==='1') setRingkasanDash(true); }catch(e){}

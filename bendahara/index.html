@@ -262,22 +262,6 @@
         <div id="dapur-cards"></div>
       </div>
 
-      <div class="panel">
-        <div class="ph">
-          <h2 id="dash-tagihan-title">📋 Tagihan Bulan Ini</h2>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="filter-toggle-btn freeze-toggle-btn" onclick="toggleFreezeNama()" title="Kunci kolom nama saat scroll tabel ke samping">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Kunci Nama
-            </button>
-            <button class="btn btn-wa btn-sm mutating-only" id="btn-wa-massal" onclick="bukaWAMassal('tagihan')" style="display:none">📱 WA Massal</button>
-            <button class="btn btn-b btn-sm" onclick="backupLengkap()">📥 Backup</button>
-
-          </div>
-        </div>
-        <div class="pb" id="dash-tagihan-summary">
-          <div class="empty"><span class="ei">📋</span><p>Memuat data...</p></div>
-        </div>
-      </div>
     </div>
 
     <!-- ===== TAGIHAN ===== -->
@@ -286,6 +270,9 @@
         <div class="ph">
           <h2><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-3px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg> Kelola Tagihan</h2>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <!-- Dipindah dari tabel "Tagihan Bulan Ini" di beranda (tabelnya dihapus, isinya sama dengan menu ini) -->
+            <button class="btn btn-wa btn-sm mutating-only" id="btn-wa-massal" onclick="bukaWAMassal('tagihan')" style="display:none">📱 WA Massal</button>
+            <button class="btn btn-b btn-sm" onclick="backupLengkap()">📥 Backup</button>
             <button class="btn btn-wa btn-sm mutating-only" onclick="kirimWABelumBayar()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> WA Pengingat</button>
             <button class="btn btn-d btn-sm mutating-only" id="btn-hapus-semua" onclick="hapusSemuaTagihan()" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Hapus Semua</button>
           </div>
@@ -1434,7 +1421,7 @@
 <script src="./js/icons.js?v=1"></script>
 <script src="./js/app-core.js?v=30"></script>
 <script src="./js/konfigurasi-tagihan.js?v=3"></script>
-<script src="./js/dashboard.js?v=10"></script>
+<script src="./js/dashboard.js?v=11"></script>
 <script src="./js/tagihan.js?v=9"></script>
 <script src="./js/pembayaran.js?v=10"></script>
 <script src="./js/santri.js?v=3"></script>

@@ -86,8 +86,6 @@ function renderDashboard(){
   const JENIS_ICON_BD={'Uang Makan':{ic:'🍽️',bg:'#fff7ed',rute:'Dapur'},'Uang Listrik':{ic:'⚡',bg:'#fefce8',rute:'Kas'}};
   function _jenisMetaBD(j){ return JENIS_ICON_BD[j]||{ic:'💰',bg:'#f0f9ff',rute:''}; }
 
-  const dapurLabel = ACTIVE_DAPUR?getDapurNama(ACTIVE_DAPUR):'Semua Dapur';
-  document.getElementById('dash-tagihan-title').textContent=`📋 Tagihan Bulan Ini — ${dapurLabel}`;
 
   // Hitung total santri aktif (exclude alumni)
   const santriAktif = ALL_SANTRI.filter(s=>!s.is_arsip);
@@ -289,33 +287,5 @@ function renderDashboard(){
   const wabtn=document.getElementById('btn-wa-massal');
   if(wabtn) wabtn.style.display=hasBelum?'inline-flex':'none';
 
-  // Tabel tagihan bulan ini
-  const rows = tagihanBulan.map((t,i)=>{
-    const s=getSantriById(t.santri_id)||{};
-    const kobongNama=s.kobong?.nama||getKobongNama(s.kobong_id)||'—';
-    const statusBadge = t.status==='lunas'?`<span class="badge badge-lunas">✅ Lunas</span>`:t.status==='cicil'?`<span class="badge badge-cicil">⏳ Cicilan</span>`:`<span class="badge badge-belum">❌ Belum</span>`;
-    return `<tr>
-      <td style="color:var(--text-l)">${i+1}</td>
-      <td class="col-nama"><div style="display:flex;align-items:center;gap:8px">
-        <div class="av" style="background:${avColor(s.nama||'')}22;color:${avColor(s.nama||'')}">${s.foto_url?`<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">`:avLetter(s.nama||'?')}</div>
-        <button onclick="openDetailModal('${t.santri_id}')" style="background:none;border:none;cursor:pointer;font-weight:600;text-align:left;color:var(--text);padding:0">${s.nama||t.santri_nama||'—'}</button>
-      </div></td>
-      <td>${s.kelas||'—'}</td>
-      <td><span class="badge badge-bg">${kobongNama}</span></td>
-      <td><span class="badge badge-dapur">${getDapurEmoji(t.dapur_id)} ${getDapurNama(t.dapur_id)}</span></td>
-      <td>${t.bulan||'—'}</td>
-      <td>${fmtRp(t.nominal_makan||0)}</td>
-      <td>${fmtRp(t.nominal_listrik||0)}</td>
-      <td><strong>${fmtRp(t.nominal)}</strong></td>
-      <td>${statusBadge}</td>
-      <td>
-        ${t.status!=='lunas'?`<button class="btn btn-p btn-xs mutating-only" onclick="bukaMoBayarMulti('${t.santri_id}','${t.id}')">💰 Bayar</button>`:''}
-        ${s.no_wa&&t.status!=='lunas'?`<button class="btn btn-wa btn-xs mutating-only" style="margin-left:4px" onclick="kirimWASantri('${t.santri_id}','${t.bulan||bulan}')">📱</button>`:''}
-      </td>
-    </tr>`;
-  }).join('');
-  document.getElementById('dash-tagihan-summary').innerHTML = rows.length
-    ? `<div class="tbl-wrap"><table><thead><tr><th>#</th><th class="col-nama">Santri</th><th>Kelas</th><th>Kobong</th><th>Dapur</th><th>Bulan</th><th>Uang Makan</th><th>Uang Listrik</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table></div>`
-    : `<div class="empty"><span class="ei">📋</span><p>Belum ada tagihan bulan ini.</p></div>`;
 }
 
