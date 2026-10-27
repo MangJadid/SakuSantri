@@ -246,7 +246,8 @@ function kirimWAMassal(){
   );
 }
 
-function exportRekapExcel(){
+async function exportRekapExcel(){
+  try{ await loadXLSX(); }catch(e){ toast(e.message,false); return; }
   const perSantri={};
   getTagihanFiltered().forEach(t=>{
     const k=t.santri_id;

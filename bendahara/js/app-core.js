@@ -28,6 +28,40 @@ function initFreezeNama(){
 }
 initFreezeNama();
 
+// ===== LIBRARY EXCEL: baru diunduh saat Export/Import dipakai =====
+// Sengaja tidak dimuat di <head> -- ukurannya 880 KB dan bikin layar loading lama
+// (apalagi sinyal lemah), padahal cuma kepakai pas Export/Import.
+let _xlsxPromise = null;
+function loadXLSX(){
+  if(window.XLSX) return Promise.resolve();
+  if(!_xlsxPromise) _xlsxPromise = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = resolve;
+    s.onerror = ()=>{ _xlsxPromise = null; s.remove(); reject(new Error('Library Excel gagal dimuat, periksa koneksi lalu coba lagi')); };
+    document.head.appendChild(s);
+  });
+  return _xlsxPromise;
+}
+
+// ===== AMBIL SEMUA BARIS (lewat batas 1000/request) =====
+// Ambil 5 halaman sekaligus (bukan antre satu-satu) -- 7.000+ tagihan jadi
+// 2 kali bolak-balik ke server, bukan 8. Kalau ada error, kembalikan yang sudah dapat.
+async function fetchAllPages(queryBuilder){
+  const PAGE = 1000, PARALEL = 5;
+  let all=[], from=0;
+  while(true){
+    const hasil = await Promise.all(Array.from({length:PARALEL}, (_,i)=>
+      queryBuilder().range(from+i*PAGE, from+(i+1)*PAGE-1)));
+    for(const {data, error} of hasil){
+      if(error||!data) return {data:all};
+      all = all.concat(data);
+      if(data.length < PAGE) return {data:all};
+    }
+    from += PARALEL*PAGE;
+  }
+}
+
 // ===== SHA-256 HELPER =====
 async function sha256(str){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -116,10 +150,9 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
   SB = createClient(SB_URL, SB_KEY);
 
   try {
-    const {data:sets} = await SB.from('settings').select('*');
+    // Dua-duanya gak saling butuh -- jalankan bareng biar layar loading lebih cepat
+    const [{data:sets}] = await Promise.all([SB.from('settings').select('*'), ensureSuperAccount()]);
     (sets||[]).forEach(s=>{ CONFIG[s.key]=s.value; });
-
-    await ensureSuperAccount();
 
     const saved = loadSession();
     if(saved){
@@ -341,8 +374,8 @@ async function loadAllData(){
 async function _loadAllDataCore(){
   const isAdmin = isKangAdmin();
   const queries = [
-    (async()=>{ let all=[],from=0,step=1000; while(true){ const {data,error}=await SB.from('santri').select('id,nama,kelas,kobong_id,kobong(id,nama,asrama_id),no_wa,dapur_id,catatan,foto_url,pin,created_by').neq('is_arsip',true).order('nama').order('id').range(from,from+step-1); if(error||!data||!data.length) break; all=[...all,...data]; if(data.length<step) break; from+=step; } return {data:all}; })(),
-    (async()=>{ let all=[],from=0,step=1000; while(true){ const {data,error}=await SB.from('tagihan_pondok').select('id,santri_id,santri_nama,dapur_id,bulan,nominal,nominal_makan,nominal_listrik,nominal_bayar,status,tgl_tagihan,tgl_bayar,keterangan,dicatat_oleh,created_at,rincian').order('created_at',{ascending:false}).order('id',{ascending:false}).range(from,from+step-1); if(error||!data||!data.length) break; all=[...all,...data]; if(data.length<step) break; from+=step; } return {data:all}; })(),
+    fetchAllPages(()=>SB.from('santri').select('id,nama,kelas,kobong_id,kobong(id,nama,asrama_id),no_wa,dapur_id,catatan,foto_url,pin,created_by').neq('is_arsip',true).order('nama').order('id')),
+    fetchAllPages(()=>SB.from('tagihan_pondok').select('id,santri_id,santri_nama,dapur_id,bulan,nominal,nominal_makan,nominal_listrik,nominal_bayar,status,tgl_tagihan,tgl_bayar,keterangan,dicatat_oleh,created_at,rincian').order('created_at',{ascending:false}).order('id',{ascending:false})),
     SB.from('asrama').select('*').order('nama'),
     SB.from('kobong').select('*,asrama(id,nama)').order('nama'),
     SB.from('piutang_alumni').select('*').order('tgl_keluar',{ascending:false}),

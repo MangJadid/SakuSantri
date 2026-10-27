@@ -4,8 +4,9 @@ function handleImportFile(file){
   if(!file) return;
   const ext=file.name.split('.').pop().toLowerCase();
   const reader=new FileReader();
-  reader.onload=function(e){
+  reader.onload=async function(e){
     let rows=[];
+    if(ext!=='csv'){ try{ await loadXLSX(); }catch(err){ toast(err.message,false); return; } }
     if(ext==='csv'){ const text=e.target.result; rows=text.split('\n').map(r=>r.split(',').map(c=>c.trim().replace(/^"|"$/g,''))); }
     else { const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; rows=XLSX.utils.sheet_to_json(ws,{header:1}); }
     const header=rows[0]?.map(h=>String(h).toLowerCase().trim());

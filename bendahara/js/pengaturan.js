@@ -361,7 +361,8 @@ async function simpanTemplateWA(){
 function resetTemplateWA(){ konfirm('Reset template WA ke pesan default?', ()=>{ document.getElementById('set-wa-template').value=getDefaultWATemplate(); toast('↺ Template direset!'); }, 'lainnya'); }
 
 // ===== BACKUP =====
-function backupLengkap(){
+async function backupLengkap(){
+  try{ await loadXLSX(); }catch(e){ toast(e.message,false); return; }
   const santri=getSantriFiltered();
   const tagihan=getTagihanFiltered();
   const wb=XLSX.utils.book_new();
