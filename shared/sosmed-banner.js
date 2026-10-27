@@ -1,7 +1,8 @@
 // ===== BANNER "FOLLOW MEDIA SOSIAL" -- dipakai Saku Santri & Bendahara =====
 // Link diatur Kang Admin di Saku Santri (menu Admin), disimpan di tabel settings
 // key 'sosmed_pondok' sebagai JSON {instagram, facebook, youtube, tiktok, x}.
-// Banner ditaruh di paling bawah <main>, jadi muncul di semua tab & semua role.
+// Banner cuma di paling bawah Beranda (semua role) -- halaman kerja (tabel dll) dibiarkan bersih.
+// Ortu juga bisa buka daftar akunnya dari menu Lainnya.
 // Disembunyikan kalau belum ada link sama sekali.
 
 const SOSMED_PLATFORM = [
@@ -104,14 +105,15 @@ function pasangCssSosmed(){
 }
 
 function renderSosmedBanner(){
-  const main = document.querySelector('#pg-app main');
-  if(!main) return;
+  // Beranda ortu = #sec-detail, selain itu (staf Saku Santri & semua akun Bendahara) = #sec-dashboard
+  const beranda = document.querySelector(SESSION?.role==='ortu' ? '#sec-detail' : '#sec-dashboard');
+  if(!beranda) return;
   const aktif = SOSMED_PLATFORM.filter(p=>getSosmedPondok()[p.key]);
   let el = document.getElementById('sosmed-banner');
   if(!aktif.length){ el?.remove(); return; }
   pasangCssSosmed();
   if(!el){ el = document.createElement('div'); el.id = 'sosmed-banner'; }
-  main.appendChild(el); // selalu jadi elemen paling bawah
+  beranda.appendChild(el); // selalu jadi elemen paling bawah beranda
   // Satu tombol besar (bukan logo kecil satu-satu) -- diketuk buka daftar akun lengkap
   el.innerHTML = `<button type="button" class="sosmed-banner" onclick="bukaSosmedSheet()" aria-haspopup="dialog">
     <span class="sosmed-teks"><span>Follow Media Sosial</span><strong>${namaPondokSosmed()}</strong><em>Ketuk untuk lihat akun ›</em></span>
