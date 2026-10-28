@@ -158,13 +158,16 @@ async function prossMassal(){
 
     // Hitung ulang saldo dari SELURUH transaksi di database (bukan dari data di memori)
     // supaya tidak meleset kalau ada transaksi lain yang masuk bersamaan dari device lain
-    const {data:semuaTx} = await SB.from('transaksi').select('santri_id,jenis,nominal').in('santri_id', sIds);
+    // Diambil per 1000 baris (fetchAllTx) -- kalau santrinya banyak, sekali ambil kepotong di 1000
+    const semuaTx = await fetchAllTx(()=>SB.from('transaksi').select('santri_id,jenis,nominal').in('santri_id', sIds).order('id'));
     const saldoMap = {};
-    (semuaTx||[]).forEach(t=>{
+    semuaTx.forEach(t=>{
       saldoMap[t.santri_id] = (saldoMap[t.santri_id]||0) + (t.jenis==='masuk'?t.nominal:-t.nominal);
     });
-    for(const sid of sIds){
-      await SB.from('santri').update({saldo: saldoMap[sid]||0}).eq('id', sid);
+    // Update saldo 10 santri sekaligus (bukan antre satu-satu) biar cepat
+    for(let i=0; i<sIds.length; i+=10){
+      await Promise.all(sIds.slice(i, i+10).map(sid=>
+        SB.from('santri').update({saldo: saldoMap[sid]||0}).eq('id', sid)));
     }
 
     if(jenis==='masuk' && sumber==='rekening' && SESSION.role==='pengurus' && totalMasukRekening>0){
