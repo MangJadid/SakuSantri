@@ -330,6 +330,13 @@ function updateDepositInfo(){
   } else infoEl.style.display='none';
 }
 
+// Ubah "Oktober 2025" jadi angka urut waktu (bukan urut abjad)
+function urutBulanDep(b){
+  const BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const [nm,thn]=(b||'').split(' ');
+  const bi=BULAN.indexOf(nm);
+  return parseInt(thn||0)*100+(bi>=0?bi:99);
+}
 async function prosesDeposit(){
   if(_isLoading) return;
   const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
@@ -344,19 +351,17 @@ async function prosesDeposit(){
   if(!tgl){ toast('⚠️ Isi tanggal!'); return; }
 
   // Cek deposit existing
-  let dep=null;
-  try {
-    const {data:d}=await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle();
-    dep=d;
-  } catch(e){ dep=null; }
+  // Kalau gagal dicek (mis. sinyal putus) → batalkan, biar gak bikin data deposit dobel
+  const {data:dep, error:depErr}=await SB.from('santri_deposit').select('*').eq('santri_id',santriId).maybeSingle();
+  if(depErr){ toast('❌ Gagal cek deposit, periksa koneksi lalu coba lagi.'); return; }
   const saldoLama=dep?Number(dep.saldo||0):0;
   let saldoBaru=saldoLama+nominal;
 
   // Otomatis potong tunggakan yang ada
   const tagBelum=ALL_TAGIHAN.filter(t=>String(t.santri_id)===String(santriId)&&t.status!=='lunas')
-    .sort((a,b)=>(a.bulan||'').localeCompare(b.bulan||'')); // urutkan dari bulan terlama
+    .sort((a,b)=>urutBulanDep(a.bulan)-urutBulanDep(b.bulan)); // urutkan dari bulan terlama
 
-  let totalDipotong=0;
+  let totalDipotong=0, gagalPotong=false;
   for(const t of tagBelum){
     if(saldoBaru<=0) break;
     const sisa=Number(t.nominal)-Number(t.nominal_bayar||0);
@@ -364,29 +369,39 @@ async function prosesDeposit(){
     const bayarSekarang=Math.min(sisa, saldoBaru);
     const totalBayar=Number(t.nominal_bayar||0)+bayarSekarang;
     const status=totalBayar>=Number(t.nominal)?'lunas':'cicil';
-    await SB.from('tagihan_pondok').update({
+    const {error}=await SB.from('tagihan_pondok').update({
       nominal_bayar:totalBayar, status, tgl_bayar:tgl,
       keterangan:`Dari deposit${ket?' - '+ket:''}`,
       dicatat_oleh:SESSION.nama||SESSION.username
     }).eq('id',t.id);
+    // Gagal tersimpan → berhenti, sisa uang tetap di deposit (gak boleh lompat ke bulan berikutnya)
+    if(error){ gagalPotong=true; break; }
     saldoBaru-=bayarSekarang;
     totalDipotong+=bayarSekarang;
   }
 
   // Simpan sisa deposit
-  if(dep){
-    await SB.from('santri_deposit').update({
-      saldo:saldoBaru, tgl_terakhir:tgl,
-      keterangan:ket||'Tambah deposit', dicatat_oleh:SESSION.nama||SESSION.username
-    }).eq('id',dep.id);
-  } else {
-    await SB.from('santri_deposit').insert({
-      santri_id:santriId, saldo:saldoBaru, tgl_terakhir:tgl,
-      keterangan:ket||'Deposit awal', dicatat_oleh:SESSION.nama||SESSION.username
-    });
+  const {error:simpanErr}=dep
+    ? await SB.from('santri_deposit').update({
+        saldo:saldoBaru, tgl_terakhir:tgl,
+        keterangan:ket||'Tambah deposit', dicatat_oleh:SESSION.nama||SESSION.username
+      }).eq('id',dep.id)
+    : await SB.from('santri_deposit').insert({
+        santri_id:santriId, saldo:saldoBaru, tgl_terakhir:tgl,
+        keterangan:ket||'Deposit awal', dicatat_oleh:SESSION.nama||SESSION.username
+      });
+
+  if(simpanErr){
+    toast(totalDipotong>0
+      ? `❌ ${fmtRp(totalDipotong)} sudah masuk ke tunggakan, tapi saldo deposit GAGAL tersimpan. Cek data deposit santri ini & koreksi manual.`
+      : '❌ Deposit gagal tersimpan, periksa koneksi lalu coba lagi.');
+    closeMo('mo-multi-bayar');
+    await loadAllData(); fillSelects(); renderDashboard(); renderTagihanTable(); renderSantri();
+    return;
   }
 
   let msg=`🏦 Deposit ${fmtRp(nominal)} berhasil!`;
+  if(gagalPotong) msg+=` ⚠️ Sebagian tunggakan gagal dipotong (koneksi), sisanya disimpan di deposit.`;
   if(totalDipotong>0) msg+=` ${fmtRp(totalDipotong)} dipotong untuk tunggakan.`;
   if(saldoBaru>0) msg+=` Sisa deposit: ${fmtRp(saldoBaru)}.`;
   toast(msg);
