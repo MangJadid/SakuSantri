@@ -7,15 +7,29 @@ function styleSheet(ws, cols){
   return ws;
 }
 
+// Nama tab Excel wajib unik & maks 31 huruf -- nama santri kembar dikasih nama kobong,
+// kalau masih kembar juga baru dikasih nomor. Kalau dobel, Excel nolak & backup gagal.
+function namaSheetUnik(wb, nama, tambahan){
+  const bersih = t => String(t||'').replace(/[:\\\/\?\*\[\]]/g,'').trim();
+  const sudahAda = n => wb.SheetNames.some(x=>x.toLowerCase()===n.toLowerCase());
+  let n = bersih(nama).substring(0,31) || 'Santri';
+  if(sudahAda(n) && tambahan) n = (bersih(nama).substring(0,18)+' - '+bersih(tambahan)).substring(0,31);
+  for(let i=2; sudahAda(n); i++) n = bersih(nama).substring(0,25)+` (${i})`;
+  return n;
+}
+
+// Return true kalau file backup berhasil dibuat (dipakai backupSemuaData buat buka tombol Tutup Bulan)
 async function exportLengkap(){
-  if(_isLoading) return;
+  if(_isLoading) return false;
+  let berhasil = false;
   const _lBtn = document.activeElement?.tagName==='BUTTON'?document.activeElement:null;
   showLoadingOverlay('Mengekspor data...','Data sedang disiapkan untuk diunduh.');
   setLoading(true, _lBtn);
   try {
 
   // Untuk pengurus & admin — ambil transaksi bulan aktif santri binaan
-  const btn = event?.target;
+  const btn = event?.target?.closest?.('button');
+  const labelAsli = btn?.innerHTML;
   if(btn){ btn.textContent='⏳ Memproses...'; btn.disabled=true; }
   try{
     await loadXLSX();
@@ -138,6 +152,26 @@ async function exportLengkap(){
       isSuper?[5,12,25,18,15,25,15,15,15]:[5,12,25,15,25,15,15,15]);
     XLSX.utils.book_append_sheet(wb, ws3, '📜 Riwayat Transaksi');
 
+    // ===== SHEET SEMUA TRANSAKSI (Admin) =====
+    // Tutup Bulan menghapus SEMUA transaksi (bukan cuma bulan aktif, termasuk santri arsip),
+    // jadi semuanya wajib ikut ke-backup di sini.
+    if(isSuper){
+      const semuaTx = await fetchAllTx(()=>SB.from('transaksi').select('*,santri(nama,kobong(nama))').order('id'));
+      const rowsSemua = semuaTx.map((t,i)=>({
+        'No': i+1,
+        'Tanggal': t.tanggal,
+        'Santri': t.santri?.nama||'—',
+        'Kobong': t.santri?.kobong?.nama||'—',
+        'Keterangan': t.keterangan||'—',
+        'Pemasukan (Rp)': t.jenis==='masuk'?t.nominal:0,
+        'Pengeluaran (Rp)': t.jenis==='keluar'?t.nominal:0,
+        'Dicatat oleh': t.oleh||'—',
+        'ID Santri': t.santri_id
+      }));
+      const wsSemua = styleSheet(XLSX.utils.json_to_sheet(rowsSemua.length?rowsSemua:[{'Keterangan':'Belum ada transaksi'}]),[6,12,25,15,25,15,15,15,10]);
+      XLSX.utils.book_append_sheet(wb, wsSemua, '🗂️ Semua Transaksi');
+    }
+
     // ===== SHEET PER SANTRI — hanya santri yang menitipkan uang jajan bulan ini =====
     // (punya minimal 1 transaksi di bulan aktif, walau saldonya udah habis/0 sebelum akhir bulan)
     const santriNitip = ALL_SANTRI.filter(s => txsBulan.some(t=>t.santri_id===s.id));
@@ -157,7 +191,7 @@ async function exportLengkap(){
         };
       });
       rows.push({'Tanggal':'','Keterangan':'SALDO AKHIR','Pemasukan (Rp)':'','Pengeluaran (Rp)':'','Saldo (Rp)':s.saldo,'Dicatat oleh':''});
-      const sheetName = s.nama.substring(0,28).replace(/[:\\\/\?\*\[\]]/g,'');
+      const sheetName = namaSheetUnik(wb, s.nama, s.kobong?.nama||getKobongNama(s.kobong_id));
       const wsS = styleSheet(XLSX.utils.json_to_sheet(rows), [12,25,15,15,12,15]);
       XLSX.utils.book_append_sheet(wb, wsS, sheetName);
     });
@@ -175,7 +209,7 @@ async function exportLengkap(){
           'Status': s.saldo<0?'MINUS':s.saldo===0?'NOL':s.saldo<kritis?'KRITIS':'NORMAL',
           'Catatan': s.catatan||''
         }));
-        const sheetName = `Asrama ${a.nama}`.substring(0,31);
+        const sheetName = namaSheetUnik(wb, `Asrama ${a.nama}`);
         const wsA = styleSheet(XLSX.utils.json_to_sheet(rows.length?rows:[{'Keterangan':'Belum ada santri'}]),[5,25,15,15,10,20]);
         XLSX.utils.book_append_sheet(wb, wsA, sheetName);
       });
@@ -186,13 +220,15 @@ async function exportLengkap(){
       : `Backup_${username}_${bulan.replace(' ','_')}_${today()}.xlsx`;
     XLSX.writeFile(wb, namaFile);
     toast(`✅ Backup ${bulan} berhasil didownload!`);
+    berhasil = true;
   } catch(e){
     toast('Gagal export: '+e.message, false);
   } finally {
-    if(btn){ btn.innerHTML=svgIcon('archive',14)+' Backup Lengkap'; btn.disabled=false; }
+    if(btn){ btn.innerHTML=labelAsli||(svgIcon('archive',14)+' Backup Lengkap'); btn.disabled=false; }
   }
 
   } finally { setLoading(false, _lBtn); }
+  return berhasil;
 }
 
 function exportExcelDashboard(){
@@ -260,7 +296,13 @@ async function exportXLSX(rows, nama){
 
 // ===== BACKUP SEMUA DATA =====
 async function backupSemuaData(){
-  await exportLengkap();
+  const berhasil = await exportLengkap();
+  const st = document.getElementById('tutup-status');
+  // Backup gagal → tombol Tutup Bulan tetap terkunci
+  if(!berhasil){
+    if(st) st.innerHTML = '<span style="color:var(--red)">❌ Backup gagal, Tutup Bulan belum bisa dilakukan. Coba backup lagi.</span>';
+    return;
+  }
   // Aktifkan tombol Tutup Bulan setelah backup
   const btnTutup = document.getElementById('btn-tutup-bulan');
   if(btnTutup){
@@ -269,7 +311,6 @@ async function backupSemuaData(){
     btnTutup.style.cursor = 'pointer';
     btnTutup.innerHTML = svgIcon('lock',14)+' 2. Tutup Bulan';
   }
-  const st = document.getElementById('tutup-status');
   if(st) st.innerHTML = '<span style="color:var(--green)">✅ Backup selesai! Sekarang kamu bisa klik <strong>Tutup Bulan</strong>.</span>';
 }
 

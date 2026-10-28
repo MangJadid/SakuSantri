@@ -25,42 +25,51 @@ async function tutupBulan(){
     const tglHariIni = today();
     const oleh = 'Kang Admin';
 
-    // 1. Ambil semua santri beserta saldo terkini
-    const {data:santri, error:errS} = await SB.from('santri').select('id,nama,saldo').order('nama');
-    if(errS) throw errS;
+    // 1. Catat ID transaksi terakhir -- yang dihapus nanti cuma transaksi s/d ID ini.
+    //    Transaksi yang masuk dari pengurus lain selama proses ini tetap aman.
+    const {data:akhir, error:errA} = await SB.from('transaksi').select('id').order('id',{ascending:false}).limit(1);
+    if(errA) throw errA;
+    const idTerakhir = akhir?.[0]?.id;
+    if(!idTerakhir) throw new Error('Belum ada transaksi untuk ditutup.');
 
-    // 2. Hapus SEMUA transaksi lama
-    const {error:errD} = await SB.from('transaksi').delete().neq('id', 0);
-    if(errD) throw errD;
+    // 2. Hitung saldo tiap santri dari transaksi lama (sama kayak cara app hitung saldo)
+    const txLama = await fetchAllTx(()=>SB.from('transaksi').select('santri_id,jenis,nominal').lte('id', idTerakhir).order('id'));
+    const saldoMap = {};
+    txLama.forEach(t=>{
+      saldoMap[t.santri_id] = (saldoMap[t.santri_id]||0) + (t.jenis==='masuk'?t.nominal:-t.nominal);
+    });
 
     // 3. Buat transaksi pembuka baru untuk setiap santri yang saldonya gak nol --
     //    saldo positif dicatat "masuk" (Saldo sisa), saldo minus dicatat "keluar"
-    //    (Tunggakan sisa) supaya kelihatan jejaknya di Riwayat, bukan cuma kebawa
-    //    diam-diam lewat kolom saldo (yang emang gak pernah direset di sini).
-    const txBaru = (santri||[])
-      .filter(s => s.saldo !== 0)
-      .map(s => s.saldo > 0 ? {
-        santri_id: s.id,
+    //    (Tunggakan sisa) supaya kelihatan jejaknya di Riwayat.
+    //    Dibuat DULUAN sebelum hapus: kalau gagal di sini, transaksi lama masih utuh.
+    const txBaru = Object.entries(saldoMap)
+      .filter(([,saldo]) => saldo !== 0)
+      .map(([sid, saldo]) => ({
+        santri_id: Number(sid),
         tanggal: tglHariIni,
-        jenis: 'masuk',
-        keterangan: `Saldo sisa ${bulan}`,
-        nominal: s.saldo,
+        jenis: saldo > 0 ? 'masuk' : 'keluar',
+        keterangan: saldo > 0 ? `Saldo sisa ${bulan}` : `Tunggakan sisa ${bulan}`,
+        nominal: Math.abs(saldo),
         oleh
-      } : {
-        santri_id: s.id,
-        tanggal: tglHariIni,
-        jenis: 'keluar',
-        keterangan: `Tunggakan sisa ${bulan}`,
-        nominal: Math.abs(s.saldo),
-        oleh
-      });
+      }));
 
+    let idBaru = [];
     if(txBaru.length){
-      const {error:errI} = await SB.from('transaksi').insert(txBaru);
+      const {data:ins, error:errI} = await SB.from('transaksi').insert(txBaru).select('id');
       if(errI) throw errI;
+      idBaru = (ins||[]).map(t=>t.id);
     }
 
-    // 4. Refresh data
+    // 4. Baru hapus transaksi lama. Kalau gagal, transaksi pembuka tadi dibatalkan
+    //    supaya saldo gak kehitung dobel -- data kembali seperti sebelum tutup bulan.
+    const {error:errD} = await SB.from('transaksi').delete().lte('id', idTerakhir);
+    if(errD){
+      if(idBaru.length) await SB.from('transaksi').delete().in('id', idBaru);
+      throw new Error(errD.message+' (data dikembalikan seperti semula, silakan coba lagi)');
+    }
+
+    // 5. Refresh data
     await loadAllData();
     renderDashboard();
 
