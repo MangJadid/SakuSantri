@@ -17,7 +17,7 @@ function hariIniPoster(){
 // Tiap poster disimpan 2 ukuran (_besar.jpg 1280px & _kecil.jpg 640px, lihat poster-admin.js) --
 // slider/galeri pakai yang kecil biar hemat kuota HP & Supabase
 function posterImg(url, w){
-  url = url || '';
+  url = alamatServerAktif(url); // gambar lama tersimpan lewat proxy -- ikut jalur yang sedang terbuka
   return w <= 640 ? url.replace(/_besar\.jpg$/, '_kecil.jpg') : url;
 }
 

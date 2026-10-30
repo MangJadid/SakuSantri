@@ -11,7 +11,8 @@ async function loginOrtu(){
     p_nama: nama, p_pin: pin
   });
 
-  if(rpcErr || !rpcData){ hideLoginOverlay(); showLoginErr('Nama atau PIN salah!'); return; }
+  if(rpcErr){ hideLoginOverlay(); showLoginErr('📡 Gagal terhubung ke server. Periksa koneksi internet, lalu coba lagi.'); return; } // gagal koneksi ≠ PIN salah
+  if(!rpcData){ hideLoginOverlay(); showLoginErr('Nama atau PIN salah!'); return; }
   if(rpcData.error){ hideLoginOverlay(); showLoginErr(rpcData.error); return; }
 
   const santri = rpcData.data;
@@ -59,7 +60,8 @@ async function loginPengurus(){
   // Fallback (akun belum pernah migrasi ke Supabase Auth): cek password lewat RPC
   // aman di server — password_hash tidak pernah dikirim ke browser
   const {data: pgData, error: rpcErr} = await SB.rpc('login_pengurus_check', {p_username: user, p_password: pass});
-  if(rpcErr || !pgData){ hideLoginOverlay(); showLoginErr('Username atau password salah!'); return; }
+  if(rpcErr){ hideLoginOverlay(); showLoginErr('📡 Gagal terhubung ke server. Periksa koneksi internet, lalu coba lagi.'); return; } // gagal koneksi ≠ password salah
+  if(!pgData){ hideLoginOverlay(); showLoginErr('Username atau password salah!'); return; }
   if(pgData.is_blocked){ hideLoginOverlay(); showLoginErr('⛔ Akun Anda diblokir. Hubungi Admin.'); return; }
 
   // Password lama cocok - otomatis daftarkan ke Supabase Auth
@@ -103,7 +105,8 @@ async function loginSuper(){
   // Fallback (belum pernah migrasi ke Supabase Auth): cek password lewat RPC,
   // aman di server — password Admin tidak pernah dikirim ke browser
   const {data: cocok, error: rpcErr} = await SB.rpc('login_super_check', {p_username: user, p_password: pass});
-  if(rpcErr || !cocok){ hideLoginOverlay(); showLoginErr('Password Admin salah!'); return; }
+  if(rpcErr){ hideLoginOverlay(); showLoginErr('📡 Gagal terhubung ke server. Periksa koneksi internet, lalu coba lagi.'); return; } // gagal koneksi ≠ password salah
+  if(!cocok){ hideLoginOverlay(); showLoginErr('Password Admin salah!'); return; }
 
   // Daftarkan ke Supabase Auth
   try{

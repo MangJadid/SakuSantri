@@ -33,9 +33,12 @@ jelaskan dampak perubahan, bukan istilah teknis.
 - Tanpa build step: HTML + JS biasa, satu file JS per fitur di `*/js/`.
 
 ## Database
-- Produksi: **Supabase**, diakses lewat proxy Cloudflare `https://tajdid.jadidsaepul0.workers.dev`
-  (diteruskan apa adanya, termasuk Storage). URL & anon key ada di `santri/js/init-setup.js` dan
-  `bendahara/js/app-core.js`. RLS tabel memakai policy `allow_all` (akses lewat anon key).
+- Produksi: **Supabase**. Jalur koneksi dipilih saat app dibuka oleh `shared/server-data.js`
+  (`pilihServerData`): proxy Cloudflare `https://tajdid.jadidsaepul0.workers.dev` atau langsung
+  `https://menfnmfwtxgcgvkbbjxh.supabase.co` — sebagian provider internet memblokir `*.workers.dev`
+  (gejalanya login "password salah" padahal koneksi yang gagal). Keduanya database yang sama.
+  Anon key ada di `santri/js/init-setup.js` dan `bendahara/js/app-core.js`. URL file Storage yang
+  tersimpan di DB lewat `alamatServerAktif()` supaya ikut jalur yang terbuka.
 - **Tabel baru di Supabase dibuat manual oleh user** lewat Supabase → SQL Editor. Tulis SQL-nya di
   file `db/supabase-<fitur>.sql`, berikan ke user, dan tunggu konfirmasi sebelum upload fitur.
   Untuk localhost juga tambahkan tabelnya ke `db/schema.sql` dan `ALLOWED_TABLES` di `api/config.php`.

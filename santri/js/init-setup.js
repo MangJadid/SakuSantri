@@ -18,10 +18,11 @@ function withTimeout(promise, ms){
   // "localhost") tetap nyambung ke API lokal, samain sama cek di index.html.
   const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname)
     || /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(location.hostname);
-  const HARDCODED_URL = isLocalDev ? '../api' : 'https://tajdid.jadidsaepul0.workers.dev';
   const HARDCODED_KEY = isLocalDev
     ? 'e3d37d584dce22eba5836211744f18ffab5a7c663ef2fe48f5c2447fa3e8ac0e'
     : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
+  // Proxy Cloudflare diblokir sebagian provider -- pilih jalur yang terbuka (shared/server-data.js)
+  const HARDCODED_URL = isLocalDev ? '../api' : await pilihServerData(HARDCODED_KEY);
 
   // Load config from localStorage
   const raw = localStorage.getItem('siujang_cfg');

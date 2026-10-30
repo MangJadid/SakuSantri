@@ -143,10 +143,11 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
   // "localhost") tetap nyambung ke API lokal, samain sama cek di index.html.
   const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname)
     || /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(location.hostname);
-  const SB_URL = isLocalDev ? '../api' : 'https://tajdid.jadidsaepul0.workers.dev';
   const SB_KEY = isLocalDev
     ? 'e3d37d584dce22eba5836211744f18ffab5a7c663ef2fe48f5c2447fa3e8ac0e'
     : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
+  // Proxy Cloudflare diblokir sebagian provider -- pilih jalur yang terbuka (shared/server-data.js)
+  const SB_URL = isLocalDev ? '../api' : await pilihServerData(SB_KEY);
   SB = createClient(SB_URL, SB_KEY);
 
   try {
@@ -238,7 +239,8 @@ async function doLogin(){
       // Fallback (belum migrasi ke Supabase Auth): cek password lewat RPC,
       // aman di server — password_hash tidak pernah dikirim ke browser
       const {data: rpcData, error: rpcErr} = await SB.rpc('login_bendahara_check', {p_username: user, p_password: pass});
-      if(rpcErr || !rpcData){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
+      if(rpcErr){ hideLoginOverlay(); showLoginErr('📡 Gagal terhubung ke server. Periksa koneksi internet, lalu coba lagi.'); return; } // gagal koneksi ≠ password salah
+      if(!rpcData){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
       data = rpcData;
       // Password cocok - otomatis daftarkan ke Supabase Auth
       try{
@@ -287,7 +289,8 @@ async function doLoginAdmin(){
       // Fallback (belum migrasi ke Supabase Auth): cek password lewat RPC,
       // aman di server — password Kang Admin tidak pernah dikirim ke browser
       const {data: cocok, error: rpcErr} = await SB.rpc('login_super_check', {p_username: user, p_password: pass});
-      if(rpcErr || !cocok){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
+      if(rpcErr){ hideLoginOverlay(); showLoginErr('📡 Gagal terhubung ke server. Periksa koneksi internet, lalu coba lagi.'); return; } // gagal koneksi ≠ password salah
+      if(!cocok){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
       // Daftarkan ke Supabase Auth
       try{
         await SB.auth.signUp({ email, password: pass,
