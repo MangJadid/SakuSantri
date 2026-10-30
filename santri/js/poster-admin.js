@@ -52,6 +52,7 @@ async function renderPosterAdmin(){
   const sec = document.getElementById('sec-poster');
   if(!sec || !bolehKelolaPoster()) return;
   if(!sec.innerHTML) sec.innerHTML = '<div class="empty"><p>Memuat poster...</p></div>';
+  pasangCssPoster(); // gaya gambar poster (utuh + latar buram) dari shared/poster.js
   const data = await muatPoster(true);
   const isSuper = SESSION.role==='super';
   const daftar = isSuper ? data.semua : data.semua.filter(p=>p.dibuat_oleh===usernamePoster());
@@ -61,7 +62,7 @@ async function renderPosterAdmin(){
     <div class="panel"><div class="ph"><h2>${svgIcon('upload',16)} <span id="pst-form-judul">Upload Poster</span></h2></div><div class="pb">
       <div class="info-box" style="margin-bottom:14px">Poster tampil di slider <strong>Poster &amp; Info</strong> di beranda Saku Santri &amp; Bendahara, untuk semua pengguna. Ukuran terbaik: tegak 4:5 (mis. 1080×1350), seperti poster Instagram.</div>
       <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
-        <label for="pst-file" id="pst-preview" style="width:132px;aspect-ratio:4/5;border:1.5px dashed var(--green-b);border-radius:12px;background:var(--green-p);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;overflow:hidden;flex-shrink:0;font-size:12px;color:var(--text-m);text-align:center">${svgIcon('image',22)}<span>Pilih gambar</span></label>
+        <label for="pst-file" id="pst-preview" style="position:relative;width:132px;aspect-ratio:4/5;border:1.5px dashed var(--green-b);border-radius:12px;background:var(--green-p);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;overflow:hidden;flex-shrink:0;font-size:12px;color:var(--text-m);text-align:center">${svgIcon('image',22)}<span>Pilih gambar</span></label>
         <input type="file" id="pst-file" accept="image/*" onchange="pilihGambarPoster(this)" style="position:absolute;width:1px;height:1px;opacity:0">
         <div style="flex:1 1 220px;min-width:0">
           <div class="fg" style="margin-bottom:12px"><label for="pst-judul">Judul</label><input type="text" id="pst-judul" maxlength="80" placeholder="mis. Jadwal Libur Maulid"></div>
@@ -92,7 +93,7 @@ async function renderPosterAdmin(){
     <div class="panel"><div class="ph"><h2>${svgIcon('image',16)} ${isSuper?'Semua Poster':'Poster Saya'} <span style="font-weight:500;color:var(--text-l)">(${daftar.length})</span></h2></div><div class="pb">
       ${daftar.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px">${daftar.map(p=>`
         <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)">
-          <img src="${escPoster(posterImg(p.gambar_url,320))}" alt="" loading="lazy" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block">
+          <div style="position:relative;aspect-ratio:4/5;overflow:hidden;background:#e7ece8">${gambarPosterHtml(p.gambar_url, 320, true)}</div>
           <div style="padding:10px">
             <div style="font-weight:700;font-size:13px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escPoster(p.judul)}</div>
             <div style="font-size:11.5px;color:var(--text-l);margin-top:4px">${escPoster(namaKategoriPoster(p.kategori_id))}${isSuper&&p.dibuat_oleh_nama?' · '+escPoster(p.dibuat_oleh_nama):''}</div>
@@ -119,7 +120,7 @@ function pilihGambarPoster(input){
     try{
       [_posterBlob, _posterKecil] = await Promise.all([kompresGambarPoster(img, 1280, 0.82), kompresGambarPoster(img, 640, 0.78)]);
       const pratinjau = URL.createObjectURL(_posterKecil);
-      document.getElementById('pst-preview').innerHTML = `<img src="${pratinjau}" alt="Pratinjau poster" style="width:100%;height:100%;object-fit:cover">`;
+      document.getElementById('pst-preview').innerHTML = gambarPosterHtml(pratinjau, 640, false); // persis seperti tampil di slider
     }catch(e){ _posterBlob = _posterKecil = null; toast(e.message, false); }
   };
   img.onerror = ()=>{ URL.revokeObjectURL(url); toast('Gambar tidak bisa dibaca, coba file lain.', false); };
@@ -135,7 +136,7 @@ function editPoster(id){
   const sampai = document.getElementById('pst-sampai');
   sampai.removeAttribute('min'); // poster lama yang sudah berakhir tetap bisa diedit
   sampai.value = p.tampil_sampai ? String(p.tampil_sampai).slice(0,10) : '';
-  document.getElementById('pst-preview').innerHTML = `<img src="${escPoster(posterImg(p.gambar_url,320))}" alt="Gambar poster saat ini" style="width:100%;height:100%;object-fit:cover">`;
+  document.getElementById('pst-preview').innerHTML = gambarPosterHtml(p.gambar_url, 320, false);
   document.getElementById('pst-form-judul').textContent = 'Edit Poster';
   document.getElementById('pst-btn-simpan').textContent = 'Simpan Perubahan';
   document.getElementById('pst-btn-batal').style.display = '';

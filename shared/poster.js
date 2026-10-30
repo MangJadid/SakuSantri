@@ -37,6 +37,13 @@ async function muatPoster(paksa){
   return _posterJanji;
 }
 
+// Foto apa pun ukurannya tampil UTUH di kotak 4:5 (tidak dipotong); sisa ruang diisi versi buram
+// foto yang sama. Dua <img> URL-nya sama, jadi cuma sekali unduh.
+function gambarPosterHtml(url, w, lazy){
+  const src = escPoster(posterImg(url, w)), muat = lazy ? ' loading="lazy"' : '';
+  return `<img class="pst-latar" src="${src}" alt="" aria-hidden="true"${muat}><img class="pst-utama" src="${src}" alt=""${muat}>`;
+}
+
 function posterAktif(){
   const t = hariIniPoster();
   return (POSTER_CACHE?.semua||[]).filter(p=>!p.tampil_sampai || String(p.tampil_sampai).slice(0,10) >= t);
@@ -68,7 +75,8 @@ function pasangCssPoster(){
     .pst-kartu{position:relative;flex:0 0 var(--pst-w);scroll-snap-align:center;aspect-ratio:4/5;border:0;padding:0;border-radius:16px;overflow:hidden;
       background:#e7ece8;cursor:pointer;box-shadow:0 8px 22px rgba(18,53,40,.2);will-change:transform,opacity}
     .pst-kartu:focus-visible{outline:3px solid var(--gold-l,#c9a227);outline-offset:2px}
-    .pst-kartu img{width:100%;height:100%;object-fit:cover;display:block}
+    .pst-latar{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px);transform:scale(1.2);opacity:.55}
+    .pst-utama{position:relative;width:100%;height:100%;object-fit:contain;display:block}
     .pst-dots{display:flex;justify-content:center;gap:6px;margin-top:4px}
     .pst-dots span{width:6px;height:6px;border-radius:3px;background:#c8d3cc;transition:width .25s,background .25s}
     .pst-dots span.on{width:18px;background:var(--green,#123528)}
@@ -87,8 +95,7 @@ function pasangCssPoster(){
     .pst-baris::-webkit-scrollbar{display:none}
     .pst-item{flex:0 0 148px;scroll-snap-align:start;border:0;padding:0;background:none;text-align:left;font:inherit;cursor:pointer}
     .pst-item:focus-visible{outline:3px solid var(--gold-l,#c9a227);outline-offset:2px;border-radius:12px}
-    .pst-item span:first-child{display:block;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:#e7ece8;box-shadow:0 3px 10px rgba(0,0,0,.1)}
-    .pst-item img{width:100%;height:100%;object-fit:cover;display:block}
+    .pst-item span:first-child{position:relative;display:block;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:#e7ece8;box-shadow:0 3px 10px rgba(0,0,0,.1)}
     .pst-item b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:7px;font-size:13.5px;line-height:1.35;color:var(--text,#1d2b24)}
     .pst-kosong{padding:60px 20px;text-align:center;color:#7b8a81}
     .pst-lihat{position:fixed;inset:0;z-index:99985;background:#0a120e;color:#fff;display:flex;flex-direction:column;animation:pst-fade .2s ease-out}
@@ -125,7 +132,7 @@ async function renderSliderPoster(el){
     <div class="pst-head"><h3><i></i>Poster &amp; Info</h3><button type="button" class="pst-semua" onclick="bukaGaleriPoster()">Lihat semua ›</button></div>
     <div class="pst-track" aria-label="Poster dan info pondok">
       ${list.map((p,i)=>`<button type="button" class="pst-kartu" onclick="bukaGaleriPoster()" aria-label="${escPoster(p.judul)} — lihat semua poster">
-        <img src="${escPoster(posterImg(p.gambar_url, 600))}" alt="" ${i?'loading="lazy"':''}></button>`).join('')}
+        ${gambarPosterHtml(p.gambar_url, 600, i>0)}</button>`).join('')}
     </div>
     ${list.length>1 ? `<div class="pst-dots" aria-hidden="true">${list.map((_,i)=>`<span class="${i?'':'on'}"></span>`).join('')}</div>` : ''}
   </div>`;
@@ -186,7 +193,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape' && document.queryS
 
 function itemGaleriPoster(p, grup){
   return `<button type="button" class="pst-item" onclick="lihatPoster(${Number(p.id)},'${grup}')">
-    <span><img src="${escPoster(posterImg(p.gambar_url, 320))}" alt="" loading="lazy"></span><b>${escPoster(p.judul)}</b></button>`;
+    <span>${gambarPosterHtml(p.gambar_url, 320, true)}</span><b>${escPoster(p.judul)}</b></button>`;
 }
 
 let _pstGrup = {};
