@@ -11,8 +11,19 @@ function batasTutupBulan(bulanAktif){
   return {batas: tgl(new Date(y, i+1, 1)), akhir: tgl(new Date(y, i+1, 0))};
 }
 
+// Bulan yang belum berakhir tidak boleh ditutup -- mencegah tutup dua kali / tutup bulan yang baru mulai
+function cekBolehTutupBulan(bulan){
+  const periode = batasTutupBulan(bulan);
+  if(!periode) return `Bulan aktif "${bulan}" tidak dikenali. Perbaiki dulu di Pengaturan → Bulan Aktif (contoh: "Oktober 2026").`;
+  if(today() < periode.batas) return `${bulan} belum berakhir. Tutup bulan ${bulan} baru bisa mulai tanggal ${fmtTglTutup(periode.batas)}.`;
+  return null;
+}
+function fmtTglTutup(iso){ const [y,m,d] = iso.split('-'); return `${parseInt(d)} ${bNames[parseInt(m)-1]} ${y}`; }
+
 function konfirmasiTutupBulan(){
   const bulan = CONFIG.bulan_aktif || 'bulan ini';
+  const tolak = cekBolehTutupBulan(bulan);
+  if(tolak){ toast(tolak, false); return; }
   konfirm(
     `<strong>⚠️ Tutup Bulan ${bulan}?</strong><br><br>
     Proses ini akan:<br>
@@ -35,8 +46,9 @@ async function tutupBulan(){
 
   try {
     const bulan = CONFIG.bulan_aktif || 'Bulan Lalu';
+    const tolak = cekBolehTutupBulan(bulan); // dicek ulang: bisa saja ditekan dua kali
+    if(tolak) throw new Error(tolak);
     const periode = batasTutupBulan(bulan);
-    if(!periode) throw new Error(`Bulan aktif "${bulan}" tidak dikenali. Perbaiki dulu di Pengaturan → Bulan Aktif (contoh: "Oktober 2026").`);
     const tglHariIni = periode.akhir; // saldo sisa dicatat di hari terakhir bulan yang ditutup
     const oleh = 'Kang Admin';
 
