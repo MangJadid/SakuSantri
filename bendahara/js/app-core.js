@@ -155,6 +155,9 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
     const [{data:sets}] = await Promise.all([SB.from('settings').select('*'), ensureSuperAccount()]);
     (sets||[]).forEach(s=>{ CONFIG[s.key]=s.value; });
 
+    // Mode perbaikan -- app ditutup sementara (shared/server-data.js); loading ditutup di finally
+    if(CONFIG.mode_perbaikan==='1'){ tampilkanModePerbaikan(); return; }
+
     const saved = loadSession();
     if(saved){
       SESSION = saved;

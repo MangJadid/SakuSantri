@@ -62,6 +62,9 @@ function withTimeout(promise, ms){
     return;
   }
 
+  // Mode perbaikan dinyalakan Kang Admin/developer -- app ditutup sementara (shared/server-data.js)
+  if(await cekModePerbaikan()){ hideLoadingScreen(); return; }
+
   // Cek persistent session — auto login untuk pengurus & super
   const savedSession = loadPersistentSession();
   if(savedSession){

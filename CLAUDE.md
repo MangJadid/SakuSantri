@@ -44,6 +44,10 @@ jelaskan dampak perubahan, bukan istilah teknis.
   Untuk localhost juga tambahkan tabelnya ke `db/schema.sql` dan `ALLOWED_TABLES` di `api/config.php`.
 - Pengaturan kecil disimpan di tabel `settings` (key/value, dimuat ke `CONFIG` saat app dibuka),
   mis. `wa_admin_asrama`, `wa_masukan`, `sosmed_pondok`, `super_profil` — tidak perlu tabel baru.
+  `bulan_aktif` dipakai BERSAMA oleh Saku Santri & Bendahara; Tutup Bulan memajukannya otomatis.
+- **Mode perbaikan:** `settings.mode_perbaikan = '1'` menutup kedua app (layar "Sedang dalam
+  perbaikan"), `'0'` membuka lagi — seketika, tanpa upload. Dicek saat app dibuka & tiap 1 menit
+  (`cekModePerbaikan` di `shared/server-data.js`). Nyalakan sebelum memperbaiki data langsung di DB.
 - Volume (Okt 2026): ±526 santri, ±6.400 transaksi, ±7.200 tagihan. Ambil data besar per 1000 baris
   secara paralel (`fetchAllTx` di `santri/js/auth.js`, `fetchAllPages` di `bendahara/js/app-core.js`).
 - Gambar: foto santri → Cloudinary (preset `santri_foto`); poster → Supabase Storage bucket `fotos`,

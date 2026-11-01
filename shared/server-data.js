@@ -31,3 +31,36 @@ function alamatServerAktif(url){
   const asal = SERVER_DATA.find(s=>u.startsWith(s+'/'));
   return asal ? SERVER_AKTIF + u.slice(asal.length) : u;
 }
+
+// ===== MODE PERBAIKAN -- settings 'mode_perbaikan' = '1' menutup app sementara untuk semua pengguna =====
+// Saklarnya di database (bukan di kode), jadi bisa dinyalakan/dimatikan seketika tanpa upload ulang.
+// Gagal mengecek (offline dll) = app TIDAK dikunci.
+async function cekModePerbaikan(){
+  if(typeof SB==='undefined' || !SB) return false;
+  try{
+    const {data} = await SB.from('settings').select('value').eq('key','mode_perbaikan').maybeSingle();
+    if(String(data?.value||'')!=='1') return false;
+  }catch(e){ return false; }
+  tampilkanModePerbaikan();
+  return true;
+}
+
+function tampilkanModePerbaikan(){
+  if(document.getElementById('mode-perbaikan')) return;
+  const el = document.createElement('div');
+  el.id = 'mode-perbaikan';
+  el.setAttribute('role','alertdialog');
+  el.setAttribute('aria-modal','true');
+  el.setAttribute('aria-labelledby','mode-perbaikan-judul');
+  el.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:#123528;color:#fdf9ee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;font-family:"Plus Jakarta Sans",system-ui,sans-serif';
+  el.innerHTML = `<div style="font-size:52px;line-height:1" aria-hidden="true">🛠️</div>
+    <h2 id="mode-perbaikan-judul" style="margin:0;font-family:Lora,Georgia,serif;font-size:24px;color:#e6c25e">Sedang dalam perbaikan</h2>
+    <p style="margin:0;max-width:330px;font-size:15px;line-height:1.65;opacity:.9">Aplikasi ditutup sementara untuk perbaikan data. Data Anda aman. Silakan coba lagi beberapa saat lagi.</p>
+    <button type="button" onclick="location.reload()" style="margin-top:6px;min-height:44px;padding:0 26px;border:0;border-radius:12px;background:#e6c25e;color:#123528;font:inherit;font-weight:700;font-size:15px;cursor:pointer">Coba lagi</button>`;
+  document.body.appendChild(el);
+  el.querySelector('button').focus();
+}
+
+// App yang sudah terbuka ikut tertutup: dicek ulang saat app dibuka lagi & tiap 1 menit
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) cekModePerbaikan(); });
+setInterval(()=>{ if(!document.hidden) cekModePerbaikan(); }, 60000);
