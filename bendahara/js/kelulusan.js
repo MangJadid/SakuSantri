@@ -180,6 +180,12 @@ async function prosesSantriKeluar(){
 
   setLoading(true, btn, '🚪 Proses Keluar...', s.nama);
   try{
+    // Santri yang DIHAPUS (bukan diarsipkan): transaksi uang jajannya ikut terhapus -- catat dulu
+    // (transaksi_terhapus). Gagal mencatat = proses keluar batal sebelum apa pun diubah.
+    if(totalTunggak<=0 || opsi==='lunas'){
+      try{ await catatTransaksiTerhapus('santri_id', _skSantriId, `Santri keluar (dihapus): ${s.nama}`); }
+      catch(e){ toast('Gagal mencatat penghapusan, santri TIDAK dihapus: '+(e.message||e), false); return; }
+    }
     if(totalTunggak>0){
       if(opsi==='lunas'){
         const ids = tunggakanList.map(t=>t.id);

@@ -48,6 +48,9 @@ jelaskan dampak perubahan, bukan istilah teknis.
 - **Mode perbaikan:** `settings.mode_perbaikan = '1'` menutup kedua app (layar "Sedang dalam
   perbaikan"), `'0'` membuka lagi — seketika, tanpa upload. Dicek saat app dibuka & tiap 1 menit
   (`cekModePerbaikan` di `shared/server-data.js`). Nyalakan sebelum memperbaiki data langsung di DB.
+- **Penghapusan transaksi wajib dicatat:** panggil `catatTransaksiTerhapus` (`shared/server-data.js`)
+  SEBELUM menghapus transaksi atau santri (transaksinya ikut terhapus); gagal mencatat = batalkan
+  hapus. Catatan masuk tabel `transaksi_terhapus` (hanya bisa ditambah & dibaca), tampil di menu Admin.
 - Volume (Okt 2026): ±526 santri, ±6.400 transaksi, ±7.200 tagihan. Ambil data besar per 1000 baris
   secara paralel (`fetchAllTx` di `santri/js/auth.js`, `fetchAllPages` di `bendahara/js/app-core.js`).
 - Gambar: foto santri → Cloudinary (preset `santri_foto`); poster → Supabase Storage bucket `fotos`,

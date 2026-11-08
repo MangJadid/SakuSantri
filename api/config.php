@@ -38,6 +38,7 @@ const ALLOWED_TABLES = [
   'push_notifications'            => ['pk' => 'id',   'upsertKey' => 'id'],
   'poster_kategori'               => ['pk' => 'id',   'upsertKey' => 'id'],
   'poster'                        => ['pk' => 'id',   'upsertKey' => 'id'],
+  'transaksi_terhapus'            => ['pk' => 'id',   'upsertKey' => 'id'],
 ];
 
 // Relasi embedded select yang didukung, mis. .select('*,kobong(id,nama)')

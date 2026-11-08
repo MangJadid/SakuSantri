@@ -264,6 +264,9 @@ async function bulkHapusSantri(){
     setLoading(true, _lBtn2);
     try {
     const targetSantri = ids.map(id=>ALL_SANTRI.find(s=>s.id===id)).filter(Boolean);
+    // Transaksi para santri ikut terhapus -- catat dulu (transaksi_terhapus), gagal mencatat = batal hapus
+    try{ await catatTransaksiTerhapus('santri_id', ids, `Santri dihapus (hapus massal ${ids.length} santri)`); }
+    catch(e){ toast('Gagal mencatat penghapusan, santri TIDAK dihapus: '+(e.message||e), false); return; }
     const {error} = await SB.from('santri').delete().in('id', ids);
     if(error){ toast('Gagal hapus: '+error.message, false); return; }
     for(const s of targetSantri){

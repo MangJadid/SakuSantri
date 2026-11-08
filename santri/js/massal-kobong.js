@@ -75,6 +75,9 @@ async function massalKobongHapus(){
   if(!ids.length) return;
   konfirm(`Hapus <strong>${ids.length} santri</strong> secara permanen?<br><span style="color:var(--red)">⚠️ Tidak bisa dibatalkan!</span>`,
     async()=>{
+      // Transaksi para santri ikut terhapus -- catat dulu (transaksi_terhapus), gagal mencatat = batal hapus
+      try{ await catatTransaksiTerhapus('santri_id', ids, `Santri dihapus (hapus massal kobong, ${ids.length} santri)`); }
+      catch(e){ toast('Gagal mencatat penghapusan, santri TIDAK dihapus: '+(e.message||e), false); return; }
       const {error} = await SB.from('santri').delete().in('id', ids);
       if(error){ toast('Gagal: '+error.message); return; }
       toast('🗑 '+ids.length+' santri dihapus!');

@@ -98,6 +98,9 @@ async function hapusTx(txId, santriId){
     showLoadingOverlay('Menghapus transaksi...','Transaksi sedang dihapus.');
     setLoading(true, _lBtn2);
     try {
+    // Catat dulu siapa & kapan menghapus (transaksi_terhapus) -- gagal mencatat = batal hapus
+    try{ await catatTransaksiTerhapus('id', txId, 'Hapus transaksi'); }
+    catch(e){ toast('Gagal mencatat penghapusan, transaksi TIDAK dihapus: '+(e.message||e), false); return; }
     // Hapus transaksi dulu
     await SB.from('transaksi').delete().eq('id',txId);
     // Hitung ulang saldo dari NOL berdasarkan semua transaksi TERSISA di database

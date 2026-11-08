@@ -305,6 +305,10 @@ async function approveHapus(reqId, santriId, santriNama){
       const req = (await SB.from('permintaan_perubahan_santri').select('*').eq('id',parseInt(String(reqId),10)).single()).data;
       const sTarget = ALL_SANTRI.find(x=>x.id===santriIdInt);
       const asramaId = sTarget ? getAsramaIdBySantri(sTarget) : req?.asrama_id;
+      // Transaksi santri ikut terhapus -- catat dulu (transaksi_terhapus), gagal mencatat = batal hapus
+      const pengaju = req?.diajukan_nama || req?.diajukan_oleh || '—';
+      try{ await catatTransaksiTerhapus('santri_id', santriIdInt, `Santri dihapus (disetujui, diajukan ${pengaju}): ${santriNama}${req?.alasan ? ' — '+req.alasan : ''}`); }
+      catch(e){ toast('Gagal mencatat penghapusan, santri TIDAK dihapus: '+(e.message||e), false); return; }
       const {error: errHapus} = await SB.from("santri").delete().eq("id", santriIdInt);
       if(errHapus){ toast('Gagal hapus santri: '+errHapus.message, false); return; }
       const {error: errUpd} = await SB.from('permintaan_perubahan_santri').update({

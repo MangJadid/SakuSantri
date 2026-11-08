@@ -437,6 +437,9 @@ async function hapusSantri(id){
     showLoadingOverlay('Menghapus santri...','Data santri sedang dihapus dari server.');
     setLoading(true, _lBtn2);
     try {
+    // Transaksi santri ikut terhapus -- catat dulu (transaksi_terhapus), gagal mencatat = batal hapus
+    try{ await catatTransaksiTerhapus('santri_id', id, `Santri dihapus: ${s.nama}`); }
+    catch(e){ toast('Gagal mencatat penghapusan, santri TIDAK dihapus: '+(e.message||e), false); return; }
     const {error: errDel} = await SB.from('santri').delete().eq('id', parseInt(String(id), 10));
     if(errDel){ toast('Gagal hapus santri: '+errDel.message, false); return; }
     await catatRiwayatSantri({santri_id:id, santri_nama:s.nama, asrama_id:getAsramaIdBySantri(s), jenis:'hapus', diffObj:null, sumber:'langsung'});

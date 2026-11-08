@@ -67,7 +67,32 @@ function renderAdminAsrama(){
     <h3 style="font-family:'Lora',serif;font-size:17px;color:var(--green);margin:22px 0 10px">${svgIcon('smartphone',16)} Nomor WA Admin Asrama</h3>
     <div class="info-box" style="margin-bottom:16px">Atur nomor WhatsApp admin untuk tiap asrama. Di <strong>beranda</strong>, orang tua melihat nomor admin asrama anaknya; di menu <strong>Lainnya</strong>, mereka bisa melihat nomor admin semua asrama.</div>
     ${panels || `<div class="empty"><span class="ei">🏛️</span><p>Belum ada asrama. Tambahkan dulu di menu Kobong.</p></div>`}
-    <button class="btn btn-p" onclick="simpanAdminAsrama()">${svgIcon('save',14)} Simpan Semua</button>`;
+    <button class="btn btn-p" onclick="simpanAdminAsrama()">${svgIcon('save',14)} Simpan Semua</button>
+    <div class="panel" style="margin-top:28px"><div class="ph"><h2>${svgIcon('trash',16)} Transaksi Terhapus</h2></div><div class="pb">
+      <div class="info-box" style="margin-bottom:14px">Setiap transaksi yang dihapus tercatat di sini, termasuk yang ikut terhapus karena santrinya dihapus: <strong>siapa, kapan, dan alasannya</strong>. Catatan ini tidak bisa diubah atau dihapus dari aplikasi. Tutup Bulan tidak tercatat di sini (saldonya terbawa dan rinciannya ada di file backup).</div>
+      <div id="tx-terhapus-isi"><div class="empty"><p>Memuat catatan...</p></div></div>
+    </div></div>`;
+  muatTransaksiTerhapus();
+}
+
+// 100 penghapusan terbaru dari tabel transaksi_terhapus (dicatat catatTransaksiTerhapus di shared/server-data.js)
+async function muatTransaksiTerhapus(){
+  const el = document.getElementById('tx-terhapus-isi');
+  if(!el) return;
+  const {data, error} = await SB.from('transaksi_terhapus').select('*').order('dihapus_pada',{ascending:false}).limit(100);
+  if(error){ el.innerHTML = `<div style="font-size:13px;color:var(--text-l)">Catatan belum bisa dimuat: ${escAdm(error.message)}</div>`; return; }
+  if(!data?.length){ el.innerHTML = '<div class="empty"><span class="ei">🧾</span><p>Belum ada transaksi yang dihapus.</p></div>'; return; }
+  const waktu = w => { const d = new Date(String(w||'').replace(' ','T')); return isNaN(d) ? escAdm(w) : d.toLocaleString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
+  el.innerHTML = `<div class="tw"><table>
+    <thead><tr><th>Waktu hapus</th><th>Dihapus oleh</th><th>Santri</th><th>Transaksi</th><th>Nominal</th><th>Alasan</th></tr></thead>
+    <tbody>${data.map(r=>`<tr>
+      <td style="white-space:nowrap;font-size:12.5px">${waktu(r.dihapus_pada)}</td>
+      <td><strong>${escAdm(r.dihapus_nama||'—')}</strong><div style="font-size:11.5px;color:var(--text-l)">@${escAdm(r.dihapus_oleh||'—')}</div></td>
+      <td>${escAdm(r.santri_nama||'—')}</td>
+      <td style="font-size:12.5px">${r.tanggal?fmtTanggal(r.tanggal):'—'} · ${escAdm(r.keterangan||'—')}<div style="font-size:11.5px;color:var(--text-l)">dicatat ${escAdm(r.dicatat_oleh||'—')}</div></td>
+      <td style="white-space:nowrap;font-weight:700;color:${r.jenis==='masuk'?'var(--green-l)':'var(--red)'}">${r.jenis==='masuk'?'+':'−'} ${rp(r.nominal)}</td>
+      <td style="font-size:12.5px">${escAdm(r.alasan||'—')}</td>
+    </tr>`).join('')}</tbody></table></div>`;
 }
 
 async function simpanAdminAsrama(){

@@ -328,4 +328,23 @@ CREATE TABLE IF NOT EXISTS poster (
   CONSTRAINT fk_poster_kategori FOREIGN KEY (kategori_id) REFERENCES poster_kategori(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ================= transaksi_terhapus (catatan siapa/kapan menghapus transaksi) =================
+CREATE TABLE IF NOT EXISTS transaksi_terhapus (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  transaksi_id BIGINT,
+  santri_id BIGINT,
+  santri_nama VARCHAR(255),
+  tanggal DATE,
+  jenis VARCHAR(20),
+  nominal BIGINT,
+  keterangan TEXT,
+  dicatat_oleh VARCHAR(255),
+  dibuat_pada DATETIME NULL,
+  dihapus_oleh VARCHAR(100),
+  dihapus_nama VARCHAR(255),
+  alasan TEXT,
+  dihapus_pada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_transaksi_terhapus_waktu (dihapus_pada)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;

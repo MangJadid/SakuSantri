@@ -64,3 +64,32 @@ function tampilkanModePerbaikan(){
 // App yang sudah terbuka ikut tertutup: dicek ulang saat app dibuka lagi & tiap 1 menit
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) cekModePerbaikan(); });
 setInterval(()=>{ if(!document.hidden) cekModePerbaikan(); }, 60000);
+
+// ===== CATAT TRANSAKSI TERHAPUS -- tabel transaksi_terhapus: isi transaksi + siapa & kapan menghapus =====
+// Dipanggil SEBELUM menghapus transaksi, atau santri (transaksinya ikut terhapus). Kalau pencatatan
+// gagal, fungsi ini melempar error dan pemanggil WAJIB membatalkan penghapusan -- supaya tidak ada
+// uang yang hilang tanpa jejak. kolom: 'id' (transaksi tertentu) atau 'santri_id' (semua transaksi santri).
+async function catatTransaksiTerhapus(kolom, nilai, alasan){
+  const ids = [].concat(nilai).map(Number).filter(Boolean);
+  if(!ids.length) return 0;
+  let rows = [];
+  for(let dari = 0; ; dari += 1000){
+    const {data, error} = await SB.from('transaksi').select('*,santri(nama)').in(kolom, ids).order('id').range(dari, dari+999);
+    if(error) throw error;
+    rows = rows.concat(data||[]);
+    if(!data || data.length < 1000) break;
+  }
+  if(!rows.length) return 0;
+  const u = SESSION?.user || SESSION || {}; // Saku Santri: SESSION.user, Bendahara: SESSION
+  const log = rows.map(t=>({
+    transaksi_id: t.id, santri_id: t.santri_id, santri_nama: t.santri?.nama || null,
+    tanggal: t.tanggal, jenis: t.jenis, nominal: t.nominal, keterangan: t.keterangan || null,
+    dicatat_oleh: t.oleh || null, dibuat_pada: t.created_at || null,
+    dihapus_oleh: u.username || SESSION?.role || null, dihapus_nama: u.nama || null, alasan
+  }));
+  for(let i = 0; i < log.length; i += 500){
+    const {error} = await SB.from('transaksi_terhapus').insert(log.slice(i, i+500));
+    if(error) throw error;
+  }
+  return rows.length;
+}
