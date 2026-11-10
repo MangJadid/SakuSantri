@@ -37,6 +37,19 @@ function opsiKlienSupabase(){
   return {auth:{storageKey: KUNCI_SESI_SB}};
 }
 
+// Akun login Supabase belum ada / passwordnya beda dari app (mis. baru direset Kang Admin di app):
+// disamakan di server oleh Edge Function `sinkron-akun` (cek password app dulu), lalu masuk.
+// Gagal (fungsi belum terpasang, offline) = lanjut seperti biasa, staf masuk tanpa kartu login.
+async function sinkronAkunLogin(jenis, username, password){
+  if(typeof SB==='undefined' || !SB?.functions) return false; // localhost (XAMPP) tidak punya Edge Function
+  try{
+    const {error} = await SB.functions.invoke('sinkron-akun', {body:{jenis, username, password}});
+    if(error) return false;
+    const {error: eMasuk} = await SB.auth.signInWithPassword({email: username + '@annur.internal', password});
+    return !eMasuk;
+  }catch(e){ return false; }
+}
+
 // Alamat file Storage (mis. gambar poster) yang tersimpan lewat jalur lain -> pakai jalur yang aktif
 function alamatServerAktif(url){
   const u = String(url||'');

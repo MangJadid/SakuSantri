@@ -226,14 +226,9 @@ async function doLogin(){
       const {data: rpcData, error: rpcErr} = await SB.rpc('login_bendahara_check', {p_username: user, p_password: pass});
       if(rpcErr){ hideLoginOverlay(); showLoginErr('📡 Gagal terhubung ke server. Periksa koneksi internet, lalu coba lagi.'); return; } // gagal koneksi ≠ password salah
       if(!rpcData){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
-      data = rpcData;
-      // Password cocok - otomatis daftarkan ke Supabase Auth
-      try{
-        await SB.auth.signUp({ email, password: pass,
-          options: { data: { username: user, nama: data.nama_tampilan, role: data.role } }
-        });
-        await SB.auth.signInWithPassword({ email, password: pass });
-      } catch(e){}
+      data = rpcData;
+      // Samakan akun login Supabase dengan password app (Edge Function sinkron-akun)
+      await sinkronAkunLogin('bendahara', user, pass);
     }
 
     if(data.is_blocked){ hideLoginOverlay(); showLoginErr('⛔ Akun diblokir. Hubungi Admin.'); return; }
@@ -275,14 +270,9 @@ async function doLoginAdmin(){
       // aman di server — password Kang Admin tidak pernah dikirim ke browser
       const {data: cocok, error: rpcErr} = await SB.rpc('login_super_check', {p_username: user, p_password: pass});
       if(rpcErr){ hideLoginOverlay(); showLoginErr('📡 Gagal terhubung ke server. Periksa koneksi internet, lalu coba lagi.'); return; } // gagal koneksi ≠ password salah
-      if(!cocok){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
-      // Daftarkan ke Supabase Auth
-      try{
-        await SB.auth.signUp({ email, password: pass,
-          options: { data: { username: user, nama: 'Admin', role: 'kangadmin' } }
-        });
-        await SB.auth.signInWithPassword({ email, password: pass });
-      } catch(e){}
+      if(!cocok){ hideLoginOverlay(); showLoginErr('❌ Username atau password salah!'); return; }
+      // Samakan akun login Supabase dengan password app (Edge Function sinkron-akun)
+      await sinkronAkunLogin('super', user, pass);
     }
 
     SESSION = {role:'kangadmin', nama:'Admin', username:user, dapur_id:null, akses_asrama:[]};

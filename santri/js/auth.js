@@ -66,12 +66,8 @@ async function loginPengurus(){
 
   // Password lama cocok - otomatis daftarkan ke Supabase Auth
   toast('Mengupgrade keamanan akun...');
-  try{
-    await SB.auth.signUp({ email, password: pass,
-      options: { data: { username: user, nama: pgData.nama, role: pgData.role } }
-    });
-    await SB.auth.signInWithPassword({ email, password: pass });
-  } catch(e){}
+  // Samakan akun login Supabase dengan password app (Edge Function sinkron-akun)
+  await sinkronAkunLogin('pengurus', user, pass);
 
   if(pgData.force_logout) await SB.from('pengurus').update({force_logout:false}).eq('id', pgData.id);
   const detectedRole = await resolvePengurusRole(pgData);
@@ -108,13 +104,8 @@ async function loginSuper(){
   if(rpcErr){ hideLoginOverlay(); showLoginErr('📡 Gagal terhubung ke server. Periksa koneksi internet, lalu coba lagi.'); return; } // gagal koneksi ≠ password salah
   if(!cocok){ hideLoginOverlay(); showLoginErr('Password Admin salah!'); return; }
 
-  // Daftarkan ke Supabase Auth
-  try{
-    await SB.auth.signUp({ email, password: pass,
-      options: { data: { username: user, nama: 'Kang Admin', role: 'super' } }
-    });
-    await SB.auth.signInWithPassword({ email, password: pass });
-  } catch(e){}
+  // Samakan akun login Supabase dengan password app (Edge Function sinkron-akun)
+  await sinkronAkunLogin('super', user, pass);
 
   const {data: pd2} = await SB.from('settings').select('value').eq('key','super_profil').single();
   let sp2 = {}; try{ sp2 = JSON.parse(pd2?.value||'{}'); }catch(e){}

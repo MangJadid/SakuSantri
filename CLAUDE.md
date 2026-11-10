@@ -48,6 +48,11 @@ jelaskan dampak perubahan, bukan istilah teknis.
 - **Mode perbaikan:** `settings.mode_perbaikan = '1'` menutup kedua app (layar "Sedang dalam
   perbaikan"), `'0'` membuka lagi — seketika, tanpa upload. Dicek saat app dibuka & tiap 1 menit
   (`cekModePerbaikan` di `shared/server-data.js`). Nyalakan sebelum memperbaiki data langsung di DB.
+- **Akun login staf (Supabase Auth)** = `<username>@annur.internal`. Saat password app benar tapi login
+  Supabase gagal, app memanggil Edge Function `sinkron-akun` (`supabase/functions/sinkron-akun/index.ts`,
+  dipasang manual lewat dashboard) yang mengecek password lalu membuat/menyamakan akunnya.
+  Tabel `pengurus`, `bendahara_users`, dan kunci rahasia `settings` hanya untuk `public.staf_aktif()`
+  (staf tidak diblokir + Kang Admin `settings.super_user`) — SQL & pembatalan di `db/supabase-staf-aktif*.sql`.
 - **Penghapusan transaksi wajib dicatat:** panggil `catatTransaksiTerhapus` (`shared/server-data.js`)
   SEBELUM menghapus transaksi atau santri (transaksinya ikut terhapus); gagal mencatat = batalkan
   hapus. Catatan masuk tabel `transaksi_terhapus` (hanya bisa ditambah & dibaca), tampil di menu Admin.
