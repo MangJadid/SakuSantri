@@ -151,8 +151,7 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
   SB = createClient(SB_URL, SB_KEY, opsiKlienSupabase());
 
   try {
-    // Dua-duanya gak saling butuh -- jalankan bareng biar layar loading lebih cepat
-    const [{data:sets}] = await Promise.all([SB.from('settings').select('*'), ensureSuperAccount()]);
+    const {data:sets} = await SB.from('settings').select('*');
     (sets||[]).forEach(s=>{ CONFIG[s.key]=s.value; });
 
     // Mode perbaikan -- app ditutup sementara (shared/server-data.js); loading ditutup di finally
@@ -173,23 +172,6 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
     document.getElementById('pg-loading').style.display='none';
   }
 })();
-
-async function ensureSuperAccount(){
-  try {
-    const {data,error} = await SB.from('bendahara_users').select('id').eq('role','super').limit(1);
-    if(error || !data || !data.length){
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-      const bytes = new Uint8Array(12);
-      crypto.getRandomValues(bytes);
-      const randomPass = Array.from(bytes, b => chars[b % chars.length]).join('');
-      await SB.from('bendahara_users').upsert({
-        username:'admin', password_hash:await sha256(randomPass),
-        nama_tampilan:'Admin / Bendahara Utama', role:'super', dapur_id:null
-      },{onConflict:'username'});
-      alert('🔑 Akun Admin pertama dibuat otomatis:\n\nUsername: admin\nPassword: '+randomPass+'\n\nCatat password ini SEKARANG — pesan ini hanya muncul sekali. Segera login lalu ganti password lewat menu Ganti Password.');
-    }
-  } catch(e){}
-}
 
 // ===== SESSION =====
 const SESS_KEY = 'bend_sess_v3';
