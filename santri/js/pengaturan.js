@@ -55,6 +55,9 @@ async function gantiPass(){
   if(p1!==p2){ toast('Password tidak cocok!',false); return; }
   const newHash = await sha256(p1);
   await SB.from('settings').upsert({key:'super_pass',value:newHash});
+  // Password akun login Supabase ikut diganti -- kalau beda, login Supabase gagal terus dan data khusus staf kosong
+  const sesi = SB.auth.getSession ? (await SB.auth.getSession()).data?.session : null;
+  if(sesi) await SB.auth.updateUser({password: p1});
   CONFIG.super_pass=newHash;
   localStorage.setItem('siujang_cfg',JSON.stringify(CONFIG));
   document.getElementById('set-pass1').value='';

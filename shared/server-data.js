@@ -25,6 +25,18 @@ async function pilihServerData(key){
   return SERVER_AKTIF; // semua gagal (offline) -- biarkan alur offline app yang menangani
 }
 
+// Sesi login Supabase disimpan dengan nama TETAP. Bawaan supabase-js menamainya dari alamat server, jadi
+// pindah jalur (proxy <-> langsung) membuat sesi tak ketemu: staf diam-diam jadi "tamu" dan data khusus
+// staf (daftar pengurus dll) kosong. Sesi lama yang dibuat lewat proxy ikut dipindah sekali.
+const KUNCI_SESI_SB = 'sb-menfnmfwtxgcgvkbbjxh-auth-token';
+function opsiKlienSupabase(){
+  try{
+    const lama = localStorage.getItem('sb-tajdid-auth-token');
+    if(lama && !localStorage.getItem(KUNCI_SESI_SB)) localStorage.setItem(KUNCI_SESI_SB, lama);
+  }catch(e){}
+  return {auth:{storageKey: KUNCI_SESI_SB}};
+}
+
 // Alamat file Storage (mis. gambar poster) yang tersimpan lewat jalur lain -> pakai jalur yang aktif
 function alamatServerAktif(url){
   const u = String(url||'');

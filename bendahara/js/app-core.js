@@ -148,7 +148,7 @@ const BULAN_AKTIF_DEFAULT = BULAN_NAMES[now2.getMonth()] + ' ' + now2.getFullYea
     : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbmZubWZ3dHhnY2d2a2JianhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTQ2NjUsImV4cCI6MjA5NTU3MDY2NX0.-xenaY9VPUzodik7nnN1emtnhg0WTqdU6dToyXSpwec';
   // Proxy Cloudflare diblokir sebagian provider -- pilih jalur yang terbuka (shared/server-data.js)
   const SB_URL = isLocalDev ? '../api' : await pilihServerData(SB_KEY);
-  SB = createClient(SB_URL, SB_KEY);
+  SB = createClient(SB_URL, SB_KEY, opsiKlienSupabase());
 
   try {
     // Dua-duanya gak saling butuh -- jalankan bareng biar layar loading lebih cepat

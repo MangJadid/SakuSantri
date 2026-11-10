@@ -41,7 +41,7 @@ function withTimeout(promise, ms){
 
   // Init Supabase
   try{
-    SB = supabase.createClient(CONFIG.url, CONFIG.key);
+    SB = supabase.createClient(CONFIG.url, CONFIG.key, opsiKlienSupabase());
     // Test connection -- dikasih batas waktu 8 detik. Kalau nyangkut/timeout, JANGAN
     // lempar ke layar setup database (data sebenarnya sudah ada, cuma jaringan lambat) --
     // lanjut aja ke alur normal biar user gak nyangkut di loading screen selamanya.
